@@ -127,100 +127,8 @@ int assign_wall_type(t_mesh *mesh); // Define calculation walls
 int assign_image_cells(t_mesh *mesh,t_solid *solids); // Define image points for immersed boundaries
 int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids); // Update the values of ghost cells using image points
 ```
-#### Reading solid geometries
 
-The function ``` read_solids()``` read STL-type files in the following format:
-
-```
-facets: 10 
-vertices: 30 
-
-n1x	n1y	n1z
-p11x	p11y	p11z
-p12x	p12y	p12z
-p13x	p13y	p13z
-
-n2x	n2y	n2z
-p21x	p21y	p21z
-p22x	p22y	p22z
-p23x	p23y	p23z
-
-...
-```
-where *ni* is the normal of  *i*-th triangle (facet) and *pij* is the *j*-th node of the *i*-th triangle.
-
-The filenames of the solid geometries must be indicated in the file ``` solids/solid_list.txt``` as follows:
-
-```
-nfiles 6
-solids/geometry1.txt
-solids/geometry2.txt
-...
-solids/geometry6.txt
-
-```
-
-Each solid geometry data read from each file will be stored using the following structure:
-
-```c
-struct t_stl_{
-	int ntri; //number of triangular facets
-	int nver; //number of vertices
-	char name[256]; //solid name, e.g. solids/geometry1.txt
-	double Xmin[3],Xmax[3]; //bounding box coordinates
-	int imin[3],imax[3];    //bounding box indices
-	t_triangle *triangle;   //array of triangular facets
-	
-};
-```
-and each triangular facet data will be stored using the following structure:
-
-```c
-struct t_triangle_{
-	double nr[3],absnr; //face normal vector and its magnitude
-	double p1[3],p2[3],p3[3];    //nodes defining the triangle	
-	int imin[3],imax[3]; 	//bounding box of the triangular facet
-};
-```
-
-#### Assigning ghost and solid cells
-
-The function ```assign_cell_type()``` is used to define ghost and solid cells. The algorithm checks whether the cells cointained in each triangle's bounding box are below or above the surface. To do so, the distance between a cell center and the surface is computed as the projection:
-
-<img src="https://render.githubusercontent.com/render/math?math=d=\frac{(\bf{x}_i-\bf{x}_{p1})\cdot \hat{\bf{n}}}{|\hat{\bf{n}}|}">
-
-where <img src="https://render.githubusercontent.com/render/math?math=\bf{x}_i"> is the vector of coordinates of the cell center and  <img src="https://render.githubusercontent.com/render/math?math=\bf{x}_{p1}"> is the vector of coordinates of the node 1 of the triangle. When <img src="https://render.githubusercontent.com/render/math?math=d<0">, the cell *i* is located below the surface. A threshold variable ```_stol_``` is used to define the thickness of the ghost cell layer.
-
-The coordinates of the surface intercept are defined as:
-
-<img src="https://render.githubusercontent.com/render/math?math=\bf{x}_{c}=\bf{x}_{i}-d\cdot \hat{\bf{n}} ">
-
-```c
-xc[0]=cell[n].xc - dist*triangle[m].nr[0]; 
-xc[1]=cell[n].yc - dist*triangle[m].nr[1];
-xc[2]=cell[n].zc - dist*triangle[m].nr[2];
-```
-
-and the "point-inside-trianle" algorithm is used to check if <img src="https://render.githubusercontent.com/render/math?math=\bf{x}_{c}"> is on the surface of the triangular facet. If so, the cell may be defined as a ghost cell and the coordinates of the image point (mirroring <img src="https://render.githubusercontent.com/render/math?math=\bf{x}_i"> with respect to <img src="https://render.githubusercontent.com/render/math?math=\bf{x}_{c}">) are computed as:
-
-<img src="https://render.githubusercontent.com/render/math?math=\bf{x}_{image}=\bf{x}_{c}-d\cdot \hat{\bf{n}} ">
-
-```c
-cell[n].xim = xc[0] - dist*triangle[m].nr[0]; 
-cell[n].yim = xc[1] - dist*triangle[m].nr[1];
-cell[n].zim = xc[2] - dist*triangle[m].nr[2];
-```
-When a cell is defined as *ghost cell* (```cell[n].ghost=1;```), we set a pointer to the triangle associated to such cell:
-```c
-cell[n].tri=&(triangle[m]);
-```
-
-#### Computing image points and ghost cell values
-
-For each ghost cell, the 8 closest neighbors to its image point are stored in ```cell[n].ni[8]``` and the weight of each neighbor is stored in ```cell[n].li[8]```. This weight is defined as <img src="https://render.githubusercontent.com/render/math?math=l_q=1/d_q^2 "> where  <img src="https://render.githubusercontent.com/render/math?math=d_q=|\bf{x}_{q}-\bf{x}_{image}| "> the distance between the image and the neighbor point, with *q* standing for the index of the neighbor cell. Note that a *q*-th weight is set to zero if the *q*-th neighbor is a ghost cell. The values at the image point are computed as:
-
-<img src="https://render.githubusercontent.com/render/math?math=\bf{U}_{image}=\sum_{q=1}^{8}l_q  \bf{U}_{q}">
-
+*This  feature is under construction yet.*
 
 
 ### Boundary conditions
@@ -299,5 +207,5 @@ License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC 
 - NonCommercial — You may not use the material for commercial purposes.
 - NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided. 
 
-Disclaimer: This software is under development and it is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
+**Disclaimer:** This software is under development and it is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
 
