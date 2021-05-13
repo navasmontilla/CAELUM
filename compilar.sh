@@ -1,0 +1,1 @@
+gcc -fopenmp euler3D.c -lm -o euler
