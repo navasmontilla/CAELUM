@@ -150,7 +150,7 @@ struct t_cell_{
 
 struct t_wall_{
 	int id;
-	int stencil; //this could be 1, 3, 5 or 7, depending on the method stencil 
+	int stencil; //this could be 1, 3, 5 or 7, depending on the method stencil  
 		//double rhoL, ruL, rvL, EL, rpL, rhoR, ruR, rvR, ER, rpR;
 		//extrapolated values at the left and right side of the wall, coming from (WENO) reconstruction
 
