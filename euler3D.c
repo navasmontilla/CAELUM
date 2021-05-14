@@ -2344,6 +2344,8 @@ double weno7L(double *phi){
 
 
 double teno5L(double *phi){
+      
+      //Adapted from http://dx.doi.org/10.13140/RG.2.2.36250.34247
 	
 	double b0, b1, b2;		//beta
 	double a0, a1, a2, a_sum;	//alpha
@@ -2397,6 +2399,8 @@ double teno5L(double *phi){
 
 
 double teno5R(double *phi){
+      
+      //Adapted from http://dx.doi.org/10.13140/RG.2.2.36250.34247
 	
 	double b0, b1, b2;		//beta
 	double a0, a1, a2, a_sum;	//alpha
