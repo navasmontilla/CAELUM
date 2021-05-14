@@ -1,16 +1,16 @@
 /*
 
 Authors:
- - Adrián Navas Montilla
+ - AdriÃ¡n Navas Montilla
  - Isabel Echeverribar
 
 Copyright (C) 2019-2021 The authors.  
 
 License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms: 
 
-- Attribution — You must give appropriate credit and provide a link to the license.
-- NonCommercial — You may not use the material for commercial purposes.
-- NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided. 
+- Attribution â€” You must give appropriate credit and provide a link to the license.
+- NonCommercial â€” You may not use the material for commercial purposes.
+- NoDerivatives â€” If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided. 
 
 Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
 
@@ -781,7 +781,7 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
                         if(mesh->periodicX==0){
                               //x setencils
                               if(l<semiSt){
-                                    cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*l+1); //poner if elseif else y añadir en todas min(st_size,dist*2+1)
+                                    cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*l+1); //poner if elseif else y aÃ±adir en todas min(st_size,dist*2+1)
                               }else if(xcells-(l+1)<semiSt){
                                     cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*(xcells-(l+1))+1);
                               }
@@ -1620,7 +1620,7 @@ int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids){
                   dotprod=triangle->nr[0]*auxval[1]+triangle->nr[1]*auxval[2]+triangle->nr[2]*auxval[3];                     
                   for(k=0;k<sim->nvar;k++){
                         if(k==1||k==2||k==3){
-                              cell[n].U[k]=auxval[k]-2.0*dotprod*triangle->nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
+                              cell[n].U[k]=auxval[k]-2.0*dotprod*triangle->nr[k-1]; //this is a reflection for vector variables u_r=u-2*(uÂ·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
                         }else{
                               cell[n].U[k]=auxval[k]; //non-vector variables are assigned equal
                         }
@@ -1845,11 +1845,11 @@ int update_wall_type(t_mesh *mesh){
 
 int compute_fluxes(t_mesh *mesh, t_sim *sim){
 	//dentro de cada pared accedemos a su celda R y L y hacemos la reconstruccion sobre ellas con wenoR() o wenoL()
-	//en función de lo que estemos reconstruyendo
+	//en funciÃ³n de lo que estemos reconstruyendo
 	//esto se hace para cada una de las variables conservadas
 	//por defecto las paredes de los contornos calculan como si hubiese periodicidad
-	//si no es así, luego updare_boundaries() ya machaca esos flujos porque en ningún caso el contorno se deja tal cual
-	//de aquí salen los valores L y R de las paredes rellenados
+	//si no es asÃ­, luego updare_boundaries() ya machaca esos flujos porque en ningÃºn caso el contorno se deja tal cual
+	//de aquÃ­ salen los valores L y R de las paredes rellenados
 	
 	double phi3[3],phi5[5],phi7[7]; //auxiliar arrays for the weno reconstruction
 	double lambdaMax;
@@ -4148,8 +4148,8 @@ int main(int argc, char * argv[]){
 #endif
 
 
-	printf("%s We're working on the Euler Equations\n%s Please, be patient. Thanks!\n",END,END);
-	//printf("%s The Euler equations have been run.\n%s You're welcome!\n",END,END);
+	printf("%s Under development.\n%s Please, be patient. Thanks!\n",END,END);
+
 
 
 	return 1;
