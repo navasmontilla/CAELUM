@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This repository includes a 3D compressible solver using 1-st, 3-rd, 5-th and 7-th order WENO, TENO and UWC reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
+This repository includes a 3D solver of the compressible Euler equations for academic purposes. The solver uses a 1-st, 3-rd, 5-th and 7-th order WENO, TENO and UWC reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
 
 <figure style="text-align: center;">
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
