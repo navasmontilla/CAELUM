@@ -4,17 +4,17 @@
 
 ## Introduction
 
-3D compressible solver using 1-st, 3-rd, 5-th and 7-th order WENO, TENO and UWC reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
+This repository includes a 3D compressible solver using 1-st, 3-rd, 5-th and 7-th order WENO, TENO and UWC reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
 
 <figure style="text-align: center;">
-  <img src="doc/panel.png" width="90%" alt="my alt text"/>
+  <img src="doc/panel.png" width="100%" alt="my alt text"/>
 </figure>
 
-This code allows the simulation of
+This code allows the simulation of:
 
 - Linear scalar transport
 - Burgers' equation
-- Compressible Euler equations
+- Compressible Euler equations:
 
 
 
