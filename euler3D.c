@@ -66,7 +66,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define DEBUG_MESH 0 //0: no debug; 1: screen info; 
 
 //Mesh stuff
-#define ALLOW_SOLIDS 1 //0: no solid cells
+#define ALLOW_SOLIDS 0 //0: no solid cells
 #define _stol_ 2.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
 
 //Acceleration functions
