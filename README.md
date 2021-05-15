@@ -15,7 +15,7 @@ This code allows the simulation of:
 The compressible Euler equations allow the simulation of shockaves and their interaction with solid boundaries. In the following figure, the intercaction of a blast wave with a solid body is shown.
 
 <figure style="text-align: center;">
-  <img src="doc/shockSolid.png" width="100%" alt="my alt text"/>
+  <img src="doc/shockSolid.PNG" width="100%" alt="my alt text"/>
 </figure>
 
 Compressible turbulence is a highly nonlinear multiscale phenomenon. It has become one of the most challenging problems in computational physics. Turbulent flows can be numerically reproduced by means of hydrodynamic solvers. A common approach is the use of the Euler equations in combination with a suitable numerical discretization method. When the numerical diffusion inherent to the discretization method mimics the physical dissipation of the unresolved turbulent motion, the approach is called Implicit Large Eddy Simulation (ILES). 
