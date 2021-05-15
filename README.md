@@ -205,7 +205,7 @@ Spatial reconstructions are implemented using 1D splitting. The available recons
 
 ### Time integrator
 
-The time stepping is done using a SSPRK3 method (3-rd order of accuracy).
+The time stepping is done using a Strong Stability Preserving Runge-Kutta 3 (SSPRK3) method.
 
 ### Riemann solvers
 
