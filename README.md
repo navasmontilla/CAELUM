@@ -164,8 +164,27 @@ void compute_transmissive_euler(t_wall *wall, int wp)
 void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp)
 ```
 
+### Initial conditions
 
+The initial conditions are implemented in:
+```c 
+int update_initial(t_mesh *mesh);
+```
 
+For Euler equations, the problem variables can be assigned for instance as follows:
+```c
+p=1.2;
+rho=1.2;  
+phi=1.0;
+u=0.0;
+v=0.0;
+w=0.0;
+```
+
+For Burgers' and linear transport, only one variable must be assigned:
+```c
+cell[k].U[0]
+```
 
 ### Spatial reconstructions
 
