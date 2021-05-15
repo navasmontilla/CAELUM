@@ -527,134 +527,6 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 		mesh->periodicZ=0;
 	}
 
-      /*
-	//Set cell stencils
-	//Initially all the cells has a stencil of size order
-	for(k=0;k<mesh->ncells;k++){
-		cell[k].st_sizeX=sim->order;
-		cell[k].st_sizeY=sim->order;
-            cell[k].st_sizeZ=sim->order;
-	}
-
-	//But there are special cases at boundary cells	
-	semiSt=(sim->order-1)*0.5;
-      for(n=0;n<zcells;n++){
-            for(m=0;m<ycells;m++){
-                  for(l=0;l<xcells;l++){
-                        k = l + m*xcells + n*xcells*ycells;
-                        k2d=l + m*xcells;
-                        if(mesh->periodicX==0){
-                              //x setencils
-                              if(l<semiSt){
-                                    cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*l+1);
-                              }
-                              if(xcells-(l+1)<semiSt){
-                                    cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*(xcells-(l+1))+1);
-                              }
-                        }
-                        if(mesh->periodicY==0){
-                              //y stencils
-                              if(m<semiSt){
-                                    cell[k].st_sizeY=MIN(cell[k].st_sizeY,2*m+1);
-                              }
-                              if(ycells-(m+1)<semiSt){
-                                    cell[k].st_sizeY=MIN(cell[k].st_sizeY,2*(ycells-(m+1))+1);
-                              }
-                        }
-                        if(mesh->periodicZ==0){
-                              //y stencils
-                              if(n<semiSt){
-                                    cell[k].st_sizeZ=MIN(cell[k].st_sizeZ,2*n+1);
-                              }
-                              if(zcells-(n+1)<semiSt){
-                                    cell[k].st_sizeZ=MIN(cell[k].st_sizeZ,2*(zcells-(n+1))+1);
-                              }
-                        }
-                  }
-            }
-	}
-	//Initialization of cell stencils
-	for(k=0;k<mesh->ncells;k++){
-		for(p=0;p<9;p++){
-			cell[k].stX[p]=-1;
-			cell[k].stY[p]=-1;
-                  cell[k].stZ[p]=-1;
-		}
-	}
-	
-      for(n=0;n<zcells;n++){
-            for(m=0;m<ycells;m++){
-                  for(l=0;l<xcells;l++){
-                        
-                        k = l + m*xcells + n*xcells*ycells;
-                        k2d=l + m*xcells;
-                        
-                        //x setencils
-                        for(p=0;p<cell[k].st_sizeX;p++){
-                              if(mesh->periodicX==0){
-                                    //nunca nos salimos de la malla
-                                    cell[k].stX[p]=l-((cell[k].st_sizeX-1)/2)+p;
-                              }else{
-                                    //aux=l-((cell[k].st_sizeX-1)*0.5)+p;
-                                    cell[k].stX[p]=l-((cell[k].st_sizeX-1)/2)+p;
-                                    if(cell[k].stX[p]<0){
-                                          cell[k].stX[p]+=xcells*(1);
-                                    }
-                                    if(cell[k].stX[p]>xcells-1){
-                                          cell[k].stX[p]+=xcells*(-1);
-
-                                    }
-
-                              }
-                              cell[k].stX[p]+=xcells*m;
-                              cell[k].stX[p]+=xcells*ycells*n;
-                        }
-                       
-                        
-                        //y stencils 
-                        for(p=0;p<cell[k].st_sizeY;p++){
-                              if(mesh->periodicY==0){
-                                    //nunca nos salimos de la malla
-                                    cell[k].stY[p]=m-((cell[k].st_sizeY-1)/2)+p;
-                              }else{
-                                    //aux=l-((cell[k].st_sizeX-1)*0.5)+p;
-                                    cell[k].stY[p]=m-((cell[k].st_sizeY-1)/2)+p;
-                                    if(cell[k].stY[p]<0){
-                                          cell[k].stY[p]+=ycells*(1);
-                                    }
-                                    if(cell[k].stY[p]>ycells-1){
-                                          cell[k].stY[p]+=ycells*(-1);
-
-                                    }
-
-                              }
-                              cell[k].stY[p]=xcells*cell[k].stY[p]+l;
-                              cell[k].stY[p]+=xcells*ycells*n;
-                        }
-                        
-                        //z stencils 
-                        for(p=0;p<cell[k].st_sizeZ;p++){
-                              if(mesh->periodicZ==0){
-                                    //nunca nos salimos de la malla
-                                    cell[k].stZ[p]=n-((cell[k].st_sizeZ-1)/2)+p;
-                              }else{
-                                    //aux=l-((cell[k].st_sizeX-1)*0.5)+p;
-                                    cell[k].stZ[p]=n-((cell[k].st_sizeZ-1)/2)+p;
-                                    if(cell[k].stZ[p]<0){
-                                          cell[k].stZ[p]+=zcells*(1);
-                                    }
-                                    if(cell[k].stZ[p]>zcells-1){
-                                          cell[k].stZ[p]+=zcells*(-1);
-
-                                    }
-
-                              }
-                              cell[k].stZ[p]=ycells*xcells*cell[k].stZ[p]+k2d;
-                        }
-                  }
-            }
-	}
-      */
       
 	//Assigment of wall's neighbour cells 
       for(n=0;n<zcells;n++){
@@ -730,10 +602,7 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 	//Allocation of arrays of variables in cells and walls
 
 
-	for(k=0;k<mesh->ncells;k++){
-		//NOw it's 5 because we have 1 solute
-		//In the future maybe it will be 4 + NSOLUTES
-		
+	for(k=0;k<mesh->ncells;k++){		
 		mesh->cell[k].U=(double*)malloc(sim->nvar*sizeof(double));
 		mesh->cell[k].U_aux=(double*)malloc(sim->nvar*sizeof(double));
 	}
@@ -887,14 +756,7 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
                               }
                               cell[k].stZ[p]=ycells*xcells*cell[k].stZ[p]+k2d;
                         }
-                  
-                        /*if(n>10&&n<40){
-                        if(cell[k].st_sizeZ<5){
-                        printf("cell %d , stsizeZ= %d\n",k,cell[k].st_sizeZ);
-                        printf("%d %d %d %d %d %d\n",cell[k].stZ[0],cell[k].stZ[1],cell[k].stZ[2],cell[k].stZ[3],cell[k].stZ[4],cell[k].stZ[5]); 
-                        getchar();}}*/
-      
-                  
+                                    
                   
                   
                   
@@ -928,27 +790,16 @@ int update_initial(t_mesh *mesh){
       L=1.0;
       for(k=0;k<mesh->ncells;k++){
       
-            //printf("Celda %d con xc %lf, yc %lf , zc %lf \n", k, cell[k].xc,cell[k].yc,cell[k].zc);           
-            //printf("Tipo %d \n", cell[k].type);  
-            
-            //printf("%d  \n",cell[k].type); 
 
-      
-            //p=5.0+1.0/16.0*(cos(4.0*PI*cell[k].xc/L)+cos(4.0*PI*cell[k].yc/L))*(2.0+cos(4.0*PI*cell[k].zc/L) );
-            //rho=1.0;
-            //u=sin(2.0*PI*cell[k].xc/L)*cos(2.0*PI*cell[k].yc/L)*cos(2.0*PI*cell[k].yc/L);
-            //v=-cos(2.0*PI*cell[k].xc/L)*sin(2.0*PI*cell[k].yc/L)*cos(2.0*PI*cell[k].yc/L);	
-            //w=0.0;
-            //phi=0.0;
             if(cell[k].type==1){
                   
                   u=0.0;
                   v=0.0;
                   w=0.0;
                   
-                  xc=0.3;
+                  xc=0.5;
                   yc=0.5;
-                  zc=0.3;
+                  zc=0.5;
                   
                   r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc)+(cell[k].zc-zc)*(cell[k].zc-zc));
                   //r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc));
@@ -1079,92 +930,7 @@ int update_cell_boundaries(t_mesh *mesh){
 	return 1;
 }
 
-/*
-int update_flux_boundaries(t_mesh *mesh){ // NOT USED ANYMORE!!!
-	t_wall *wall;
-	int m,l,n,k,wp;
-	
-	//Transmissive walls
-	//Boundary 0 (bottom)
-	if (mesh->bc[0]==3){	
-		m=0;
-#pragma omp parallel for default(none) private(wall,k,wp,n) shared(mesh,m) 
-		for(l=0;l<mesh->xcells;l++){
-                  for(n=0;n<mesh->zcells;n++){
-                        //k=mesh->xcells*m+l;
-                        k= mesh->xcells*m + l + n*mesh->xcells*mesh->ycells;
-                        wall=&(mesh->wall[mesh->cell[k].w1_id]);
-                        wp=1;
-                        compute_transmissive_euler(wall,wp);
-                  }
-		}		
-	}
-	if (mesh->bc[2]==3){	
-		m=mesh->ycells-1;
-#pragma omp parallel for default(none) private(wall,k,wp,n) shared(mesh,m) 
-		for(l=0;l<mesh->xcells;l++){
-                  for(n=0;n<mesh->zcells;n++){
-                        k= mesh->xcells*m + l + n*mesh->xcells*mesh->ycells;
-                        wall=&(mesh->wall[mesh->cell[k].w3_id]);
-                        wp=3;
-                        compute_transmissive_euler(wall,wp);
-                  }
-		}		
-	}
-	if (mesh->bc[1]==3){	
-		l=mesh->xcells-1;
-#pragma omp parallel for default(none) private(wall,k,wp,n) shared(mesh,l) 
-		for(m=0;m<mesh->ycells;m++){
-			for(n=0;n<mesh->zcells;n++){
-                        k= mesh->xcells*m + l + n*mesh->xcells*mesh->ycells;
-                        wall=&(mesh->wall[mesh->cell[k].w2_id]);
-                        wp=2;
-                        compute_transmissive_euler(wall,wp);
-                  }
-		}		
-	}
-	if (mesh->bc[3]==3){	
-		l=0;
-#pragma omp parallel for default(none) private(wall,k,wp,n) shared(mesh,l) 
-		for(m=0;m<mesh->ycells;m++){
-			for(n=0;n<mesh->zcells;n++){
-                        k= mesh->xcells*m + l + n*mesh->xcells*mesh->ycells;
-                        wall=&(mesh->wall[mesh->cell[k].w4_id]);
-                        wp=4;
-                        compute_transmissive_euler(wall,wp);
-                  }
-		}		
-	}
-      if (mesh->bc[4]==3){	
-		n=0;
-#pragma omp parallel for default(none) private(wall,k,wp,l) shared(mesh,n) 
-		for(m=0;m<mesh->ycells;m++){
-			for(l=0;l<mesh->xcells;l++){
-                        k= mesh->xcells*m + l + n*mesh->xcells*mesh->ycells;
-                        wall=&(mesh->wall[mesh->cell[k].w5_id]);
-                        wp=5;
-                        compute_transmissive_euler(wall,wp);
-                  }
-		}		
-	}
-      if (mesh->bc[5]==3){	
-		n=mesh->zcells-1;;
-#pragma omp parallel for default(none) private(wall,k,wp,l) shared(mesh,n) 
-		for(m=0;m<mesh->ycells;m++){
-			for(l=0;l<mesh->xcells;l++){
-                        k= mesh->xcells*m + l + n*mesh->xcells*mesh->ycells;
-                        wall=&(mesh->wall[mesh->cell[k].w6_id]);
-                        wp=6;
-                        compute_transmissive_euler(wall,wp);
-                  }
-		}		
-	}
 
-
-	return 1;
-}
-
-*/ 
 
 
 int assign_cell_type(t_mesh *mesh,t_solid *solids){ // Define ghost and solid cells
@@ -1188,21 +954,6 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids){ // Define ghost and solid ce
 #if ALLOW_SOLIDS==1
       /*
       //solid cells are assigned using simple formulas. In the future, "find-point-inside" algorithms will be used.
-      xci=0.7;
-      yci=0.5;
-      zci=0.0;
-      for(k=0;k<mesh->ncells;k++){
-            r=sqrt((cell[k].xc-xci)*(cell[k].xc-xci)+(cell[k].yc-yci)*(cell[k].yc-yci)+(cell[k].zc-zci)*(cell[k].zc-zci));
-            r=sqrt((cell[k].xc-xci)*(cell[k].xc-xci)+(cell[k].yc-yci)*(cell[k].yc-yci));
-            //if (r<0.15) {
-            //      cell[k].type=0;          //solid cells are assigned
-            //}
-            //printf("Celda %d con xc %lf, yc %lf , zc %lf \n", k, cell[k].xc,cell[k].yc,cell[k].zc);           
-            if ((cell[k].xc>0.7&&cell[k].xc<0.8) && (cell[k].yc>0.3&&cell[k].yc<0.7) && (cell[k].zc>0.3&&cell[k].zc<0.7)){
-                  cell[k].type=0;          //solid cells are assigned
-            }
-            //printf("Tipo %d \n", cell[k].type);  
-      }
       */
       
       if(solids->nsolid<1){
@@ -1565,16 +1316,6 @@ int assign_image_cells(t_mesh *mesh,t_solid *solids){
                               }
                         }
                         
-                        /*if(cell[n].zc>0.70){
-                        printf("cell %d,: %d %d %d \n", n,cell[n].l,cell[n].m,cell[n].n );
-                        printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
-                        printf("div %lf \n", cell[n].zim/mesh->dz );
-                        printf("cell minmax : %d %d, %d %d, %d %d\n", imin,imax,jmin,jmax,kmin,kmax );
-                        printf("cell %d, neighbors: %d %d %d %d %d %d %d %d \n",n,cell[n].ni[0],cell[n].ni[1],cell[n].ni[2],cell[n].ni[3],cell[n].ni[4],cell[n].ni[5],cell[n].ni[6],cell[n].ni[7]);
-                        printf("cell %d, li: %lf %lf %lf %lf %lf %lf %lf %lf \n",n,cell[n].li[0],cell[n].li[1],cell[n].li[2],cell[n].li[3],cell[n].li[4],cell[n].li[5],cell[n].li[6],cell[n].li[7]);
-                        printf("sum %lf \n",sum);  
-                        
-                        }*/
                         
      
 			
@@ -1659,7 +1400,7 @@ double dot_product(double *input1, double *input2){
 
 
 
-int assign_wall_type(t_mesh *mesh){ //hay que poner que las paredes entre ghost cells sean wtype=0 y las paredes entre ghost cell y solido tb en una funcion nueva update_wall_type
+int assign_wall_type(t_mesh *mesh){ 
 	t_wall *wall;
 	int m,l,n,k,wp;
       
@@ -1844,12 +1585,6 @@ int update_wall_type(t_mesh *mesh){
 
 
 int compute_fluxes(t_mesh *mesh, t_sim *sim){
-	//dentro de cada pared accedemos a su celda R y L y hacemos la reconstruccion sobre ellas con wenoR() o wenoL()
-	//en función de lo que estemos reconstruyendo
-	//esto se hace para cada una de las variables conservadas
-	//por defecto las paredes de los contornos calculan como si hubiese periodicidad
-	//si no es así, luego updare_boundaries() ya machaca esos flujos porque en ningún caso el contorno se deja tal cual
-	//de aquí salen los valores L y R de las paredes rellenados
 	
 	double phi3[3],phi5[5],phi7[7]; //auxiliar arrays for the weno reconstruction
 	double lambdaMax;
@@ -2053,21 +1788,6 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
 	}
       
 	mesh->lambda_max=lambdaMax;
-
-      /*printf("La reconstruccion WENO es:\n");
-	for(k=0;k<mesh->ncells;k++){
-
-            if (k==16){
-            
-            printf("Celda %d \n",k);
-            printf("%lf %lf %lf \n",mesh->cell[k].xc-0.5,mesh->cell[k].w4->UL[0],mesh->cell[k].w4->UR[0]);
-            printf("%lf %lf %lf \n",mesh->cell[k].xc+0.5,mesh->cell[k].w2->UL[0],mesh->cell[k].w2->UR[0]);
-            printf("%lf %lf %lf \n",mesh->cell[k].yc-0.5,mesh->cell[k].w1->UL[0],mesh->cell[k].w1->UR[0]);
-            printf("%lf %lf %lf \n",mesh->cell[k].yc+0.5,mesh->cell[k].w3->UL[0],mesh->cell[k].w3->UR[0]);
-            printf("%lf %lf %lf \n",mesh->cell[k].zc-0.5,mesh->cell[k].w5->UL[0],mesh->cell[k].w5->UR[0]);
-            printf("%lf %lf %lf \n",mesh->cell[k].zc+0.5,mesh->cell[k].w6->UL[0],mesh->cell[k].w6->UR[0]);
-            }
-	}*/
 
 
 	return 1;
@@ -3153,7 +2873,6 @@ void update_cell(t_mesh *mesh, t_sim *sim){
 	int i,k;
 	t_cell *cell;
 
-      //printf("Las celdas son:\n");
 	cell=mesh->cell;
 	for(i=0;i<mesh->ncells;i++){
             if(cell->type!=0&&cell->ghost!=1){
@@ -3821,6 +3540,11 @@ int main(int argc, char * argv[]){
       mesh->dz= mesh->Lz/mesh->zcells;
       
       
+      printf("\n\e[94mAuthors:\n - Adrián Navas Montilla\n - Isabel Echeverribar \n");
+      printf("Copyright (C) 2018-2019 The authors.   \n\n");     
+      printf("License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES under the following terms: \n \n - Attribution — You must give appropriate credit and provide a link to the license. \n - NonCommercial — You may not use the material for commercial purposes. \n - NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided.\n\n");     
+      printf("Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.\e[0m\n");
+      
       
       printf(" \n");
       printf(" \e[4mSIMULATION SETUP:\e[0m\n");
@@ -3994,11 +3718,7 @@ int main(int argc, char * argv[]){
       
 	#endif
 	
-	//I leave this here because it could be usefull in the future.
-	/*if(!read_rastercreate_mesh(mesh) || !update_initial(mesh)){
-		printf("%s Unable to proceed. Please, revise the above errors\n",ERR);
-		return(0);
-	}*/	      
+	      
 	////////////////////////////////////////////////////
 	////////////// C A L C U L A T I O N ///////////////
 	////////////////////////////////////////////////////
@@ -4042,7 +3762,6 @@ int main(int argc, char * argv[]){
 			}
 		}
             
-            //getchar();
             
             #if LINEAR_TRANSPORT == 1	// this is an old feature
 		    for(i=0;i<mesh->ncells;i++){
@@ -4059,14 +3778,12 @@ int main(int argc, char * argv[]){
 		////////////////////////////////////////////////////
 		///////////// P O S T - P R O C E S S //////////////
 		////////////////////////////////////////////////////
-		//DUMP FUNCTIONS ----> to do
-		//
 
             timeac=timeac+sim->dt;
 		if(timeac>sim->tVolc){
 			sprintf(vtkfile,"output-files/state%d.vtk",nIt+1);
-                  sprintf(matrixfile_u,"output-files/u%d.dat",nIt+1);
-			sprintf(matrixfile_v,"output-files/v%d.dat",nIt+1);
+                  //sprintf(matrixfile_u,"output-files/u%d.dat",nIt+1);
+			//sprintf(matrixfile_v,"output-files/v%d.dat",nIt+1);
 			write_vtk(mesh,vtkfile);
                   //write_matrix_u(mesh,matrixfile_u);
 			//write_matrix_v(mesh,matrixfile_v);
@@ -4075,7 +3792,6 @@ int main(int argc, char * argv[]){
                   printf(" T= %lf, dt= %lf\n",t+sim->dt,sim->dt);
                   mass_calculation(mesh,sim);
                   printf(" Total mass: %14.14e\n",mesh->mass);
-//		  printf("E in the cell XX is %lf\n",mesh->cell[2500].U[3]);
                   printf("\n");
 			nIt++;		//Number of iteration for the next time step
 			timeac=0.0;
@@ -4116,39 +3832,10 @@ int main(int argc, char * argv[]){
       
 #endif 
  
-#if LINEAR_TRANSPORT
-      f=fopen("output-files/diagonal.out","w");
-//		fprintf(f,"Rho, u, e, pres\n");
-
-      cell=mesh->cell; 
-      l=0;
-      for(m=0;m<mesh->xcells;m++){	
-            fprintf(f,"%lf %lf %14.14e \n",cell[l].xc,cell[l].yc,cell[l].U[5]/cell[l].U[0]);
-            l=l+mesh->xcells+1;
-      }
-      fclose(f);
-      
-      sprintf(matrixfile_phi,"output-files/phi.dat");
-      write_matrix_phi(mesh,matrixfile_phi);                  
-#endif
 
 
-#if LINEAR
-      f=fopen("output-files/diagonal.out","w");
-//		fprintf(f,"Rho, u, e, pres\n");
 
-      cell=mesh->cell; 
-      l=0;
-      for(m=0;m<mesh->xcells;m++){	
-            fprintf(f,"%lf %lf %14.14e \n",cell[l].xc,cell[l].yc,cell[l].U[0]);
-            l=l+mesh->xcells+1;
-      }
-      fclose(f);
-                      
-#endif
-
-
-	printf("%s Under development.\n%s Please, be patient. Thanks!\n",END,END);
+	printf("%s Under development. Please, be patient. Thanks!\n",END,END);
 
 
 
