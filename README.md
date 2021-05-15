@@ -252,7 +252,7 @@ License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC 
 - NonCommercial — You may not use the material for commercial purposes.
 - NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided. 
 
-If you want to contribute to this project, please [contact us](mailto:anavas@unizar.es)! ;)
+If you want to contribute to this project or provide any feedback, please [contact us](mailto:anavas@unizar.es)! ;)
 
 **Disclaimer:** This software is under development and it is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
 
