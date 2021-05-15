@@ -173,17 +173,24 @@ int update_initial(t_mesh *mesh);
 
 For Euler equations, the problem variables can be assigned for instance as follows:
 ```c
-p=1.2;
-rho=1.2;  
-phi=1.0;
-u=0.0;
-v=0.0;
-w=0.0;
+for(k=0;k<mesh->ncells;k++){
+	p= ... ;
+	rho= ... ;  
+	phi= ... ;
+	u= ... ;
+	v= ... ;
+	w= ... ;
+	
+	...
+	
+}
 ```
 
 For Burgers' and linear transport, only one variable must be assigned:
 ```c
-cell[k].U[0]
+for(k=0;k<mesh->ncells;k++){
+	cell[k].U[0]= ... ;
+}
 ```
 
 ### Spatial reconstructions
