@@ -206,7 +206,7 @@ Authors:
  - Adrián Navas Montilla
  - Isabel Echeverribar
 
-Copyright (C) 2019-2021 The authors.  
+Copyright (C) 2018-2019 The authors.  
 
 License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms: 
 
