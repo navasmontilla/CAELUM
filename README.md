@@ -154,6 +154,8 @@ The available boundary conditions are:
 
 * 1: Periodic.
 
+* 2: (not available)
+
 * 3: Transmissive. The numerical flux is set as the physical flux at the interface, using:
 ```c 
 void compute_transmissive_euler(t_wall *wall, int wp)
