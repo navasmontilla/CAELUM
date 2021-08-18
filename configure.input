@@ -1,7 +1,7 @@
 /////SIMULATION_SETUP//////
-FinalTime		1.0
+FinalTime		1.4
 DumpTime		0.2
-CFL			0.25
+CFL			0.25 
 Order			5
 
 ////////MESH_SETUP/////////
