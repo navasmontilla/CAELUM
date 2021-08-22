@@ -1,16 +1,16 @@
 /////SIMULATION_SETUP//////
-FinalTime		1.4
-DumpTime		0.2
-CFL			0.25 
+FinalTime		1.0
+DumpTime		5.00
+CFL			0.1
 Order			5
 
 ////////MESH_SETUP/////////
-xcells			20
-ycells			20
-zcells			20
-SizeX			1.0
-SizeY			1.0
-SizeZ			1.0
+xcells			6
+ycells			6
+zcells			6
+SizeX			6.283185307179586
+SizeY			6.283185307179586
+SizeZ			6.283185307179586
 
 ///////BOUNDARY_COND///////
 Face_1(-y)			1

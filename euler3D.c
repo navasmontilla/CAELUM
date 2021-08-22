@@ -46,7 +46,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 
 //reconstruction method
 #define WENO 1
-#define OPT_WEIGHTS 0 //This is 0 for WENO and 1 for UWC
+#define OPT_WEIGHTS 1 //This is 0 for WENO and 1 for UWC
 #define TENO 0
 #define _CT_ 1.0e-4
 
@@ -70,17 +70,22 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define _stol_ 2.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
 
 //Acceleration functions
-#define NTHREADS 24
+#define NTHREADS 2
 
 //Printing variables (vtk)
+#define WRITE_VTK 0
 #define print_RHO 0
 #define print_MOMENTUM 1
 #define print_ENERGY 0
 #define print_PRESSURE 1
 #define print_SOLUTES 0
 
+//Printing list of variables
+#define WRITE_LIST 1
+#define WRITE_TKE 1 //write file TKE evolution in time
 
-
+//Reading data
+#define READ_INITIAL 1
 
 ////////////////////////////////////////////////////
 //////////////  S T R U C T U R E S  ///////////////
@@ -110,7 +115,7 @@ struct t_cell_{
 		//double u,v,H,e_i,p; //primitive variables: density, x velocity, y velocity, specific enthalpy, specific internal energy, pressure
 		//double rho,ru,rv,E,rp;//conserved variables: density, mass flow x, mass flow y, internal energy,  pasive scalar (rho*p);
 		//double rho_aux,ru_aux,rv_aux,E_aux,rp_aux;//conserved variables: density, mass flow x, mass flow y, internal energy, pasive scalar (rho*p);
-	double *U; //this is the variables array.
+	double *U; //this is the array of vars.
 			//When using Euler: rho, rhou, rhov, E, rhop
 			//When using SW: h, hu, hv
 	double *U_aux;
@@ -192,7 +197,7 @@ struct t_mesh_{
 	//
 	
 	double lambda_max;
-
+	double tke;
 	double mass;
 
 	t_sim *sim;
@@ -249,6 +254,7 @@ int assign_wall_type(t_mesh *mesh);
 int assign_cell_type(t_mesh *mesh,t_solid *solids);
 int assign_image_cells(t_mesh *mesh,t_solid *solids);
 int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids);
+int update_wall_type(t_mesh *mesh,t_solid *solids);
 int update_stencils(t_mesh *mesh,t_sim *sim);
 
 int write_vtk(t_mesh *mesh,char *filename);
@@ -256,6 +262,7 @@ int write_matrix(t_mesh *mesh,char *filename);
 int write_matrix_u(t_mesh *mesh,char *filename);
 int write_matrix_v(t_mesh *mesh,char *filename);
 int write_matrix_phi(t_mesh *mesh,char *filename);
+int write_list(t_mesh *mesh,char *filename);
 
 
 int compute_wallX(t_cell *cell);
@@ -294,6 +301,7 @@ void compute_burgers_flux(t_wall *wall,double *lambda_max);
 void compute_linear_flux(t_wall *wall,double *lambda_max);
 
 void mass_calculation(t_mesh *mesh, t_sim *sim);
+void tke_calculation(t_mesh *mesh, t_sim *sim);
 
 int read_solids(t_mesh *mesh, t_solid *solids );
 
@@ -312,7 +320,8 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 	t_node *node;
 
 	//int semiSt; //auxiliar variable to recalculate boundary cells stencil
-	
+	mesh->tke=0.0;
+
 
 	mesh->sim=sim;
 
@@ -777,17 +786,54 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
 
 int update_initial(t_mesh *mesh){
 	int l,m,k,n,RP;
+	FILE *fp;
+	char fname[1024];
       double d,aux1,xaux,yaux,r,umax,ut,wp,r_d,L,xc,yc,zc;
       double x1,x2,y1,y2,C;
       double p,u,v,w,rho,phi;
 	  
 	t_cell *cell;
 	cell=mesh->cell;
+	
+	sprintf(fname,"case/initial.out");
+	fp = fopen(fname,"r");
 
+#if READ_INITIAL	
+	if (fp != NULL){
+		fscanf(fp, "%*[^\n]\n");
+		fscanf(fp, "%*[^\n]\n");
+		
+		for(l=0;l<mesh->xcells;l++){  
+			for(m=0;m<mesh->ycells;m++){
+				for(n=0;n<mesh->zcells;n++){
+				k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+				fscanf(fp,"%*le %*le %*le %le %le %le %le %le",&u,&v,&w,&rho,&p);
+				//printf("%14.14e %14.14e %14.14e %14.14e %14.14e \n",u,v,w,rho,p);
+				phi=0.0;
+				cell[k].U[0]=rho;
+				cell[k].U[1]=u*cell[k].U[0];
+				cell[k].U[2]=v*cell[k].U[0];
+				cell[k].U[3]=w*cell[k].U[0];
+				cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
+				cell[k].U[5]=phi;
+				}
+			}
+		}
+		
+		fclose(fp);
+		
+		printf("%s Initial state file has been read \n",OK);
+		
+	}else{
+
+	printf("%s No initial state file is found. Initial data is set in update_initial() \n",WAR);
+#else
+	printf("%s Read initial data function is disabled (set macro) \n",WAR);
+#endif
 
 #if EULER && !LINEAR_TRANSPORT
 
-      L=1.0;
+      L=mesh->Lx;//1.0;
       for(k=0;k<mesh->ncells;k++){
       
 
@@ -796,29 +842,25 @@ int update_initial(t_mesh *mesh){
                   u=0.0;
                   v=0.0;
                   w=0.0;
+
                   
-                  xc=0.5;
-                  yc=0.5;
-                  zc=0.5;
+                  rho=1.0;
+                  p=  100.0 + rho/16.0*(cos(4.0*PI*cell[k].xc/L)+cos(4.0*PI*cell[k].yc/L))*((2.0+cos(4.0*PI*cell[k].zc/L)));
                   
-                  r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc)+(cell[k].zc-zc)*(cell[k].zc-zc));
-                  //r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc));
-                  if (r<0.2) {
-                        p=1.2;
-                        rho=1.2  ;  
-                        phi=1.0;
-                  }else{
-                        p=1.0;
-                        rho=1.0;
-                        phi=2.0;
-                  }
-                                    
-                        cell[k].U[0]=rho;
-                        cell[k].U[1]=u*cell[k].U[0];
-                        cell[k].U[2]=v*cell[k].U[0];
-                        cell[k].U[3]=w*cell[k].U[0];
-                        cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
-                        cell[k].U[5]=phi;
+                  
+                  u=sin(2.0*PI*cell[k].xc/L)*cos(2.0*PI*cell[k].yc/L)*cos(2.0*PI*cell[k].zc/L);
+                  v=-cos(2.0*PI*cell[k].xc/L)*sin(2.0*PI*cell[k].yc/L)*cos(2.0*PI*cell[k].zc/L);	
+                  w=0.0;
+                  
+                  phi=0.0;
+                             
+                             
+                  cell[k].U[0]=rho;
+                  cell[k].U[1]=u*cell[k].U[0];
+                  cell[k].U[2]=v*cell[k].U[0];
+                  cell[k].U[3]=w*cell[k].U[0];
+                  cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
+                  cell[k].U[5]=phi;
                   
                   
                   
@@ -835,8 +877,9 @@ int update_initial(t_mesh *mesh){
                   
             }
 
-		
+#if READ_INITIAL		
 	}
+#endif
 
 #endif
 
@@ -918,7 +961,9 @@ for(k=0;k<mesh->ncells;k++){
       
 }
 
-#endif	
+#endif
+
+	}
 
 	return 1;
 }
@@ -1256,82 +1301,86 @@ int assign_image_cells(t_mesh *mesh,t_solid *solids){
       double di[8],li[8];
       double aux1,aux2,aux3,sum;
 
-	  
-      cell=mesh->cell;
-	for(n=0;n<mesh->ncells;n++){
-		  if (cell[n].ghost==1) {
-			
-			if (cell[n].xim>0.0 && cell[n].xim<mesh->Lx && cell[n].yim>0.0 && cell[n].yim<mesh->Ly && cell[n].zim>0.0 && cell[n].zim<mesh->Lz) {  // We first check that image points are inside the computational domain. Habria que usar +- dx para afinar
+	if(solids->nsolid<1){
+            printf("%s In function assign_image_cells() no solids are considered\n",WAR);
+      }else{
+		
+		cell=mesh->cell;
+		for(n=0;n<mesh->ncells;n++){
+			  if (cell[n].ghost==1) {
 				
-                        // The indices of the 8 closest cells to an image point are defined
-                        imin= MAX((cell[n].xim-mesh->dx/2.0)/mesh->dx,0); 
-				imax= MIN(imin+1,mesh->xcells-1);
-				jmin= MAX((cell[n].yim-mesh->dy/2.0)/mesh->dy,0);
-				jmax= MIN(jmin+1,mesh->ycells-1);
-				kmin= MAX((cell[n].zim-mesh->dz/2.0)/mesh->dz,0);
-				kmax= MIN(kmin+1,mesh->zcells-1);
-                        
-                        
-                        
-                        // The cell numbers of those 8 neighbors are defined
-				cell[n].ni[0]= imin + jmin*mesh->xcells  + kmin*mesh->xcells*mesh->ycells; 
-				cell[n].ni[1]= imax + jmin*mesh->xcells  + kmin*mesh->xcells*mesh->ycells;
-				cell[n].ni[2]= imax + jmax*mesh->xcells  + kmin*mesh->xcells*mesh->ycells;
-				cell[n].ni[3]= imin + jmax*mesh->xcells  + kmin*mesh->xcells*mesh->ycells;
-				cell[n].ni[4]= imin + jmin*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
-				cell[n].ni[5]= imax + jmin*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
-				cell[n].ni[6]= imax + jmax*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
-				cell[n].ni[7]= imin + jmax*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
+				if (cell[n].xim>0.0 && cell[n].xim<mesh->Lx && cell[n].yim>0.0 && cell[n].yim<mesh->Ly && cell[n].zim>0.0 && cell[n].zim<mesh->Lz) {  // We first check that image points are inside the computational domain. Habria que usar +- dx para afinar
+					
+					// The indices of the 8 closest cells to an image point are defined
+					imin= MAX((cell[n].xim-mesh->dx/2.0)/mesh->dx,0); 
+					imax= MIN(imin+1,mesh->xcells-1);
+					jmin= MAX((cell[n].yim-mesh->dy/2.0)/mesh->dy,0);
+					jmax= MIN(jmin+1,mesh->ycells-1);
+					kmin= MAX((cell[n].zim-mesh->dz/2.0)/mesh->dz,0);
+					kmax= MIN(kmin+1,mesh->zcells-1);
+					
+					
+					
+					// The cell numbers of those 8 neighbors are defined
+					cell[n].ni[0]= imin + jmin*mesh->xcells  + kmin*mesh->xcells*mesh->ycells; 
+					cell[n].ni[1]= imax + jmin*mesh->xcells  + kmin*mesh->xcells*mesh->ycells;
+					cell[n].ni[2]= imax + jmax*mesh->xcells  + kmin*mesh->xcells*mesh->ycells;
+					cell[n].ni[3]= imin + jmax*mesh->xcells  + kmin*mesh->xcells*mesh->ycells;
+					cell[n].ni[4]= imin + jmin*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
+					cell[n].ni[5]= imax + jmin*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
+					cell[n].ni[6]= imax + jmax*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
+					cell[n].ni[7]= imin + jmax*mesh->xcells  + kmax*mesh->xcells*mesh->ycells;
+					
+
+					// The weights for the interpolation at the image points are computed 
+					sum=0.0;
+					for(q=0;q<8;q++){ // loop over neighbor cells
+						aux1=cell[n].xim-cell[cell[n].ni[q]].xc;
+						aux2=cell[n].yim-cell[cell[n].ni[q]].yc;
+						aux3=cell[n].zim-cell[cell[n].ni[q]].zc;
+						
+						//if(n==594473){
+						//      printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
+						//      printf("aux1 %lf aux2 %lf aux3 %lf\n", aux1,aux2,aux3);
+						//      getchar();
+						//}
+						
+						di[q]=pow( aux1*aux1+aux2*aux2+aux3*aux3, 0.5 ); // this is the distance between the image point and each neighbor cell
+						if(cell[cell[n].ni[q]].ghost!=1){
+							li[q]=1.0/(di[q]*di[q]+TOL14);
+						}else{
+							li[q]=0.0;
+						}
+						sum = sum+li[q];
+
+					}
+					
+					if(sum<TOL14){
+						cell[n].type=0;
+						cell[n].ghost=0;
+					}else{
+						for(q=0;q<8;q++){
+							cell[n].li[q]=li[q]/sum; // weighting coefficients
+						}
+					}
+					
+					
+	     
 				
-
-                        // The weights for the interpolation at the image points are computed 
-                        sum=0.0;
-				for(q=0;q<8;q++){ // loop over neighbor cells
-                              aux1=cell[n].xim-cell[cell[n].ni[q]].xc;
-                              aux2=cell[n].yim-cell[cell[n].ni[q]].yc;
-                              aux3=cell[n].zim-cell[cell[n].ni[q]].zc;
-                              
-                              //if(n==594473){
-                              //      printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
-                              //      printf("aux1 %lf aux2 %lf aux3 %lf\n", aux1,aux2,aux3);
-                              //      getchar();
-                              //}
-                              
-					di[q]=pow( aux1*aux1+aux2*aux2+aux3*aux3, 0.5 ); // this is the distance between the image point and each neighbor cell
-                              if(cell[cell[n].ni[q]].ghost!=1){
-                                    li[q]=1.0/(di[q]*di[q]+TOL14);
-                              }else{
-                                    li[q]=0.0;
-                              }
-                              sum = sum+li[q];
-
+				}else{
+				//if(cell[n].zc<mesh->dz){
+				//      printf("cell %d,: %d %d %d \n", n,cell[n].l,cell[n].m,cell[n].n );
+				//      printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
+				//	}
+					cell[n].type=0;
+					cell[n].ghost=0;
 				}
-                        
-                        if(sum<TOL14){
-                              cell[n].type=0;
-                              cell[n].ghost=0;
-                        }else{
-                              for(q=0;q<8;q++){
-                                    cell[n].li[q]=li[q]/sum; // weighting coefficients
-                              }
-                        }
-                        
-                        
-     
-			
-			}else{
-                  //if(cell[n].zc<mesh->dz){
-                  //      printf("cell %d,: %d %d %d \n", n,cell[n].l,cell[n].m,cell[n].n );
-                  //      printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
-			//	}
-				cell[n].type=0;
-                        cell[n].ghost=0;
-			}
-			
-		  }		
-      }
-      
-      //printf("%s Image points have been identified \n\n",OK);
+				
+			  }		
+		}
+		
+		//printf("%s Image points have been identified \n\n",OK);
+	}
 
 	return 1;
 }
@@ -1344,38 +1393,39 @@ int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids){
       double auxval[sim->nvar];
       double dotprod;    
       
-      cell=mesh->cell;
-      for(n=0;n<mesh->ncells;n++){
-		  if (cell[n].ghost==1) {
-                  triangle=cell[n].tri;  // triangular facet associated to a ghost cell
-                  for(k=0;k<sim->nvar;k++){
-                        auxval[k]=0.0;
-                        for(q=0;q<8;q++){
-                              auxval[k]= auxval[k] + cell[n].li[q]* cell[cell[n].ni[q]].U[k]; //interpolated variables at image point
-                              //printf("li:%lf U:%lf \n", cell[n].li[q],cell[cell[n].ni[q]].U[k] );
-                        }
-                        //getchar();
-                  }
-                  
-                  
-                  dotprod=triangle->nr[0]*auxval[1]+triangle->nr[1]*auxval[2]+triangle->nr[2]*auxval[3];                     
-                  for(k=0;k<sim->nvar;k++){
-                        if(k==1||k==2||k==3){
-                              cell[n].U[k]=auxval[k]-2.0*dotprod*triangle->nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
-                        }else{
-                              cell[n].U[k]=auxval[k]; //non-vector variables are assigned equal
-                        }
-                              
-			}
+	if(solids->nsolid>0){		
+		cell=mesh->cell;
+		for(n=0;n<mesh->ncells;n++){
+			  if (cell[n].ghost==1) {
+				triangle=cell[n].tri;  // triangular facet associated to a ghost cell
+				for(k=0;k<sim->nvar;k++){
+					auxval[k]=0.0;
+					for(q=0;q<8;q++){
+						auxval[k]= auxval[k] + cell[n].li[q]* cell[cell[n].ni[q]].U[k]; //interpolated variables at image point
+						//printf("li:%lf U:%lf \n", cell[n].li[q],cell[cell[n].ni[q]].U[k] );
+					}
+					//getchar();
+				}
+				
+				
+				dotprod=triangle->nr[0]*auxval[1]+triangle->nr[1]*auxval[2]+triangle->nr[2]*auxval[3];                     
+				for(k=0;k<sim->nvar;k++){
+					if(k==1||k==2||k==3){
+						cell[n].U[k]=auxval[k]-2.0*dotprod*triangle->nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
+					}else{
+						cell[n].U[k]=auxval[k]; //non-vector variables are assigned equal
+					}
+						
+				}
 
-                  
-                    
-              }
+				
+				  
+			  }
+		}
+		
+		//printf("%s Ghost cell values have been computed \n\n",OK);
+      
       }
-      
-      //printf("%s Ghost cell values have been computed \n\n",OK);
-      
-      
       
 }
 
@@ -1549,26 +1599,30 @@ int assign_wall_type(t_mesh *mesh){
 
 
 
-int update_wall_type(t_mesh *mesh){ 
+int update_wall_type(t_mesh *mesh,t_solid *solids){ 
 	t_wall *wall;
 	int m,l,n,k,wp;
       
-      
-      for(n=0;n<mesh->nwalls;n++){
-            wall=&(mesh->wall[n]);                  
+	if(solids->nsolid<1){
+            printf("%s In function update_wall_type() no solids are considered\n",WAR);
+      }else{      
+		for(n=0;n<mesh->nwalls;n++){
+			wall=&(mesh->wall[n]);                  
 
-            if(wall->cellL->ghost>0 && wall->cellR->ghost>0){       //left and right ghost          
-                  wall->wtype=0;
-            }else if(wall->cellR->type==0 && wall->cellL->ghost>0){ //left ghost and right solid
-                  wall->wtype=0;                        
-            }else if(wall->cellL->type==0 && wall->cellR->ghost>0){ //left solid and right ghost
-                  wall->wtype=0; 
-            }else if(wall->cellL->type==0 && wall->cellR->type==0){ //left and right solids
-                  wall->wtype=0; 
-            }          
-             
+			if(wall->cellL->ghost>0 && wall->cellR->ghost>0){       //left and right ghost          
+				wall->wtype=0;
+			}else if(wall->cellR->type==0 && wall->cellL->ghost>0){ //left ghost and right solid
+				wall->wtype=0;                        
+			}else if(wall->cellL->type==0 && wall->cellR->ghost>0){ //left solid and right ghost
+				wall->wtype=0; 
+			}else if(wall->cellL->type==0 && wall->cellR->type==0){ //left and right solids
+				wall->wtype=0; 
+			}          
+			 
 
-      }
+		}
+	
+	}
 
       return 1;
       
@@ -2968,6 +3022,29 @@ void mass_calculation(t_mesh *mesh, t_sim *sim){
 }
 
 
+void tke_calculation(t_mesh *mesh, t_sim *sim){
+
+	int i;
+	double tke_a,u,v,w;
+	double volume,volumeT;
+
+	volume=mesh->dx*mesh->dy*mesh->dz;
+	volumeT=0.0;
+	tke_a=0.0;
+	for(i=0;i<mesh->ncells;i++){
+            if(mesh->cell[i].type!=0){
+                  u=mesh->cell[i].U[1]/mesh->cell[i].U[0];
+                  v=mesh->cell[i].U[2]/mesh->cell[i].U[0];
+                  w=mesh->cell[i].U[3]/mesh->cell[i].U[0];
+                  tke_a+=0.5*mesh->cell[i].U[0]*(u*u + v*v + w*w)*volume;
+				  volumeT+=volume;
+            }
+	}
+	mesh->tke=tke_a/volumeT; //average TKE in the domain
+
+}
+
+
 
 ////////////////////////////////////////////////////
 /////  P O S T - P R O C.   F U N C T I O N S //////
@@ -3245,6 +3322,41 @@ int write_matrix_phi(t_mesh *mesh, char *filename){
 
 
 
+int write_list(t_mesh *mesh, char *filename){
+		
+		
+	int l,m,n,k;
+	double u,v,w,p,rho;
+	FILE *fp;
+	fp=fopen(filename,"w");
+
+	// Write file header
+	fprintf(fp,"VARIABLES = X, Y, Z, u, v, w, rho, p \n");
+	fprintf(fp,"CELLS = %d, %d, %d,\n",mesh->xcells,mesh->ycells,mesh->zcells);
+
+    for(l=0;l<mesh->xcells;l++){  
+		for(m=0;m<mesh->ycells;m++){
+			for(n=0;n<mesh->zcells;n++){
+			k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+			u=mesh->cell[k].U[1]/mesh->cell[k].U[0];
+			v=mesh->cell[k].U[2]/mesh->cell[k].U[0];
+			w=mesh->cell[k].U[3]/mesh->cell[k].U[0];
+			rho=mesh->cell[k].U[0];
+			p=(_gamma_-1.0)*(mesh->cell[k].U[4]-0.5*mesh->cell[k].U[0]*(mesh->cell[k].U[1]*mesh->cell[k].U[1]+mesh->cell[k].U[2]*mesh->cell[k].U[2]+mesh->cell[k].U[3]*mesh->cell[k].U[3])/(mesh->cell[k].U[0]*mesh->cell[k].U[0]));
+			fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e \n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p);
+            }
+		}
+	}
+
+	fclose(fp);
+
+
+	return 1;
+}
+
+
+
+
 int read_solids(t_mesh *mesh,t_solid *solids ){
 		
 	int i,j,k;
@@ -3257,14 +3369,14 @@ int read_solids(t_mesh *mesh,t_solid *solids ){
 	
       f=1.0-TOL14;
 	
-	sprintf(fname,"solids/solid_list.txt");
+	sprintf(fname,"case/solid_list.txt");
 	fp = fopen(fname,"r");
 	
 	if (fp == NULL)
-    {
-        printf("%s No solids are found in folder solids/.. \n",WAR);
+	{
+		printf("%s No solids are found in folder case/.. \n",WAR);
 		solids->nsolid=0;
-    }else{
+	}else{
 
 	fscanf(fp,"%*s %d", &solids->nsolid);
 	printf(" The number of solids domains is: %d \n",solids->nsolid);
@@ -3450,6 +3562,7 @@ int main(int argc, char * argv[]){
 	t_sim *sim;
 	t_solid *solids;
 	char vtkfile[1024];
+	char listfile[1024];
       char matrixfile_u[1024];
 	char matrixfile_v[1024];
       char matrixfile_phi[1024];
@@ -3457,9 +3570,10 @@ int main(int argc, char * argv[]){
 	double tf,t;
 	int nIt; //counter for iterations
 	double timeac; //accumulated time before dump
+	double timeac2,tTke; //other counter. dump time for tke
 	t_cell *cell;
       FILE *file_input;
-      
+      FILE *file_tke;
       
 #ifdef _OPENMP 
 	omp_set_num_threads(NTHREADS);
@@ -3496,7 +3610,7 @@ int main(int argc, char * argv[]){
 	//
 	// S I M U L A T I O N   P A R A M E T E R S
 
-      sprintf(fname,"configure.input");	
+      sprintf(fname,"case/configure.input");	
       file_input = fopen(fname,"r"); // "r"= only read
       fscanf(file_input,"%*s");  
       fscanf(file_input,"%*s %lf" ,&sim->tf);  
@@ -3580,7 +3694,7 @@ int main(int argc, char * argv[]){
       
       printf(" \n");
       
-      printf("%s Input data has been read \n",OK);
+      printf("%s Configuration file has been read \n",OK);
       
         
       
@@ -3603,20 +3717,20 @@ int main(int argc, char * argv[]){
       
       if(mesh->bc[1]==1 && mesh->xcells<=(sim->order-1)/2){
             printf("%s The number of cells in X is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
-            mesh->bc[1]==3;
-            mesh->bc[3]==3;
+            mesh->bc[1]=3;
+            mesh->bc[3]=3;
 
 	}
       if(mesh->bc[0]==1 && mesh->ycells<=(sim->order-1)/2){
             printf("%s The number of cells in Y is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
-            mesh->bc[0]==3;
-            mesh->bc[2]==3;
+            mesh->bc[0]=3;
+            mesh->bc[2]=3;
 
 	}
       if(mesh->bc[4]==1 && mesh->zcells<=(sim->order-1)/2){
             printf("%s The number of cells in Z is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
-            mesh->bc[4]==3;
-            mesh->bc[5]==3;
+            mesh->bc[4]=3;
+            mesh->bc[5]=3;
 
 	}
       
@@ -3629,6 +3743,8 @@ int main(int argc, char * argv[]){
       
       //Initialization of ac. dump time
 	timeac=0.0;
+      timeac2=0.0;
+      tTke=0.05;
 		
 	// S I M U L A T I O N  S E T - U P
 	if(sim->order==1){
@@ -3642,6 +3758,8 @@ int main(int argc, char * argv[]){
       printf("%s Memory has been allocated and mesh connectivity has been defined \n\n",OK);
 	#if ALLOW_SOLIDS
 	read_solids(mesh,solids);
+	#else
+	solids->nsolid=0;
 	#endif
       assign_cell_type(mesh,solids);
       if(solids->nsolid>0){
@@ -3652,7 +3770,7 @@ int main(int argc, char * argv[]){
       #if ALLOW_SOLIDS
       assign_image_cells(mesh,solids);
       update_ghost_cells(sim,mesh,solids);
-      update_wall_type(mesh);
+      update_wall_type(mesh,solids);
       printf("%s Image points have been defined and ghost cell values have been computed \n",OK);
       #endif
 	  
@@ -3671,6 +3789,7 @@ int main(int argc, char * argv[]){
 	// M E S H   C R E A T I O N   D E B U G G I N G
 	write_geo_vtk(mesh,"output-files/inital_geo_mesh.vtk");
 	write_vtk(mesh,"output-files/state0.vtk");
+	write_list(mesh,"output-files/list0.out");
       printf("\n");
       printf(" T= 0.0e+0, Initial data printed. Starting time loop.\n\n");
 //    write_matrix_u(mesh,"output-files/u0.dat");
@@ -3716,6 +3835,11 @@ int main(int argc, char * argv[]){
       
       getchar();
       
+	#endif
+	
+	
+	#if WRITE_TKE == 1
+	file_tke=fopen("output-files/tke.out","w");
 	#endif
 	
 	      
@@ -3780,13 +3904,15 @@ int main(int argc, char * argv[]){
 		////////////////////////////////////////////////////
 
             timeac=timeac+sim->dt;
-		if(timeac>sim->tVolc){
+		if(timeac>sim->tVolc){	
+			#if WRITE_VTK 
 			sprintf(vtkfile,"output-files/state%d.vtk",nIt+1);
-                  //sprintf(matrixfile_u,"output-files/u%d.dat",nIt+1);
-			//sprintf(matrixfile_v,"output-files/v%d.dat",nIt+1);
 			write_vtk(mesh,vtkfile);
-                  //write_matrix_u(mesh,matrixfile_u);
-			//write_matrix_v(mesh,matrixfile_v);
+			#endif
+            #if WRITE_LIST 
+			sprintf(listfile,"output-files/list%d.out",nIt+1);
+			write_list(mesh,listfile);
+			#endif
 			
                   printf("\n");
                   printf(" T= %lf, dt= %lf\n",t+sim->dt,sim->dt);
@@ -3797,6 +3923,15 @@ int main(int argc, char * argv[]){
 			timeac=0.0;
 		}
 
+		#if WRITE_TKE 
+            timeac2=timeac2+sim->dt;
+		if(timeac2>tTke){                
+            tke_calculation(mesh,sim);
+            fprintf(file_tke,"%14.14e %14.14e\n",t+sim->dt,mesh->tke);              
+			timeac2=0.0;
+		}
+        #endif  
+		
 		
 		t+=sim->dt;	//Time for the next time step
 		sim->t=t;
@@ -3810,13 +3945,18 @@ int main(int argc, char * argv[]){
       if(timeac>TOL14){
       sprintf(vtkfile,"output-files/state%d.vtk",nIt+1);
       write_vtk(mesh,vtkfile);
+	  sprintf(listfile,"output-files/list%d.out",nIt+1);
+	  write_list(mesh,listfile);
       }
+	  
+      #if WRITE_TKE 
+      fclose(file_tke);
+      #endif  
       
-      
+/*      
       int m, l;
       FILE *f;
-      char filename[1024];
-      
+      char filename[1024];      
 #if EULER      
       f=fopen("output-files/section-sod_schock_tube.out","w");
 //		fprintf(f,"Rho, u, e, pres\n");
@@ -3831,7 +3971,7 @@ int main(int argc, char * argv[]){
       fclose(f);
       
 #endif 
- 
+*/ 
 
 
 
