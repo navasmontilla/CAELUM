@@ -31,7 +31,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define OK "\033[1;35m [OK]\033[0m "
 
 //Physical constants
-#define PI 3.1415926535
+#define PI 3.141592653589793
 #define _g_ 9.81
 #define epsilon 1.0E-14
 #define _gamma_ 1.4
@@ -46,7 +46,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 
 //reconstruction method
 #define WENO 1
-#define OPT_WEIGHTS 1 //This is 0 for WENO and 1 for UWC
+#define OPT_WEIGHTS 0 //This is 0 for WENO and 1 for UWC
 #define TENO 0
 #define _CT_ 1.0e-4
 
@@ -57,9 +57,13 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define EULER 1 //Euler equations
 #define SW 0
 
+//Multicomponent and multiphase flow
+#define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma). 
+#define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
+
 //Solvers
-#define HLLE 0
-#define HLLC 1
+#define HLLE 1
+#define HLLC 0
 #define ROE 0
 
 //Debug code 
@@ -790,7 +794,7 @@ int update_initial(t_mesh *mesh){
 	char fname[1024];
       double d,aux1,xaux,yaux,r,umax,ut,wp,r_d,L,xc,yc,zc;
       double x1,x2,y1,y2,C;
-      double p,u,v,w,rho,phi;
+      double p,u,v,w,rho,phi,gamma;
 	  
 	t_cell *cell;
 	cell=mesh->cell;
@@ -807,15 +811,23 @@ int update_initial(t_mesh *mesh){
 			for(m=0;m<mesh->ycells;m++){
 				for(n=0;n<mesh->zcells;n++){
 				k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
-				fscanf(fp,"%*le %*le %*le %le %le %le %le %le",&u,&v,&w,&rho,&p);
+				fscanf(fp,"%*le %*le %*le %le %le %le %le %le %le",&u,&v,&w,&rho,&p,&phi);
 				//printf("%14.14e %14.14e %14.14e %14.14e %14.14e \n",u,v,w,rho,p);
-				phi=0.0;
+				#if MULTICOMPONENT
+					#if MULTI_TYPE==1
+					gamma=phi;
+					#else
+					gamma=1.0+1.0/phi;
+					#endif
+				#else
+					gamma=_gamma_;
+				#endif
 				cell[k].U[0]=rho;
 				cell[k].U[1]=u*cell[k].U[0];
 				cell[k].U[2]=v*cell[k].U[0];
 				cell[k].U[3]=w*cell[k].U[0];
-				cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
-				cell[k].U[5]=phi;
+				cell[k].U[4]=p/(gamma-1.0)+0.5*rho*(u*u + v*v + w*w);
+				cell[k].U[5]=phi*rho;
 				}
 			}
 		}
@@ -828,7 +840,7 @@ int update_initial(t_mesh *mesh){
 
 	printf("%s No initial state file is found. Initial data is set in update_initial() \n",WAR);
 #else
-	printf("%s Read initial data function is disabled (set macro) \n",WAR);
+	printf("%s Read initial data file is disabled (set macro) \n",WAR);
 #endif
 
 #if EULER && !LINEAR_TRANSPORT
@@ -2303,10 +2315,10 @@ void set_velocity(t_mesh *mesh, t_sim *sim){
 void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 
 	int m;
-	double WR[5], WL[5]; /**<Auxiliar array of variables rotated for the 1D problem**/
-	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR;
+	double WR[6], WL[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR, gammaL, gammaR, phiL, phiR;
 	double raizrhoR, raizrhoL, sumRaizRho;
-	double u_hat, v_hat, w_hat, H_hat, c_hat;
+	double u_hat, v_hat, w_hat, H_hat, c_hat, gamma_hat;
 	double S1, S2, diffS, maxS;
 	double FR[5], FL[5];
 	double F_star[5];
@@ -2331,6 +2343,23 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 	WR[4]=wall->UR[4];
 	WL[4]=wall->UL[4];
 	
+#if MULTICOMPONENT
+	WR[5]=wall->UR[5];
+	WL[5]=wall->UL[5];
+	phiL=WL[5]/WL[0];
+	phiR=WR[5]/WR[0];
+	#if MULTI_TYPE==1
+		gammaL=phiL;
+		gammaR=phiR;
+	#else
+		gammaL=1.0+1.0/phiL;
+		gammaR=1.0+1.0/phiR;
+	#endif
+#else
+	gammaL=_gamma_;
+	gammaR=_gamma_;
+#endif	
+	
 	/**Additional variables for the solver**/
 	uL=WL[1]/WL[0];
 	uR=WR[1]/WR[0];
@@ -2341,15 +2370,15 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
       wL=WL[3]/WL[0];
 	wR=WR[3]/WR[0];
 
-	pL=(_gamma_-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
-	pR=(_gamma_-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
+	pL=(gammaL-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
+	pR=(gammaR-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
 	
 	HL=(WL[4]+pL)/WL[0];
 	HR=(WR[4]+pR)/WR[0];
 	
-	cL=sqrt(_gamma_*pL/WL[0]);
+	cL=sqrt(gammaL*pL/WL[0]);
 
-	cR=sqrt(_gamma_*pR/WR[0]);
+	cR=sqrt(gammaR*pR/WR[0]);
 	
 	raizrhoL=sqrt(WL[0]);
 	raizrhoR=sqrt(WR[0]);
@@ -2360,8 +2389,17 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 	v_hat=(vR*raizrhoR+vL*raizrhoL)/sumRaizRho;
       w_hat=(wR*raizrhoR+wL*raizrhoL)/sumRaizRho;
 	H_hat=(HR*raizrhoR+HL*raizrhoL)/sumRaizRho;
+#if MULTICOMPONENT	
+	#if MULTI_TYPE==1
+		gamma_hat=1.0+ 1.0/( (phiR*raizrhoR+phiL*raizrhoL)/sumRaizRho );
+	#else
+		gamma_hat=(gammaR*raizrhoR+gammaL*raizrhoL)/sumRaizRho;
+	#endif
+#else
+	gamma_hat=_gamma_;
+#endif
 
-	c_hat=sqrt((_gamma_-1)*(H_hat-0.5*(u_hat*u_hat+v_hat*v_hat+w_hat*w_hat)));
+	c_hat=sqrt((gamma_hat-1)*(H_hat-0.5*(u_hat*u_hat+v_hat*v_hat+w_hat*w_hat)));
 
 	/**Physical flux calculation (the F of the eqs.)**/
 
@@ -2584,8 +2622,8 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 void compute_transmissive_euler(t_wall *wall, int wp){
 
 	int m;   
-      double WR[5], WL[5]; /**<Auxiliar array of variables rotated for the 1D problem**/
-	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR;
+      double WR[6], WL[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR, gammaL, gammaR, phiL, phiR;
 	double FR[5], FL[5];
 	double F_star[5];
       
@@ -2609,6 +2647,23 @@ void compute_transmissive_euler(t_wall *wall, int wp){
 	WR[4]=wall->UR[4];
 	WL[4]=wall->UL[4];
 	
+#if MULTICOMPONENT
+	WR[5]=wall->UR[5];
+	WL[5]=wall->UL[5];
+	phiL=WL[5]/WL[0];
+	phiR=WR[5]/WR[0];
+	#if MULTI_TYPE==1
+		gammaL=phiL;
+		gammaR=phiR;
+	#else
+	gammaL=1.0+1.0/phiL;
+	gammaR=1.0+1.0/phiR;
+	#endif
+#else
+	gammaL=_gamma_;
+	gammaR=_gamma_;
+#endif
+	
 	
 	/**Additional variables for the solver**/
 	uL=WL[1]/WL[0];
@@ -2620,8 +2675,8 @@ void compute_transmissive_euler(t_wall *wall, int wp){
       wL=WL[3]/WL[0];
 	wR=WR[3]/WR[0];
 
-	pL=(_gamma_-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
-	pR=(_gamma_-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
+	pL=(gammaL-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
+	pR=(gammaR-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
 	
 	
 
@@ -3136,6 +3191,7 @@ int write_vtk(t_mesh *mesh, char *filename){
 		
 	int i,j;
 	FILE *fp;
+	double gamma;
 	fp=fopen(filename,"w");
 
 	// Write file header
@@ -3189,7 +3245,16 @@ int write_vtk(t_mesh *mesh, char *filename){
 	fprintf(fp,"SCALARS pres DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
       for(j=0;j<mesh->ncells;j++){
-            mesh->cell[j].pres=(_gamma_-1.0)*(mesh->cell[j].U[4]-0.5*mesh->cell[j].U[0]*(mesh->cell[j].U[1]*mesh->cell[j].U[1]+mesh->cell[j].U[2]*mesh->cell[j].U[2]+mesh->cell[j].U[3]*mesh->cell[j].U[3])/(mesh->cell[j].U[0]*mesh->cell[j].U[0]));
+		#if MULTICOMPONENT
+			#if MULTI_TYPE==1
+				gamma=mesh->cell[j].U[5]/mesh->cell[j].U[0];
+			#else
+				gamma=1.0+1.0/(mesh->cell[j].U[5]/mesh->cell[j].U[0]);
+			#endif
+		#else
+			gamma=_gamma_;
+		#endif
+            mesh->cell[j].pres=(gamma-1.0)*(mesh->cell[j].U[4]-0.5*mesh->cell[j].U[0]*(mesh->cell[j].U[1]*mesh->cell[j].U[1]+mesh->cell[j].U[2]*mesh->cell[j].U[2]+mesh->cell[j].U[3]*mesh->cell[j].U[3])/(mesh->cell[j].U[0]*mesh->cell[j].U[0]));
             fprintf(fp,"%lf \n",mesh->cell[j].pres);
       }
       #endif
@@ -3326,12 +3391,12 @@ int write_list(t_mesh *mesh, char *filename){
 		
 		
 	int l,m,n,k;
-	double u,v,w,p,rho;
+	double u,v,w,p,rho,phi,gamma;
 	FILE *fp;
 	fp=fopen(filename,"w");
 
 	// Write file header
-	fprintf(fp,"VARIABLES = X, Y, Z, u, v, w, rho, p \n");
+	fprintf(fp,"VARIABLES = X, Y, Z, u, v, w, rho, p, phi \n");
 	fprintf(fp,"CELLS = %d, %d, %d,\n",mesh->xcells,mesh->ycells,mesh->zcells);
 
     for(l=0;l<mesh->xcells;l++){  
@@ -3342,8 +3407,18 @@ int write_list(t_mesh *mesh, char *filename){
 			v=mesh->cell[k].U[2]/mesh->cell[k].U[0];
 			w=mesh->cell[k].U[3]/mesh->cell[k].U[0];
 			rho=mesh->cell[k].U[0];
-			p=(_gamma_-1.0)*(mesh->cell[k].U[4]-0.5*mesh->cell[k].U[0]*(mesh->cell[k].U[1]*mesh->cell[k].U[1]+mesh->cell[k].U[2]*mesh->cell[k].U[2]+mesh->cell[k].U[3]*mesh->cell[k].U[3])/(mesh->cell[k].U[0]*mesh->cell[k].U[0]));
-			fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e \n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p);
+			phi=mesh->cell[k].U[5]/mesh->cell[k].U[0];
+			#if MULTICOMPONENT
+				#if MULTI_TYPE==1
+					gamma=phi;
+				#else
+					gamma=1.0+1.0/phi;
+				#endif
+			#else
+				gamma=_gamma_;
+			#endif
+			p=(gamma-1.0)*(mesh->cell[k].U[4]-0.5*mesh->cell[k].U[0]*(mesh->cell[k].U[1]*mesh->cell[k].U[1]+mesh->cell[k].U[2]*mesh->cell[k].U[2]+mesh->cell[k].U[3]*mesh->cell[k].U[3])/(mesh->cell[k].U[0]*mesh->cell[k].U[0]));
+			fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e \n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi);
             }
 		}
 	}
@@ -3788,8 +3863,8 @@ int main(int argc, char * argv[]){
 	
 	// M E S H   C R E A T I O N   D E B U G G I N G
 	write_geo_vtk(mesh,"output-files/inital_geo_mesh.vtk");
-	write_vtk(mesh,"output-files/state0.vtk");
-	write_list(mesh,"output-files/list0.out");
+	write_vtk(mesh,"output-files/state000.vtk");
+	write_list(mesh,"output-files/list000.out");
       printf("\n");
       printf(" T= 0.0e+0, Initial data printed. Starting time loop.\n\n");
 //    write_matrix_u(mesh,"output-files/u0.dat");
@@ -3906,11 +3981,11 @@ int main(int argc, char * argv[]){
             timeac=timeac+sim->dt;
 		if(timeac>sim->tVolc){	
 			#if WRITE_VTK 
-			sprintf(vtkfile,"output-files/state%d.vtk",nIt+1);
+			sprintf(vtkfile,"output-files/state%03d.vtk",nIt+1);
 			write_vtk(mesh,vtkfile);
 			#endif
             #if WRITE_LIST 
-			sprintf(listfile,"output-files/list%d.out",nIt+1);
+			sprintf(listfile,"output-files/list%03d.out",nIt+1);
 			write_list(mesh,listfile);
 			#endif
 			
@@ -3943,9 +4018,9 @@ int main(int argc, char * argv[]){
       printf(" Final time is T= %14.14e \n \n",sim->t);
       
       if(timeac>TOL14){
-      sprintf(vtkfile,"output-files/state%d.vtk",nIt+1);
+      sprintf(vtkfile,"output-files/state%03d.vtk",nIt+1);
       write_vtk(mesh,vtkfile);
-	  sprintf(listfile,"output-files/list%d.out",nIt+1);
+	  sprintf(listfile,"output-files/list%03d.out",nIt+1);
 	  write_list(mesh,listfile);
       }
 	  

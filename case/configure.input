@@ -1,26 +1,26 @@
-/////SIMULATION_SETUP//////
-FinalTime		1.0
-DumpTime		5.00
-CFL			0.1
-Order			5
-
+/////SIMULATION_SETUP////// 
+FinalTime    2.5
+DumpTime    0.9
+CFL    0.3
+Order    7
+ 
 ////////MESH_SETUP/////////
-xcells			6
-ycells			6
-zcells			6
-SizeX			6.283185307179586
-SizeY			6.283185307179586
-SizeZ			6.283185307179586
-
+xcells    20
+ycells    20
+zcells    20
+SizeX    0.6
+SizeY    0.6
+SizeZ    0.6
+ 
 ///////BOUNDARY_COND///////
-Face_1(-y)			1
-Face_2(+x)			1
-Face_3(+y)			1
-Face_4(-x)			1
-Face_5(-z)			1
-Face_6(+z)			1
-
+Face_1    1
+Face_2    1
+Face_3    1
+Face_4    1
+Face_5    1
+Face_6    1
+ 
 ///////LINEAR_TRANSPORT///////(if_applicable)
-u_x                     1.0
-u_y                     1.0
-u_z                     1.0
+u_x    1.0
+u_y    1.0
+u_z    1.0
