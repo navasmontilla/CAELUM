@@ -11,8 +11,9 @@ This code allows the simulation of:
 - Linear scalar transport
 - Burgers' equation
 - Compressible Euler equations
+- Multicomponent compressible Euler equations
 
-The compressible Euler equations allow the simulation of shockaves and their interaction with solid boundaries. In the following figure, the intercaction of a blast wave with a solid body is shown.
+The compressible Euler equations allow the simulation of shockaves and their interaction with solid boundaries. In the following figure, the interaction of a blast wave with a solid body is shown.
 
 <figure style="text-align: center;">
   <img src="doc/shockSolid.PNG" width="100%" alt="my alt text"/>
@@ -58,9 +59,9 @@ Order			5
 xcells			80
 ycells			100
 zcells			80
-SizeX			0.80
-SizeY			1.0
-SizeZ			0.80
+SizeX				0.80
+SizeY				1.0
+SizeZ				0.80
 
 ///////BOUNDARY_COND///////
 Face_1(-y)			3
@@ -96,6 +97,15 @@ and defining the x, y and z velocities in the configuration file.
 ```c
 #define EULER 1 
 ```
+It is possible to run the two-component Euler equations, setting:
+```c
+#define MULTICOMPONENT 1
+#define MULTI_TYPE 2 
+```
+and set ```MULTI_TYPE``` to choose between Gamma formulation (=1) <img src="https://render.githubusercontent.com/render/math?math=\phi =\gamma"> or  formulation (=2) <img src="https://render.githubusercontent.com/render/math?math=\phi =1/(\gamma-1)">  (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001)) for
+
+<img src="https://render.githubusercontent.com/render/math?math=\frac{\partial \rho\phi}{\partial t}%2B\frac{\partial \rho u\phi}{\partial x}=0">
+
 
 *It is possible to run a linear transport module within the euler equations, setting ```#define LINEAR_TRANSPORT 1 ```, but it is an old feature*
 
@@ -168,10 +178,23 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp)
 
 ### Initial conditions
 
-The initial conditions are implemented in:
+Generally, the initial conditions can be implemented in:
 ```c 
 int update_initial(t_mesh *mesh);
 ```
+
+For Euler equations, the initial conditions can also be set in the file ```initial.out```:
+
+```c 
+VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
+...
+```
+
+or implemented in ```int update_initial(t_mesh *mesh)```.
 
 For Euler equations, the problem variables can be assigned for instance as follows:
 ```c
