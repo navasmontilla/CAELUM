@@ -10,8 +10,7 @@ This code allows the simulation of:
 
 - Linear scalar transport
 - Burgers' equation
-- Compressible Euler equations
-- Multicomponent compressible Euler equations
+- Compressible Euler equations (single and multicomponent)
 
 The compressible Euler equations allow the simulation of shockaves and their interaction with solid boundaries. In the following figure, the interaction of a blast wave with a solid body is shown.
 
@@ -59,9 +58,9 @@ Order			5
 xcells			80
 ycells			100
 zcells			80
-SizeX				0.80
-SizeY				1.0
-SizeZ				0.80
+SizeX			0.80
+SizeY			1.0
+SizeZ			0.80
 
 ///////BOUNDARY_COND///////
 Face_1(-y)			3
