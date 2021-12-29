@@ -1,10 +1,6 @@
-# Benchmark tests
+# Benchmark #1: Riemann problems
 
-
-
-## Benchmark #1: Riemann problems
-
-### RP1
+## RP1
 
 <table>
   <tr>
@@ -40,7 +36,7 @@
 </figure>
 
 
-### RP2
+## RP2
 
 
 <table>
@@ -76,7 +72,7 @@
   <img src="bench_RP_comp_2.png" width="100%" alt="my alt text"/>
 </figure>
 
-### RP3
+## RP3
 
 
 <table>
@@ -112,7 +108,7 @@
   <img src="bench_RP_comp_3.png" width="100%" alt="my alt text"/>
 </figure>
 
-### RP4
+## RP4
 
 
 <table>
