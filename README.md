@@ -16,7 +16,7 @@ Regarding the compressible Euler equations, the following physical phenomena can
 
 - Compressible flows with sharp discontinuities (contact and shock waves)
 - Compressible flows composed by a mixture of 2 gases
-- External compressible flow around solid bodies (*.stl files)
+- External flows around solid bodies (given by *.stl triangulation files)
 - Compressible turbulence
 
 Compressible turbulence is a highly nonlinear multiscale phenomenon. It has become one of the most challenging problems in computational physics. Turbulent flows can be numerically reproduced by means of hydrodynamic solvers. A common approach is the use of the Euler equations in combination with a suitable numerical discretization scheme. When the numerical diffusion inherent to the discretization method mimics the physical dissipation of the unresolved turbulent motion, the approach is called Implicit Large Eddy Simulation (ILES). 
@@ -100,9 +100,8 @@ and defining the x, y and z velocities in the configuration file.
 It is possible to run the two-component Euler equations, setting:
 ```c
 #define MULTICOMPONENT 1
-#define MULTI_TYPE 2 
 ```
-and set ```MULTI_TYPE``` to choose between Gamma formulation (=1) <img src="https://render.githubusercontent.com/render/math?math=\phi =\gamma"> or  formulation (=2) <img src="https://render.githubusercontent.com/render/math?math=\phi =1/(\gamma-1)">  (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001)) for
+and set ```MULTI_TYPE=1``` to choose this Gamma formulation  <img src="https://render.githubusercontent.com/render/math?math=\phi =\gamma"> or  ```MULTI_TYPE=2``` to use this formulation <img src="https://render.githubusercontent.com/render/math?math=\phi =1/(\gamma-1)">  (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001)) for
 
 <img src="https://render.githubusercontent.com/render/math?math=\frac{\partial \rho\phi}{\partial t}%2B\frac{\partial \rho u\phi}{\partial x}=0">
 
