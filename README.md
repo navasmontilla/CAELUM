@@ -260,6 +260,17 @@ The code is parallelized using OpenMP. To set the number of threads, for example
 ```
 If compiling without the OMP flag, the code will run as a serial program.
 
+
+### Numerical results
+
+Results are sorted in the following categories:
+
+- [Benchmark tests](doc/benchmarks.md)
+- Other results
+
+
+
+
 ## Authorship
 
 Authors:
