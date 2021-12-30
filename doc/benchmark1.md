@@ -1,4 +1,10 @@
-# Benchmark #1: Riemann problems
+# Benchmark #1: 1D Riemann problems
+
+The following Riemann problems are computed using the WENO method in combination with the HLLE solver. The grid is discretized in 100 computational cells.  
+These cases can be executed by running in Anaconda:
+``` 
+jupyter notebook 1D_RPs.ipynb
+```
 
 ## RP1
 
