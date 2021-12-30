@@ -265,7 +265,8 @@ If compiling without the OMP flag, the code will run as a serial program.
 
 Results are sorted in the following categories:
 
-- [Benchmark #1: Riemann problems](doc/benchmark1.md)
+- [Benchmark #1: 1D Riemann problems](doc/benchmark1.md)
+- [Benchmark #2: 2D Riemann problems](doc/benchmark2.md)
 - Other results
 
 
