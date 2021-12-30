@@ -48,12 +48,12 @@
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=\rho"></td>
     <td>1.0</td>
-    <td>1.0</td>
+    <td>0.125</td>
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=p"></td>
     <td>1.0</td>
-    <td>1.0</td>
+    <td>0.1</td>
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=u"></td>
@@ -62,8 +62,8 @@
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=\phi"></td>
-    <td>1.0</td>
-    <td>0.0</td>
+    <td>1.666</td>
+    <td>5.0</td>
   </tr>
  </table>
  
@@ -88,8 +88,8 @@
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=p"></td>
-    <td>1.0</td>
-    <td>1.0</td>
+    <td>1000.0</td>
+    <td>0.01</td>
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=u"></td>
@@ -119,18 +119,18 @@
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=\rho"></td>
-    <td>1.0</td>
-    <td>1.0</td>
+    <td>5.99924</td>
+    <td>5.99242</td>
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=p"></td>
-    <td>1.0</td>
-    <td>1.0</td>
+    <td>460.894</td>
+    <td>46.0950</td>
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=u"></td>
-    <td>0.0</td>
-    <td>0.0</td>
+    <td>19.5975</td>
+    <td>-6.19633</td>
   </tr>
   <tr>
     <td><img src="https://render.githubusercontent.com/render/math?math=\phi"></td>
@@ -143,3 +143,5 @@
 <figure style="text-align: center;">
   <img src="bench_RP_comp_4.png" width="100%" alt="my alt text"/>
 </figure>
+
+
