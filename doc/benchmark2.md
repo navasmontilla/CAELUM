@@ -28,6 +28,20 @@ The initial condition for the Riemann problems consists of piecewise constant da
 <img src="https://render.githubusercontent.com/render/math?math=p_1=0.3">
 <img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11}">
 <img src="https://render.githubusercontent.com/render/math?math=v_1=0">
+
+
+<table>
+  <tr>
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0">
+<img src="https://render.githubusercontent.com/render/math?math=p_1=0.3">
+<img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11}">
+<img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0">
+<img src="https://render.githubusercontent.com/render/math?math=p_1=0.3">
+<img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11}">
+<img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
+  </tr>
+ </table> 
  
  
  
