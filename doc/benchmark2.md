@@ -4,7 +4,7 @@ The following Riemann problems are computed using the WENO method in combination
 
 These cases can be computed using the Jupyter Notebook [2D_RPs.ipynb](../2D_RPs.ipynb), which can executed by running in Anaconda:
 ``` 
-jupyter notebook 1D_RPs.ipynb
+jupyter notebook 2D_RPs.ipynb
 ```
 
 The initial condition for the Riemann problems consists of piecewise constant data in four different regions, identified as follows:
@@ -30,49 +30,22 @@ The initial condition for the Riemann problems consists of piecewise constant da
 <img src="https://render.githubusercontent.com/render/math?math=p_1=0.3,">
 <img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
 <img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0,">
-<img src="https://render.githubusercontent.com/render/math?math=p_1=0.3,">
-<img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=1.5,">
+<img src="https://render.githubusercontent.com/render/math?math=p_1=1.5,">
+<img src="https://render.githubusercontent.com/render/math?math=u_1=0,">
 <img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
   </tr>
     <tr>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0,">
-<img src="https://render.githubusercontent.com/render/math?math=p_1=0.3,">
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=77.0/558.0,">
+<img src="https://render.githubusercontent.com/render/math?math=p_1=9.0/310.0,">
 <img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
-<img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
+<img src="https://render.githubusercontent.com/render/math?math=v_1=4/\sqrt{11}"></td>
     <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0,">
 <img src="https://render.githubusercontent.com/render/math?math=p_1=0.3,">
 <img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
 <img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
   </tr>
  </table> 
- 
- 
- 
-             if (xc[l,m,:]<0.5 and yc[l,m,:]<0.5):
-                rho[l,m,:]=77.0/558.0
-                p  [l,m,:]=9.0/310.0
-                u  [l,m,:]=4.0/np.sqrt(11.0)
-                v  [l,m,:]=4.0/np.sqrt(11.0)
-                phi[l,m,:]=1.0
-            elif (xc[l,m,:]<0.5 and yc[l,m,:]>0.5):
-                rho[l,m,:]=33.0/62.0
-                p  [l,m,:]=0.30
-                u  [l,m,:]=4.0/np.sqrt(11.0)
-                v  [l,m,:]=0.0
-                phi[l,m,:]=0.0 
-            elif (xc[l,m,:]>0.5 and yc[l,m,:]>0.5):
-                rho[l,m,:]=1.50
-                p  [l,m,:]=1.50
-                u  [l,m,:]=0.0
-                v  [l,m,:]=0.0
-                phi[l,m,:]=0.0 
-            else:
-                rho[l,m,:]=33.0/62.0
-                p  [l,m,:]=0.30
-                u  [l,m,:]=0.0
-                v  [l,m,:]=4.0/np.sqrt(11.0)
-                phi[l,m,:]=0.0 
  
 
 <figure style="text-align: center;">
