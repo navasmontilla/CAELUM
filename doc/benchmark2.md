@@ -1,6 +1,6 @@
 # Benchmark #2: 2D Riemann problems
 
-The following Riemann problems are computed using the WENO method in combination with the HLLE solver. The grid is discretized in 100 computational cells. 
+The following Riemann problems are computed using the WENO method in combination with the HLLE solver. The grid is discretized in 160x160 computational cells. 
 
 These cases can be computed using the Jupyter Notebook [2D_RPs.ipynb](../2D_RPs.ipynb), which can executed by running in Anaconda:
 ``` 
