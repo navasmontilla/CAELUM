@@ -7,7 +7,7 @@ These cases can be computed using the Jupyter Notebook [2D_RPs.ipynb](../2D_RPs.
 jupyter notebook 1D_RPs.ipynb
 ```
 
-## RP1
+The initial condition for the Riemann problems consists of piecewise constant data in four different regions, identified as follows:
 
 <table>
   <tr>
@@ -18,9 +18,43 @@ jupyter notebook 1D_RPs.ipynb
     <td>3</td>
     <td>4</td>
   </tr>
- </table>
+ </table> 
+
+## RP1
+
+
  
- <img src="https://render.githubusercontent.com/render/math?math=\rho_1=">
+<img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0">
+<img src="https://render.githubusercontent.com/render/math?math=p_1=0.3">
+<img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11}">
+<img src="https://render.githubusercontent.com/render/math?math=v_1=0">
+ 
+ 
+ 
+             if (xc[l,m,:]<0.5 and yc[l,m,:]<0.5):
+                rho[l,m,:]=77.0/558.0
+                p  [l,m,:]=9.0/310.0
+                u  [l,m,:]=4.0/np.sqrt(11.0)
+                v  [l,m,:]=4.0/np.sqrt(11.0)
+                phi[l,m,:]=1.0
+            elif (xc[l,m,:]<0.5 and yc[l,m,:]>0.5):
+                rho[l,m,:]=33.0/62.0
+                p  [l,m,:]=0.30
+                u  [l,m,:]=4.0/np.sqrt(11.0)
+                v  [l,m,:]=0.0
+                phi[l,m,:]=0.0 
+            elif (xc[l,m,:]>0.5 and yc[l,m,:]>0.5):
+                rho[l,m,:]=1.50
+                p  [l,m,:]=1.50
+                u  [l,m,:]=0.0
+                v  [l,m,:]=0.0
+                phi[l,m,:]=0.0 
+            else:
+                rho[l,m,:]=33.0/62.0
+                p  [l,m,:]=0.30
+                u  [l,m,:]=0.0
+                v  [l,m,:]=4.0/np.sqrt(11.0)
+                phi[l,m,:]=0.0 
  
 
 <figure style="text-align: center;">
