@@ -7,7 +7,7 @@ These cases can be computed using the Jupyter Notebook [2D_RPs.ipynb](../2D_RPs.
 jupyter notebook 2D_RPs.ipynb
 ```
 
-The initial condition for the Riemann problems consists of piecewise constant data in four different regions, identified as follows:
+The initial condition for the Riemann problems consists of piecewise constant data in four equal square regions in which the domain is divided, identified as follows:
 
 <table>
   <tr>
@@ -30,20 +30,20 @@ The initial condition for the Riemann problems consists of piecewise constant da
 <img src="https://render.githubusercontent.com/render/math?math=p_1=0.3,">
 <img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
 <img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=1.5,">
-<img src="https://render.githubusercontent.com/render/math?math=p_1=1.5,">
-<img src="https://render.githubusercontent.com/render/math?math=u_1=0,">
-<img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_2=1.5,">
+<img src="https://render.githubusercontent.com/render/math?math=p_2=1.5,">
+<img src="https://render.githubusercontent.com/render/math?math=u_2=0,">
+<img src="https://render.githubusercontent.com/render/math?math=v_2=0"></td>
   </tr>
     <tr>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=77.0/558.0,">
-<img src="https://render.githubusercontent.com/render/math?math=p_1=9.0/310.0,">
-<img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
-<img src="https://render.githubusercontent.com/render/math?math=v_1=4/\sqrt{11}"></td>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_1=33.0/62.0,">
-<img src="https://render.githubusercontent.com/render/math?math=p_1=0.3,">
-<img src="https://render.githubusercontent.com/render/math?math=u_1=4/\sqrt{11},">
-<img src="https://render.githubusercontent.com/render/math?math=v_1=0"></td>
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_3=77.0/558.0,">
+<img src="https://render.githubusercontent.com/render/math?math=p_3=9.0/310.0,">
+<img src="https://render.githubusercontent.com/render/math?math=u_3=4/\sqrt{11},">
+<img src="https://render.githubusercontent.com/render/math?math=v_3=4/\sqrt{11}"></td>
+    <td><img src="https://render.githubusercontent.com/render/math?math=\rho_4=33.0/62.0,">
+<img src="https://render.githubusercontent.com/render/math?math=p_4=0.3,">
+<img src="https://render.githubusercontent.com/render/math?math=u_4=4/\sqrt{11},">
+<img src="https://render.githubusercontent.com/render/math?math=v_4=0"></td>
   </tr>
  </table> 
  
