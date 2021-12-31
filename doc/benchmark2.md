@@ -11,31 +11,16 @@ jupyter notebook 1D_RPs.ipynb
 
 <table>
   <tr>
-    <td></td>
-    <td>Left</td>
-    <td>Right</td>
+    <td>1</td>
+    <td>2</td>
   </tr>
   <tr>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\rho"></td>
-    <td>1.0</td>
-    <td>1.0</td>
-  </tr>
-  <tr>
-    <td><img src="https://render.githubusercontent.com/render/math?math=p"></td>
-    <td>1.0</td>
-    <td>1.0</td>
-  </tr>
-  <tr>
-    <td><img src="https://render.githubusercontent.com/render/math?math=u"></td>
-    <td>0.0</td>
-    <td>0.0</td>
-  </tr>
-  <tr>
-    <td><img src="https://render.githubusercontent.com/render/math?math=\phi"></td>
-    <td>1.0</td>
-    <td>0.0</td>
+    <td>3</td>
+    <td>4</td>
   </tr>
  </table>
+ 
+ <img src="https://render.githubusercontent.com/render/math?math=\rho_1=">
  
 
 <figure style="text-align: center;">
