@@ -8,5 +8,5 @@ The Taylor-Green vortex
 
 
 <figure style="text-align: center;">
-  <img src="Ek_Spectrums_uwc_o5.png" width="50%" alt="my alt text"/>
+  <img src="Ek_Spectrums_uwc_o5.png" alt="my alt text"/>
 </figure>
