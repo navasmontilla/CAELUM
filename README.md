@@ -12,12 +12,10 @@ This code allows the simulation of:
 - Burgers' equation
 - Compressible Euler equations (single and multicomponent)
 
-Regarding the compressible Euler equations, the following physical phenomena can be reproduced by EHOW-3D:
+Regarding the compressible Euler equations, the following features are allowed in EHOW-3D:
 
-- Compressible flows with sharp discontinuities (contact and shock waves)
 - Compressible flows composed by a mixture of 2 gases
-- External flows around solid bodies (given by *.stl triangulation files)
-- Compressible turbulence
+- Inmersed solid bodies given by *.stl triangulation files (*under construction*)
 
 Compressible turbulence is a highly nonlinear multiscale phenomenon. It has become one of the most challenging problems in computational physics. Turbulent flows can be numerically reproduced by means of hydrodynamic solvers. A common approach is the use of the Euler equations in combination with a suitable numerical discretization scheme. When the numerical diffusion inherent to the discretization method mimics the physical dissipation of the unresolved turbulent motion, the approach is called Implicit Large Eddy Simulation (ILES). 
 
@@ -260,6 +258,24 @@ The code is parallelized using OpenMP. To set the number of threads, for example
 ```
 If compiling without the OMP flag, the code will run as a serial program.
 
+
+### Output data
+
+EHOW-3D allows printing data in *.vtk format and ASCII *.out files. To activate each of those output file types, use the macros:
+
+```c
+#define WRITE_VTK 1
+#define WRITE_LIST 1
+```
+
+For *.vkt files, it is posible to choose the variables to print by means of additional macros. For instance, if we want to print X,Y,Z momentum and pressure, do:
+```c
+#define print_RHO 0
+#define print_MOMENTUM 1
+#define print_ENERGY 0
+#define print_PRESSURE 1
+#define print_SOLUTES 0
+```
 
 ## Numerical results
 
