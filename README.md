@@ -267,9 +267,10 @@ Results are sorted in the following categories:
 
 - [Benchmark #1: 1D Riemann problems](doc/benchmark1.md)
 - [Benchmark #2: 2D Riemann problems](doc/benchmark2.md)
-- [Benchmark #3: 2D Riemann problems](doc/benchmark2.md)
+-  Benchmark #3: Two-fluid mixture problem
 -  Benchmark #4: Convergence rate test
 - [Benchmark #5: Taylor-Green vortex](doc/benchmark5.md)
+-  Benchmark #6: External flow around a solid object
 - Other results
 
 
