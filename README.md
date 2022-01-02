@@ -27,56 +27,7 @@ ILES methods accurately reproduce the statistical behavior of turbulent flows. T
 
 
 
-## Quick start
-
-### Compilation
-
-To compile using *gcc* and the OpenMP *-fopenmp* flag, type:
-
-```
-$ gcc -lm -fopenmp euler3D.c -o euler3D
-```
-
-It can also be compiled using PGI NVIDIA compiler, with the OpenMP *-mp* flag:
-```
-$ pgcc -mp -o euler3D euler3D.c
-```
-
-### Configuration file
-
-The configuration file required has the following format:
-
-```
-/////SIMULATION_SETUP//////
-FinalTime		0.2
-DumpTime		0.05
-CFL			0.25
-Order			5
-
-////////MESH_SETUP/////////
-xcells			80
-ycells			100
-zcells			80
-SizeX			0.80
-SizeY			1.0
-SizeZ			0.80
-
-///////BOUNDARY_COND///////
-Face_1(-y)			3
-Face_2(+x)			3
-Face_3(+y)			3
-Face_4(-x)			3
-Face_5(-z)			3
-Face_6(+z)			3
-
-///////LINEAR_TRANSPORT///////(if_applicable)
-u_x                     1.0
-u_y                     1.0
-u_z                     1.0
-```
-
-
-## Documentation
+## Quick guide
 
 ### Equations solved
 
@@ -250,13 +201,41 @@ The x-split version of the solvers is implemented. It must be noted that the rot
 ```
 where ``` WL``` is the 3D vector in the (cell) local coordinates and  ``` UL``` in the absolute coordinates.
 
-### Parallel implementation
+### Input data
 
-The code is parallelized using OpenMP. To set the number of threads, for example 24 threads, the following macro is used:
-```c
-#define NTHREADS 24
+
+#### Configuration file
+
+The configuration file required has the following format:
+
 ```
-If compiling without the OMP flag, the code will run as a serial program.
+/////SIMULATION_SETUP//////
+FinalTime		0.2
+DumpTime		0.05
+CFL			0.25
+Order			5
+
+////////MESH_SETUP/////////
+xcells			80
+ycells			100
+zcells			80
+SizeX			0.80
+SizeY			1.0
+SizeZ			0.80
+
+///////BOUNDARY_COND///////
+Face_1(-y)			3
+Face_2(+x)			3
+Face_3(+y)			3
+Face_4(-x)			3
+Face_5(-z)			3
+Face_6(+z)			3
+
+///////LINEAR_TRANSPORT///////(if_applicable)
+u_x                     1.0
+u_y                     1.0
+u_z                     1.0
+```
 
 
 ### Output data
@@ -276,6 +255,29 @@ For *.vkt files, it is posible to choose the variables to print by means of addi
 #define print_PRESSURE 1
 #define print_SOLUTES 0
 ```
+
+
+### Compilation
+
+To compile using *gcc* and the OpenMP *-fopenmp* flag, type:
+
+```
+$ gcc -lm -fopenmp euler3D.c -o euler3D
+```
+
+It can also be compiled using PGI NVIDIA compiler, with the OpenMP *-mp* flag:
+```
+$ pgcc -mp -o euler3D euler3D.c
+```
+
+### Parallel implementation
+
+The code is parallelized using OpenMP. To set the number of threads, for example 24 threads, the following macro is used:
+```c
+#define NTHREADS 24
+```
+If compiling without the OMP flag, the code will run as a serial program.
+
 
 ## Numerical results
 
