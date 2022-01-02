@@ -85,7 +85,7 @@ struct t_cell_{
 	//...
 }; 
 ```
-### Solid domains
+### Solid domains (*under development*)
 
 Solid domains are allowed by setting the macro: 
 ```c
@@ -103,7 +103,7 @@ int assign_image_cells(t_mesh *mesh,t_solid *solids); // Define image points for
 int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids); // Update the values of ghost cells using image points
 ```
 
-*This  feature is under construction yet.*
+*This  feature is still under development.*
 
 
 ### Boundary conditions
@@ -206,12 +206,12 @@ where ``` WL``` is the 3D vector in the (cell) local coordinates and  ``` UL``` 
 
 Input data must be placed in the folder ```case/```, and contains:
 
-- *configure.input*: Configuration file
-- *initial.out* (optional): Initial condition file described above, same format and filetype than the ASCII *.out output file 
-- *solid_list.txt* (optional): Contains the number of solid bodies and the path to their files
-- *solid1.txt* (optional): 1-st solid body file (ASCII STL format)
+- *configure.input*: Configuration file.
+- *initial.out* (optional): Initial condition file described above, same format and filetype than the ASCII *.out output file.
+- *solid_list.txt* (optional): Contains the number of solid bodies and the path to their files.
+- *solid1.txt* (optional): 1-st solid body file (ASCII STL format).
 - ...
-- *solidN.txt* (optional): N-th solid body file (ASCII STL format)
+- *solidN.txt* (optional): N-th solid body file (ASCII STL format).
 
 
 #### Configuration file
@@ -253,8 +253,8 @@ u_z                     1.0
 EHOW-3D allows printing data in *.vtk format and ASCII *.out files. To activate each of those output file types, use the macros:
 
 ```c
-#define WRITE_VTK 1
-#define WRITE_LIST 1
+#define WRITE_VTK 1  //print *.vtk
+#define WRITE_LIST 1 //print ASCII *.out
 ```
 
 For *.vkt files, it is posible to choose the variables to print by means of additional macros. For instance, if we want to print X,Y,Z momentum and pressure, do:
@@ -267,6 +267,14 @@ For *.vkt files, it is posible to choose the variables to print by means of addi
 ```
 
 The dumping time is set as *DumpTime* in the file *configure.input*. 
+
+### Parallel implementation
+
+The code is parallelized using OpenMP. To set the number of threads, for example 24 threads, the following macro is used:
+```c
+#define NTHREADS 24
+```
+If compiling without the OMP flag, the code will run as a serial program.
 
 
 ### Compilation
@@ -282,13 +290,6 @@ It can also be compiled using PGI NVIDIA compiler, with the OpenMP *-mp* flag:
 $ pgcc -mp -o euler3D euler3D.c
 ```
 
-### Parallel implementation
-
-The code is parallelized using OpenMP. To set the number of threads, for example 24 threads, the following macro is used:
-```c
-#define NTHREADS 24
-```
-If compiling without the OMP flag, the code will run as a serial program.
 
 
 ## Numerical results
