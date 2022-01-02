@@ -131,19 +131,6 @@ Generally, the initial conditions can be implemented in:
 int update_initial(t_mesh *mesh);
 ```
 
-For Euler equations, the initial conditions can also be set in the file ```initial.out```:
-
-```c 
-VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
-CELLS = 40, 40, 40,
-0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
-0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
-0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
-...
-```
-
-or implemented in ```int update_initial(t_mesh *mesh)```.
-
 For Euler equations, the problem variables can be assigned for instance as follows:
 ```c
 for(k=0;k<mesh->ncells;k++){
@@ -165,6 +152,20 @@ for(k=0;k<mesh->ncells;k++){
 	cell[k].U[0]= ... ;
 }
 ```
+
+
+For Euler equations, **the initial conditions can also be set in the file** ```initial.out```:
+
+```c 
+VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
+...
+```
+
+
 
 ### Spatial reconstructions
 
@@ -203,10 +204,19 @@ where ``` WL``` is the 3D vector in the (cell) local coordinates and  ``` UL``` 
 
 ### Input data
 
+Input data must be placed in the folder ```case/```, and contains:
+
+- *configure.input*: Configuration file
+- *initial.out* (optional): Initial condition file described above, same format and filetype than the ASCII *.out output file 
+- *solid_list.txt* (optional): Contains the number of solid bodies and the path to their files
+- *solid1.txt* (optional): 1-st solid body file (ASCII STL format)
+- ...
+- *solidN.txt* (optional): N-th solid body file (ASCII STL format)
+
 
 #### Configuration file
 
-The configuration file required has the following format:
+The configuration file *configure.input* has the following format:
 
 ```
 /////SIMULATION_SETUP//////
@@ -255,6 +265,8 @@ For *.vkt files, it is posible to choose the variables to print by means of addi
 #define print_PRESSURE 1
 #define print_SOLUTES 0
 ```
+
+The dumping time is set as *DumpTime* in the file *configure.input*. 
 
 
 ### Compilation
