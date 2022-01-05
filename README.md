@@ -15,7 +15,7 @@ This code allows the simulation of:
 Regarding the compressible Euler equations, the following features are allowed in EHOW-3D:
 
 - Compressible flows composed by a mixture of 2 gases
-- Inmersed solid bodies given by *.stl triangulation files (*under construction*)
+- Inmersed solid bodies given by *.stl triangulation files (under construction)
 
 Compressible turbulence is a highly nonlinear multiscale phenomenon. It has become one of the most challenging problems in computational physics. Turbulent flows can be numerically reproduced by means of hydrodynamic solvers. A common approach is the use of the Euler equations in combination with a suitable numerical discretization scheme. When the numerical diffusion inherent to the discretization method mimics the physical dissipation of the unresolved turbulent motion, the approach is called Implicit Large Eddy Simulation (ILES). 
 
@@ -298,7 +298,7 @@ Results are sorted in the following categories:
 
 - [Benchmark #1: 1D Riemann problems](doc/benchmark1.md)
 - [Benchmark #2: 2D Riemann problems](doc/benchmark2.md)
--  Benchmark #3: Two-fluid mixture problem
+- [Benchmark #3: Two-fluid mixture problem](doc/benchmark3.md)
 -  Benchmark #4: Convergence rate test
 - [Benchmark #5: Taylor-Green vortex](doc/benchmark5.md)
 -  Benchmark #6: External flow around a solid object
