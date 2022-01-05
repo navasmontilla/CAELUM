@@ -51,3 +51,4 @@ Time: t=0.16
   <img src="bench_multicomponent_comp_1.png" width="100%" alt="my alt text"/>
 </figure>
 
+Legend: <span style="color:blue"> *1-st order* text</span>, <span style="color:orange"> *3-rd order* text</span>, <span style="color:green"> *5-th order* text</span>, <span style="color:red"> *7-th order* text</span>
