@@ -1,13 +1,22 @@
-# Benchmark #1: 1D Riemann problems
+# Benchmark #3: Two-fluid mixture problem
 
-The following Riemann problems are computed using the WENO method in combination with the HLLE solver. The grid is discretized in 100 computational cells. 
+The following Riemann problems are computed using the WENO method in combination with the HLLE solver. The grid is discretized in 100 computational cells. The multi-fluid solver is activated with the following macros:
 
-These cases can be computed using the Jupyter Notebook [1D_multicomponent.ipynb](../1D_RPs.ipynb), which can executed by running in Anaconda:
+```c
+#define MULTICOMPONENT 0 
+#define MULTI_TYPE 2    
+```
+
+These cases can be computed using the Jupyter Notebook [1D_multicomponent.ipynb](../1D_RPs.ipynb), which can be executed by running in Anaconda:
 ``` 
 jupyter notebook 1D_multicomponent.ipynb
 ```
 
 ## RP1
+
+This is a test case from *Rémi Abgrall, Smadar Karni, Computations of Compressible Multifluids, Journal of Computational Physics, Volume 169, Issue 2, 2001, Pages 594-623*.
+
+Time: t=0.16
 
 <table>
   <tr>
