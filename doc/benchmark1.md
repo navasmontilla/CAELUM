@@ -42,6 +42,12 @@ jupyter notebook 1D_RPs.ipynb
   <img src="bench_RP_comp_1.png" width="100%" alt="my alt text"/>
 </figure>
 
+Legend: 
+![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `1-st order`
+![#f0aa15](https://via.placeholder.com/15/f0aa15/000000?text=+) `3-rd order`
+![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `5-th order`
+![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `7-th order`
+
 
 ## RP2
 
@@ -79,6 +85,14 @@ jupyter notebook 1D_RPs.ipynb
   <img src="bench_RP_comp_2.png" width="100%" alt="my alt text"/>
 </figure>
 
+Legend: 
+![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `1-st order`
+![#f0aa15](https://via.placeholder.com/15/f0aa15/000000?text=+) `3-rd order`
+![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `5-th order`
+![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `7-th order`
+
+
+
 ## RP3
 
 
@@ -115,6 +129,14 @@ jupyter notebook 1D_RPs.ipynb
   <img src="bench_RP_comp_3.png" width="100%" alt="my alt text"/>
 </figure>
 
+Legend: 
+![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `1-st order`
+![#f0aa15](https://via.placeholder.com/15/f0aa15/000000?text=+) `3-rd order`
+![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `5-th order`
+![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `7-th order`
+
+
+
 ## RP4
 
 
@@ -150,5 +172,11 @@ jupyter notebook 1D_RPs.ipynb
 <figure style="text-align: center;">
   <img src="bench_RP_comp_4.png" width="100%" alt="my alt text"/>
 </figure>
+
+Legend: 
+![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `1-st order`
+![#f0aa15](https://via.placeholder.com/15/f0aa15/000000?text=+) `3-rd order`
+![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `5-th order`
+![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `7-th order`
 
 
