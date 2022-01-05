@@ -52,3 +52,5 @@ Time: t=0.16
 </figure>
 
 Legend: <span style="color:blue"> *1-st order* text</span>, <span style="color:orange"> *3-rd order* text</span>, <span style="color:green"> *5-th order* text</span>, <span style="color:red"> *7-th order* text</span>
+
+![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `7-th order`
