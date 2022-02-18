@@ -47,3 +47,16 @@ The Taylor-Green vortex (TGV) problem is a canonical flow that contains the feat
 <figure style="text-align: center;">
   <img src="Ek_Spectrums_weno.png" alt="my alt text"/>
 </figure>
+
+
+## Convergence of WENO schemes
+
+The following figures show the kinetic energy dissipation and kinetic energy cascade for the 3-rd, 5-th and 7-th order schemes in grids composed of $64^3$, $128^3$ and $256^3$ cells.
+
+<figure style="text-align: center;">
+  <img src="TKE_evol_weno_all.png" alt="my alt text"/>
+</figure>
+
+<figure style="text-align: center;">
+  <img src="Ek_Spectrums_weno_all.png" alt="my alt text"/>
+</figure>
