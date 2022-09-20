@@ -32,23 +32,26 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 
 //Physical constants
 #define PI 3.141592653589793
-#define _g_ 9.81
-#define epsilon 1.0E-14
+#define _g_ 9.8
 #define _gamma_ 1.4
+#define _R_ 287.058
+#define _p0_ 1.0E5
 
 //Useful functions
 #define TOL4 1.0E-4
 #define TOL8 1.0E-8
 #define TOL14 1.0E-14
+#define TOL40 1.0E-40
 #define MIN(x,y) (x < y ? x : y) 
 #define MAX(x,y) (x > y ? x : y)
 #define ABS(x) (x < 0 ? -x : x)
 
-//reconstruction method
-#define WENO 1
-#define OPT_WEIGHTS 0 //This is 0 for WENO and 1 for UWC
-#define TENO 0
-#define _CT_ 1.0e-4
+//reconstruction method 
+#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for UWC
+#define _CT_ 1.0e-6
+#define epsilon  1.0E-6
+#define epsilon2 1.0E-40
+#define _Q_ 6.0
 
 //Equations
 #define LINEAR 0 //Linear scalar transport: f=a*u
@@ -57,6 +60,9 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define EULER 1 //Euler equations
 #define SW 0
 
+//Source terms
+#define ST 0 // 0: Source OFF, 1: Source ON
+
 //Multicomponent and multiphase flow
 #define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma). 
 #define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
@@ -64,6 +70,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 //Solvers
 #define HLLE 1
 #define HLLC 0
+#define HLLS 0
 #define ROE 0
 
 //Debug code 
@@ -77,16 +84,18 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define NTHREADS 2
 
 //Printing variables (vtk)
-#define WRITE_VTK 0
+#define WRITE_VTK 1
 #define print_RHO 0
 #define print_MOMENTUM 1
 #define print_ENERGY 0
 #define print_PRESSURE 1
+#define print_OVERPRESSURE 1
 #define print_SOLUTES 0
+#define print_POTENTIALTEM 1
 
 //Printing list of variables
 #define WRITE_LIST 1
-#define WRITE_TKE 1 //write file TKE evolution in time
+#define WRITE_TKE 0 //write file TKE evolution in time
 
 //Reading data
 #define READ_INITIAL 1
@@ -123,7 +132,10 @@ struct t_cell_{
 			//When using Euler: rho, rhou, rhov, E, rhop
 			//When using SW: h, hu, hv
 	double *U_aux;
-	double pres,u_int; //pressure
+	double *Ue; //equilibrium state
+	double *S;
+      double *S_corr;
+	double pres,prese,u_int; //pressure
 	double dx,dy,dz;
 	double xc,yc,zc;
 	int n1,n2,n3,n4,n5,n6,n7,n8; //ID's of the nodes of the cell
@@ -165,6 +177,8 @@ struct t_wall_{
 
 	double *UL, *UR; //array of extrapolated values at the left and right side of the wall, coming from (WENO) reconstruction
 	double *fR_star,*fL_star;
+      double *ULe, *URe; //array of extrapolated values at the left and right side of the wall, coming from (WENO) reconstruction, for the EQUILIBRIUM
+	double pRe,pLe; //equilibrium pressures
 	int cellR_id, cellL_id; //id of the right and left cell
 	t_cell *cellR, *cellL; //pointers to the right and left cells of the wall
 	double nx, ny, nz;
@@ -249,7 +263,7 @@ struct t_triangle_{
 
 
 int create_mesh(t_mesh *mesh,t_sim *sim);
-int update_initial(t_mesh *mesh);
+int update_initial(t_mesh *mesh, t_sim *sim);
 int update_flux_boundaries(t_mesh *mesh);
 int update_cell_boundaries(t_mesh *mesh);
 int update_dt(t_mesh *mesh,t_sim *sim);
@@ -265,13 +279,11 @@ int write_vtk(t_mesh *mesh,char *filename);
 int write_matrix(t_mesh *mesh,char *filename);
 int write_matrix_u(t_mesh *mesh,char *filename);
 int write_matrix_v(t_mesh *mesh,char *filename);
-int write_matrix_phi(t_mesh *mesh,char *filename);
 int write_list(t_mesh *mesh,char *filename);
+int write_list_eq(t_mesh *mesh,char *filename);
 
+void print_info(t_mesh *mesh, t_sim *sim);
 
-int compute_wallX(t_cell *cell);
-int compute_wallY(t_cell *cell);
-int half_update(t_cell *cell); 
 
 double weno3L(double *phi);
 double weno3R(double *phi);
@@ -279,9 +291,6 @@ double weno5L(double *phi);
 double weno5R(double *phi);
 double weno7L(double *phi);
 double weno7R(double *phi);
-
-double teno5L(double *phi);
-double teno5R(double *phi);
 
 void compute_solver(t_wall *wall);
 void compute_transport(t_wall *wall);
@@ -294,8 +303,13 @@ void update_cellK1(t_mesh *mesh, t_sim *sim);
 void update_cellK2(t_mesh *mesh, t_sim *sim);
 void update_cellK3(t_mesh *mesh, t_sim *sim);
 
+int compute_fluxes(t_mesh *mesh, t_sim *sim);
+int equilibrium_reconstruction(t_mesh *mesh, t_sim *sim);
+void compute_source(t_mesh *mesh);
+
 void compute_euler_HLLE(t_wall *wall,double *lambda_max);
 void compute_euler_HLLC(t_wall *wall,double *lambda_max);
+void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim);
 void compute_transmissive_euler(t_wall *wall, int wp);
 void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp);
 void compute_euler_Roe(t_wall *wall,double *lambda_max);
@@ -398,6 +412,8 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 		wall[k].fL_star=(double*)malloc(sim->nvar*sizeof(double));
 		wall[k].UR=(double*)malloc(sim->nvar*sizeof(double));
 		wall[k].UL=(double*)malloc(sim->nvar*sizeof(double));
+            wall[k].URe=(double*)malloc(sim->nvar*sizeof(double));
+		wall[k].ULe=(double*)malloc(sim->nvar*sizeof(double));
 	}
 
 	//Walls amd nodes of the cells
@@ -616,14 +632,26 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 
 
 	for(k=0;k<mesh->ncells;k++){		
-		mesh->cell[k].U=(double*)malloc(sim->nvar*sizeof(double));
+		mesh->cell[k].U=    (double*)malloc(sim->nvar*sizeof(double));
 		mesh->cell[k].U_aux=(double*)malloc(sim->nvar*sizeof(double));
+		mesh->cell[k].Ue   =(double*)malloc(sim->nvar*sizeof(double));
+		mesh->cell[k].S=    (double*)malloc(sim->nvar*sizeof(double));
+            mesh->cell[k].S_corr=    (double*)malloc(sim->nvar*sizeof(double));
 	}
 	
 	for(k=0;k<mesh->nwalls;k++){
 		mesh->wall[k].UR=(double*)malloc(sim->nvar*sizeof(double));
 		mesh->wall[k].UL=(double*)malloc(sim->nvar*sizeof(double));
 	}
+	
+	cell=mesh->cell;
+	for(n=0;n<mesh->ncells;n++){	
+		for(k=0;k<sim->nvar;k++){	
+			cell[n].S[k]=0.0 ;
+                  cell[n].S_corr[k]=0.0 ;
+		}
+	}
+	
 
 
 	
@@ -788,21 +816,36 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
 
 
 
-int update_initial(t_mesh *mesh){
+int update_initial(t_mesh *mesh, t_sim *sim){
 	int l,m,k,n,RP;
-	FILE *fp;
+	FILE *fp,*fpe;
 	char fname[1024];
-      double d,aux1,xaux,yaux,r,umax,ut,wp,r_d,L,xc,yc,zc;
-      double x1,x2,y1,y2,C;
-      double p,u,v,w,rho,phi,gamma;
+      double d,aux1,aux2,aux3,xaux,yaux,r,umax,ut,wp,r_d,L,xc,yc,zc,rc;
+      double x1,x2,y1,y2,z1,z2,C;
+      double p,u,v,w,rho,phi,gamma,tt,p0,tt0,rho0,pexner,T0,BV;
 	  
 	t_cell *cell;
 	cell=mesh->cell;
 	
 	sprintf(fname,"case/initial.out");
 	fp = fopen(fname,"r");
+	
+	sprintf(fname,"case/equilibrium.out");
+	fpe = fopen(fname,"r");
 
 #if READ_INITIAL	
+	if (fpe != NULL){
+		
+	}else{
+		printf("%s File case/equilibrium.out not found. Equilibrium is set as default. \n",WAR);
+		for(k=0;k<mesh->ncells;k++){
+			cell[k].prese=0.0;	
+			for(m=0;m<sim->nvar;m++){
+				cell[k].Ue[m]=0.0;
+			}
+		}
+	}
+
 	if (fp != NULL){
 		fscanf(fp, "%*[^\n]\n");
 		fscanf(fp, "%*[^\n]\n");
@@ -811,7 +854,7 @@ int update_initial(t_mesh *mesh){
 			for(m=0;m<mesh->ycells;m++){
 				for(n=0;n<mesh->zcells;n++){
 				k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
-				fscanf(fp,"%*le %*le %*le %le %le %le %le %le %le",&u,&v,&w,&rho,&p,&phi);
+				fscanf(fp,"%*f %*f %*f %le %le %le %le %le %le",&u,&v,&w,&rho,&p,&phi);
 				//printf("%14.14e %14.14e %14.14e %14.14e %14.14e \n",u,v,w,rho,p);
 				#if MULTICOMPONENT
 					#if MULTI_TYPE==1
@@ -838,9 +881,9 @@ int update_initial(t_mesh *mesh){
 		
 	}else{
 
-	printf("%s No initial state file is found. Initial data is set in update_initial() \n",WAR);
+	printf("%s File case/initial.out not found. Initial data is set in update_initial() \n",WAR);
 #else
-	printf("%s Read initial data file is disabled (set macro) \n",WAR);
+	printf("%s Read initial data from file case/initial.out is disabled \n",WAR);
 #endif
 
 #if EULER && !LINEAR_TRANSPORT
@@ -854,40 +897,84 @@ int update_initial(t_mesh *mesh){
                   u=0.0;
                   v=0.0;
                   w=0.0;
-
-                  
-                  rho=1.0;
-                  p=  100.0 + rho/16.0*(cos(4.0*PI*cell[k].xc/L)+cos(4.0*PI*cell[k].yc/L))*((2.0+cos(4.0*PI*cell[k].zc/L)));
-                  
-                  
-                  u=sin(2.0*PI*cell[k].xc/L)*cos(2.0*PI*cell[k].yc/L)*cos(2.0*PI*cell[k].zc/L);
-                  v=-cos(2.0*PI*cell[k].xc/L)*sin(2.0*PI*cell[k].yc/L)*cos(2.0*PI*cell[k].zc/L);	
-                  w=0.0;
-                  
                   phi=0.0;
-                             
-                             
-                  cell[k].U[0]=rho;
-                  cell[k].U[1]=u*cell[k].U[0];
-                  cell[k].U[2]=v*cell[k].U[0];
-                  cell[k].U[3]=w*cell[k].U[0];
-                  cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
-                  cell[k].U[5]=phi;
                   
                   
+                  //r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc)+(cell[k].zc-zc)*(cell[k].zc-zc));
+                  //r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc));
+
+
+                  x1=cell[k].zc-cell[k].dz/2;
+                  x2=cell[k].zc+cell[k].dz/2;
+                  
+                  tt0=300;
+                  p0=_p0_; 
+                  rho0=p0/(_R_*tt0);
+                  
+                  tt=tt0;
+                  aux2=(_gamma_-1.0)/_gamma_*_g_/(_R_*tt); 
+                  p=   p0*  pow((1.0-aux2*cell[k].zc),_gamma_/(_gamma_-1.0));  //pointwise
+                  rho= rho0*pow((1.0-aux2*cell[k].zc),1.0/(_gamma_-1.0));
+                  
+               
+			cell[k].Ue[0]=rho;
+			cell[k].Ue[1]=u*cell[k].Ue[0];
+			cell[k].Ue[2]=v*cell[k].Ue[0];
+			cell[k].Ue[3]=w*cell[k].Ue[0];
+			cell[k].Ue[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
+			cell[k].Ue[5]=phi*rho;
+                  
+                  cell[k].prese=p;
+			
+			for(m=0;m<sim->nvar;m++){
+				cell[k].U[m]=cell[k].Ue[m];
+			}
+			             
+
+                  xc=500;
+                  zc=260;
+                  rc=250;
+                  r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].zc-zc)*(cell[k].zc-zc));
+                  if (r>rc) {
+                        aux1=0.0;
+                  }else{
+                        aux1=10.0/2.0*(1.0+cos(PI*r/rc));
+                  }
+                  
+                  tt=tt0+aux1;
+                  aux2=(_gamma_-1.0)/_gamma_*_g_/(_R_*tt0);
+                  p=   p0*  pow((1.0-aux2*cell[k].zc),_gamma_/(_gamma_-1.0));  //pointwise
+                  rho= p0/(_R_*tt)*pow((1.0-aux2*cell[k].zc),1.0/(_gamma_-1.0));
+			u=0.0;
+                  v=0.0;
+                  w=0.0;
+                  phi=0.0;
+                  
+			cell[k].U[0]=rho;
+			cell[k].U[1]=u*cell[k].U[0];
+			cell[k].U[2]=v*cell[k].U[0];
+			cell[k].U[3]=w*cell[k].U[0];
+			cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
+			cell[k].U[5]=phi*rho;
+			
                   
             }else{
                   
-                  cell[k].U[0]=-1.0;
-                  cell[k].U[1]=0.0;
-                  cell[k].U[2]=0.0;
-                  cell[k].U[3]=0.0;
-                  cell[k].U[4]=0.0;
-                  cell[k].U[5]=0.0;
+                  cell[k].Ue[0]=-1.0;
+                  cell[k].Ue[1]=0.0;
+                  cell[k].Ue[2]=0.0;
+                  cell[k].Ue[3]=0.0;
+                  cell[k].Ue[4]=0.0;
+                  cell[k].Ue[5]=0.0;
                   
+			for(m=0;m<sim->nvar;m++){
+				cell[k].U[m]=cell[k].Ue[m];
+			}
                  
                   
             }
+            
+      } 
 
 #if READ_INITIAL		
 	}
@@ -918,9 +1005,9 @@ for(k=0;k<mesh->ncells;k++){
             r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc)+(cell[k].zc-zc)*(cell[k].zc-zc));
             //r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].yc-yc)*(cell[k].yc-yc));
             if (r<0.25) {
-                  phi=1.0;
+                  phi=0.0;
             }else{
-                  phi=2.0;
+                  phi=0.0;
             }
             
             // the following function is implemented: 1/(dx*dy)* int_x1^x2 int_y1^y2 [sin(2*pi/L*(x+y))] dy dx
@@ -975,14 +1062,44 @@ for(k=0;k<mesh->ncells;k++){
 
 #endif
 
-	}
 
 	return 1;
 }
 
 
 int update_cell_boundaries(t_mesh *mesh){
+      int l,m,k,n;
+      double p,u,v,w,rho,phi,gamma,zc;
+      t_cell *cell;
+	cell=mesh->cell;
+      rho=1.0 ; 
+      u=0.0;
+      v=0.0;
+      w=0.0;
+      
+	/*
+      for(k=0;k<mesh->ncells;k++){
+      
+                  p=-1.0/cell[k].dz*(exp(-(cell[k].zc+cell[k].dz/2)) - exp(-(cell[k].zc-cell[k].dz/2)));
+			rho=p;
+                  
+                  if(cell[k].n<1 ){
+  
+                        cell[k].U[0]=rho;
 
+                        cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w); // si la quitamos, error 1.e-12
+                        
+                  }
+                  
+                  if(cell[k].n> mesh->zcells-2){
+
+
+                        cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
+                        
+                  
+                  
+      }
+	}*/
 
 	return 1;
 }
@@ -1708,12 +1825,7 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
                         for(i=0;i<order;i++){
                               phi5[i]=mesh->cell[st[i]].U[k];
                         }
-                        #if WENO
                         wall->UR[k]=weno5R(phi5);
-                        #endif
-                        #if TENO
-                        wall->UR[k]=teno5R(phi5);
-                        #endif
                   }
             }else if(order==7){
                   for(k=0;k<sim->nvar;k++){
@@ -1769,12 +1881,7 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
                         for(i=0;i<order;i++){
                               phi5[i]=mesh->cell[st[i]].U[k];
                         }
-                        #if WENO
                         wall->UL[k]=weno5L(phi5);
-                        #endif
-                        #if TENO
-                        wall->UL[k]=teno5L(phi5);
-                        #endif
                   }         
             }else if(order==7){
                   for(k=0;k<sim->nvar;k++){
@@ -1798,6 +1905,9 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
                         #endif
                         #if HLLC
                               compute_euler_HLLC(wall,&lambdaMax);
+                        #endif
+				#if HLLS
+                              compute_euler_HLLS(wall,&lambdaMax,sim);
                         #endif
                         #if ROE
                               compute_euler_Roe(wall,&lambdaMax);
@@ -1860,18 +1970,185 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
 }
 
 
+
+
+int equilibrium_reconstruction(t_mesh *mesh, t_sim *sim){
+	
+	double phi3[3],phi5[5],phi7[7]; //auxiliar arrays for the weno reconstruction
+	double uL,uR,vL,vR,wL,wR;
+	int order;
+	int n,i,j,k;
+	int st[9]; //local stencil array
+	t_wall *wall;
+      t_cell *cell;
+
+
+#pragma omp parallel for default(none) private(wall,phi3,phi5,phi7,uL,uR,vL,vR,wL,wR,order,i,j,k,st) shared(sim,mesh) 
+	for(n=0;n<mesh->nwalls;n++){
+		wall=&(mesh->wall[n]);
+		
+            if(wall->wtype!=0){
+                
+            //RIGHT RECONSTRUCTION
+            if(wall->nx<TOL4 && wall->nz<TOL4){
+                  //y-wall
+                  order=wall->cellR->st_sizeY;
+                  for(j=0;j<9;j++){
+                        st[j]=wall->cellR->stY[j];
+                  }
+            }else if (wall->nz<TOL4) {
+                  //x-wall
+                  order=wall->cellR->st_sizeX;
+                  for(j=0;j<9;j++){
+                        st[j]=wall->cellR->stX[j];
+                  }
+            }else{
+                  //z-wall
+                  order=wall->cellR->st_sizeZ;
+                  for(j=0;j<9;j++){
+                        st[j]=wall->cellR->stZ[j];
+                  }
+            }
+            if(order==1){
+
+                  for(k=0;k<sim->nvar;k++){
+                        wall->URe[k]=wall->cellR->Ue[k];
+                  }
+
+            }else if(order==3){
+
+                  for(k=0;k<sim->nvar;k++){
+                        for(i=0;i<order;i++){
+                              phi3[i]=mesh->cell[st[i]].Ue[k];
+                        }
+                        wall->URe[k]=weno3R(phi3);
+                  }
+
+            }else if(order==5){
+                  for(k=0;k<sim->nvar;k++){
+                        for(i=0;i<order;i++){
+                              phi5[i]=mesh->cell[st[i]].Ue[k];
+                        }
+                        wall->URe[k]=weno5R(phi5);
+                  }
+            }else if(order==7){
+                  for(k=0;k<sim->nvar;k++){
+                        for(i=0;i<order;i++){
+                              phi7[i]=mesh->cell[st[i]].Ue[k];
+                        }
+                        wall->URe[k]=weno7R(phi7);
+                  }      
+            }else{
+                  //order==9
+            }
+
+
+
+            //LEFT RECONSTRUCTION
+            if(wall->nx<TOL4 && wall->nz<TOL4){
+                  //y-wall
+                  order=wall->cellL->st_sizeY;
+                  for(j=0;j<9;j++){
+                        st[j]=wall->cellL->stY[j];
+                  }
+            }else if (wall->nz<TOL4) {
+                  //x-wall
+                  order=wall->cellL->st_sizeX;
+                  for(j=0;j<9;j++){
+                        st[j]=wall->cellL->stX[j];
+                  }
+            }else{
+                  //z-wall
+                  order=wall->cellL->st_sizeZ;
+                  for(j=0;j<9;j++){
+                        st[j]=wall->cellL->stZ[j];
+                  }
+            }
+
+            if(order==1){
+
+                  for(k=0;k<sim->nvar;k++){
+                        wall->ULe[k]=wall->cellL->Ue[k];
+                  }
+
+            }else if(order==3){
+
+                  for(k=0;k<sim->nvar;k++){
+                        for(i=0;i<order;i++){
+                              phi3[i]=mesh->cell[st[i]].Ue[k];
+                        }
+                        wall->ULe[k]=weno3L(phi3);
+                  }
+
+            }else if(order==5){
+                  for(k=0;k<sim->nvar;k++){
+                        for(i=0;i<order;i++){
+                              phi5[i]=mesh->cell[st[i]].Ue[k];
+                        }
+                        wall->ULe[k]=weno5L(phi5);
+
+                  }         
+            }else if(order==7){
+                  for(k=0;k<sim->nvar;k++){
+                        for(i=0;i<order;i++){
+                              phi7[i]=mesh->cell[st[i]].Ue[k];
+                        }
+                        wall->ULe[k]=weno7L(phi7);
+                  }
+            }else{
+                  //order==7
+            }
+		
+		uL=wall->ULe[1]/wall->ULe[0];
+		uR=wall->URe[1]/wall->URe[0];
+
+		vL=wall->ULe[2]/wall->ULe[0];
+		vR=wall->URe[2]/wall->URe[0];
+		
+		wL=wall->ULe[3]/wall->ULe[0];
+		wR=wall->URe[3]/wall->URe[0];
+
+		wall->pLe=(_gamma_-1.0)*(wall->ULe[4]-0.5*wall->ULe[0]*(uL*uL+vL*vL+wL*wL));
+		wall->pRe=(_gamma_-1.0)*(wall->URe[4]-0.5*wall->URe[0]*(uR*uR+vR*vR+wR*wR));
+      
+	}
+      
+      }
+      
+#pragma omp parallel for default(none) private(k,cell) shared(mesh)
+	for(i=0;i<mesh->ncells;i++){
+		cell=&(mesh->cell[i]);
+            if(cell->type!=0){
+			cell->S_corr[3] = (cell->w6->pLe-cell->w5->pRe)/cell->dz + _g_*cell->Ue[0];
+			//cell->S_corr[3] = (cell->w6->ULe[4]-cell->w5->URe[4])*(_gamma_-1.0)/cell->dz + _g_*cell->Ue[0]; this is only valid for static equilibrium
+            }
+	}
+
+     
+      
+	return 1;
+}
+
+
+
+
+
+
+
+
 double weno3R(double *phi){
 
 	double b0, b1;		//beta
 	double a0, a1, a_sum;	//alpha
 	double g0, g1;		//gamma optimal weight/
+	double c0, c1;
 	double w0, w1;		//WENO weight
 	double UR;
 		
 	g0=2.0/3.0;
 	g1=1.0/3.0;
     
-#if OPT_WEIGHTS == 0  
+#if TYPE_REC == 0  
 
 	b0=(phi[1]-phi[0])*(phi[1]-phi[0]);
 	b1=(phi[2]-phi[1])*(phi[2]-phi[1]);
@@ -1883,6 +2160,26 @@ double weno3R(double *phi){
 
 	w0=a0/a_sum;
 	w1=a1/a_sum;
+    
+#elif TYPE_REC == 1  //TENO
+
+	b0=(phi[1]-phi[0])*(phi[1]-phi[0]);
+	b1=(phi[2]-phi[1])*(phi[2]-phi[1]);
+    
+	a0=1.0/pow((b0+epsilon2),_Q_);
+	a1=1.0/pow((b1+epsilon2),_Q_);
+	
+	c0 = a0/(a0 + a1);
+      c1 = a1/(a0 + a1);
+      
+      c0 = c0 < _CT_ ? 0. : 1.;
+      c1 = c1 < _CT_ ? 0. : 1.;
+	
+	a0 = g0*c0;
+      a1 = g1*c1;
+	
+      w0 = a0/(a0 + a1);
+      w1 = a1/(a0 + a1);
     
 #else  
     
@@ -1903,13 +2200,14 @@ double weno3L(double *phi){
 	double b0, b1;		//beta
 	double a0, a1, a_sum;	//alpha
 	double g0, g1;		//gamma optimal weight/
+	double c0, c1;
 	double w0, w1;		//WENO weight
 	double UL;
 		
 	g0=1.0/3.0;
 	g1=2.0/3.0;
     
-#if OPT_WEIGHTS == 0   
+#if TYPE_REC == 0   
 
 	b0=(phi[1]-phi[0])*(phi[1]-phi[0]);
 	b1=(phi[2]-phi[1])*(phi[2]-phi[1]);
@@ -1921,8 +2219,28 @@ double weno3L(double *phi){
 
 	w0=a0/a_sum;
 	w1=a1/a_sum;
+
+#elif TYPE_REC == 1  //TENO
+
+	b0=(phi[1]-phi[0])*(phi[1]-phi[0]);
+	b1=(phi[2]-phi[1])*(phi[2]-phi[1]);
     
-#else  
+	a0=1.0/pow((b0+epsilon2),_Q_);
+	a1=1.0/pow((b1+epsilon2),_Q_);
+	
+	c0 = a0/(a0 + a1);
+      c1 = a1/(a0 + a1);
+      
+      c0 = c0 < _CT_ ? 0. : 1.;
+      c1 = c1 < _CT_ ? 0. : 1.;
+	
+	a0 = g0*c0;
+      a1 = g1*c1;
+	
+      w0 = a0/(a0 + a1);
+      w1 = a1/(a0 + a1);
+    
+#else //UWC 
     
     w0=g0;
 	w1=g1;
@@ -1941,20 +2259,21 @@ double weno5R(double *phi){
 	double b0, b1, b2;		//beta
 	double a0, a1, a2, a_sum;	//alpha
 	double g0, g1, g2;		//gamma optimal weight/
+	double c0, c1, c2;
 	double w0, w1, w2;		//WENO weight
+	double s55;
 	double UR;
 		
 	g0=3.0/10.0;
 	g1=3.0/5.0;
       g2=1.0/10.0;
       
-#if OPT_WEIGHTS == 0    
+#if TYPE_REC == 0    //WENO
 
 	b0=13.0/12.0*(phi[0]-2*phi[1]+phi[2])*(phi[0]-2*phi[1]+phi[2])+0.25*(phi[0]-4*phi[1]+3*phi[2])*(phi[0]-4*phi[1]+3*phi[2]);
 	b1=13.0/12.0*(phi[1]-2*phi[2]+phi[3])*(phi[1]-2*phi[2]+phi[3])+0.25*(phi[1]-phi[3])*(phi[1]-phi[3]);
       b2=13.0/12.0*(phi[2]-2*phi[3]+phi[4])*(phi[2]-2*phi[3]+phi[4])+0.25*(3*phi[2]-4*phi[3]+phi[4])*(3*phi[2]-4*phi[3]+phi[4]);
 	
-    
       
       a0=g0/((b0+epsilon)*(b0+epsilon));
 	a1=g1/((b1+epsilon)*(b1+epsilon));
@@ -1966,12 +2285,46 @@ double weno5R(double *phi){
 	w1=a1/a_sum;
       w2=a2/a_sum;
       
-#else  
+#elif TYPE_REC == 1  //TENO
+
+	b0=13.0/12.0*(phi[0]-2*phi[1]+phi[2])*(phi[0]-2*phi[1]+phi[2])+0.25*(phi[0]-4*phi[1]+3*phi[2])*(phi[0]-4*phi[1]+3*phi[2]);
+	b1=13.0/12.0*(phi[1]-2*phi[2]+phi[3])*(phi[1]-2*phi[2]+phi[3])+0.25*(phi[1]-phi[3])*(phi[1]-phi[3]);
+      b2=13.0/12.0*(phi[2]-2*phi[3]+phi[4])*(phi[2]-2*phi[3]+phi[4])+0.25*(3*phi[2]-4*phi[3]+phi[4])*(3*phi[2]-4*phi[3]+phi[4]);
+
+	/*
+	s55 = fabs(b2 - b0);
+	a0 = pow(1.0 + s55/(b0+epsilon2),_Q_);
+      a1 = pow(1.0 + s55/(b1+epsilon2),_Q_);
+      a2 = pow(1.0 + s55/(b2+epsilon2),_Q_);
+	*/
     
-    w0=g0;
+	a0=1.0/pow((b0+epsilon2),_Q_);
+	a1=1.0/pow((b1+epsilon2),_Q_);
+      a2=1.0/pow((b2+epsilon2),_Q_);
+	
+	c0 = a0/(a0 + a1 + a2);
+      c1 = a1/(a0 + a1 + a2);
+      c2 = a2/(a0 + a1 + a2);
+      
+      c0 = c0 < _CT_ ? 0. : 1.;
+      c1 = c1 < _CT_ ? 0. : 1.;
+      c2 = c2 < _CT_ ? 0. : 1.;
+	
+	a0 = g0*c0;
+      a1 = g1*c1;
+      a2 = g2*c2;
+	
+      w0 = a0/(a0 + a1 + a2);
+      w1 = a1/(a0 + a1 + a2);
+      w2 = a2/(a0 + a1 + a2);
+    
+#else //UWC
+	
+	w0=g0;
 	w1=g1;
-    w2=g2;
-    
+	w2=g2;
+
+
 #endif        
 	
 	UR=w0*(1.0/3.0*phi[2]+5.0/6.0*phi[1]-1.0/6.0*phi[0]) + w1*(-1.0/6.0*phi[3]+5.0/6.0*phi[2]+1.0/3.0*phi[1]) + w2*(1.0/3.0*phi[4]-7.0/6.0*phi[3]+11.0/6.0*phi[2]) ;
@@ -1985,14 +2338,16 @@ double weno5L(double *phi){
 	double b0, b1, b2;		//beta
 	double a0, a1, a2, a_sum;	//alpha
 	double g0, g1, g2;		//gamma optimal weight/
+	double c0, c1, c2;
 	double w0, w1, w2;		//WENO weight
+	double s55;
 	double UL;
 		
 	g0=1.0/10.0;
 	g1=3.0/5.0;
       g2=3.0/10.0;
     
-#if OPT_WEIGHTS == 0    
+#if TYPE_REC == 0    
 
 	b0=13.0/12.0*(phi[0]-2*phi[1]+phi[2])*(phi[0]-2*phi[1]+phi[2])+0.25*(phi[0]-4*phi[1]+3*phi[2])*(phi[0]-4*phi[1]+3*phi[2]);
 	b1=13.0/12.0*(phi[1]-2*phi[2]+phi[3])*(phi[1]-2*phi[2]+phi[3])+0.25*(phi[1]-phi[3])*(phi[1]-phi[3]);
@@ -2008,7 +2363,40 @@ double weno5L(double *phi){
 	w0=a0/a_sum;
 	w1=a1/a_sum;
       w2=a2/a_sum;
+	
+#elif TYPE_REC == 1  //TENO
+ 
+	b0=13.0/12.0*(phi[0]-2*phi[1]+phi[2])*(phi[0]-2*phi[1]+phi[2])+0.25*(phi[0]-4*phi[1]+3*phi[2])*(phi[0]-4*phi[1]+3*phi[2]);
+	b1=13.0/12.0*(phi[1]-2*phi[2]+phi[3])*(phi[1]-2*phi[2]+phi[3])+0.25*(phi[1]-phi[3])*(phi[1]-phi[3]);
+      b2=13.0/12.0*(phi[2]-2*phi[3]+phi[4])*(phi[2]-2*phi[3]+phi[4])+0.25*(3*phi[2]-4*phi[3]+phi[4])*(3*phi[2]-4*phi[3]+phi[4]);
+   
+	/*
+	s55 = fabs(b2 - b0);
+	a0 = pow(1.0 + s55/(b0+epsilon2),_Q_);
+      a1 = pow(1.0 + s55/(b1+epsilon2),_Q_);
+      a2 = pow(1.0 + s55/(b2+epsilon2),_Q_);
+	*/
     
+	a0=1.0/pow((b0+epsilon2),_Q_);
+	a1=1.0/pow((b1+epsilon2),_Q_);
+      a2=1.0/pow((b2+epsilon2),_Q_);
+	
+	c0 = a0/(a0 + a1 + a2);
+      c1 = a1/(a0 + a1 + a2);
+      c2 = a2/(a0 + a1 + a2);
+      
+      c0 = c0 < _CT_ ? 0. : 1.;
+      c1 = c1 < _CT_ ? 0. : 1.;
+      c2 = c2 < _CT_ ? 0. : 1.;
+	
+	a0 = g0*c0;
+      a1 = g1*c1;
+      a2 = g2*c2;
+	
+      w0 = a0/(a0 + a1 + a2);
+      w1 = a1/(a0 + a1 + a2);
+      w2 = a2/(a0 + a1 + a2);
+ 
 #else 
     
       w0=g0;
@@ -2033,6 +2421,7 @@ double weno7R(double *phi){
 	double b0, b1, b2, b3;		//beta
 	double a0, a1, a2, a3, a_sum;	//alpha
 	double g0, g1, g2, g3;		//gamma optimal weight/
+	double c0, c1, c2, c3;	
 	double w0, w1, w2, w3;		//WENO weight
 	double UR;
 		
@@ -2042,7 +2431,7 @@ double weno7R(double *phi){
       g3=1.0/35.0;
 
       
-#if OPT_WEIGHTS == 0    
+#if TYPE_REC == 0    
  
       b0 = phi[0]*(547.0*phi[0] - 3882.0*phi[1] + 4642.0*phi[2] - 1854.0*phi[3]) + phi[1]*(7043.0*phi[1] - 17246.0*phi[2] + 7042.0*phi[3]) + phi[2]*(11003.0*phi[2] - 9402.0*phi[3]) + phi[3]*2107.0*phi[3];		
 	b1 = phi[1]*(267.0*phi[1] - 1642.0*phi[2] + 1602.0*phi[3] - 494.0*phi[4]) + phi[2]*(2843.0*phi[2] - 5966.0*phi[3] + 1922.0*phi[4]) + phi[3]*(3443.0*phi[3] - 2522.0*phi[4]) + phi[4]*547.0*phi[4];
@@ -2061,7 +2450,39 @@ double weno7R(double *phi){
       w2=a2/a_sum;
       w3=a3/a_sum;
       
-#else  
+#elif TYPE_REC == 1  //TENO
+
+      b0 = phi[0]*(547.0*phi[0] - 3882.0*phi[1] + 4642.0*phi[2] - 1854.0*phi[3]) + phi[1]*(7043.0*phi[1] - 17246.0*phi[2] + 7042.0*phi[3]) + phi[2]*(11003.0*phi[2] - 9402.0*phi[3]) + phi[3]*2107.0*phi[3];		
+	b1 = phi[1]*(267.0*phi[1] - 1642.0*phi[2] + 1602.0*phi[3] - 494.0*phi[4]) + phi[2]*(2843.0*phi[2] - 5966.0*phi[3] + 1922.0*phi[4]) + phi[3]*(3443.0*phi[3] - 2522.0*phi[4]) + phi[4]*547.0*phi[4];
+	b2 = phi[2]*(547.0*phi[2] - 2522.0*phi[3] + 1922.0*phi[4] - 494.0*phi[5]) + phi[3]*(3443.0*phi[3] - 5966.0*phi[4] + 1602*phi[5]) + phi[4]*(2843.0*phi[4] - 1642*phi[5]) + phi[5]*267.0*phi[5];
+	b3 = phi[3]*(2107.0*phi[3] - 9402.0*phi[4] + 7042.0*phi[5] - 1854.0*phi[6]) + phi[4]*(11003.0*phi[4] - 17246.0*phi[5] + 4642.0*phi[6]) + phi[5]*(7043.0*phi[5] - 3882.0*phi[6]) + phi[6]*547.0*phi[6];
+    
+	a0=1.0/pow((b0+epsilon2),_Q_);
+	a1=1.0/pow((b1+epsilon2),_Q_);
+      a2=1.0/pow((b2+epsilon2),_Q_);
+	a3=1.0/pow((b3+epsilon2),_Q_);
+	
+	c0 = a0/(a0 + a1 + a2 + a3);
+      c1 = a1/(a0 + a1 + a2 + a3);
+      c2 = a2/(a0 + a1 + a2 + a3);
+	c3 = a3/(a0 + a1 + a2 + a3);
+      
+      c0 = c0 < _CT_ ? 0. : 1.;
+      c1 = c1 < _CT_ ? 0. : 1.;
+      c2 = c2 < _CT_ ? 0. : 1.;
+	c3 = c3 < _CT_ ? 0. : 1.;
+	
+	a0 = g0*c0;
+      a1 = g1*c1;
+      a2 = g2*c2;
+	a3 = g3*c3;
+	
+      w0 = a0/(a0 + a1 + a2 + a3);
+      w1 = a1/(a0 + a1 + a2 + a3);
+      w2 = a2/(a0 + a1 + a2 + a3);
+	w3 = a3/(a0 + a1 + a2 + a3);
+    
+#else //UWC  
     
       w0=g0;
       w1=g1;
@@ -2082,6 +2503,7 @@ double weno7L(double *phi){
 	double b0, b1, b2, b3;		//beta
 	double a0, a1, a2, a3, a_sum;	//alpha
 	double g0, g1, g2, g3;		//gamma optimal weight/
+	double c0, c1, c2, c3;	
 	double w0, w1, w2, w3;		//WENO weight
 	double UL;
 		
@@ -2091,7 +2513,7 @@ double weno7L(double *phi){
       g3=4.0/35.0;
       
       
-#if OPT_WEIGHTS == 0    
+#if TYPE_REC == 0    
  
       b0 = phi[0]*(547.0*phi[0] - 3882.0*phi[1] + 4642.0*phi[2] - 1854.0*phi[3]) + phi[1]*(7043.0*phi[1] - 17246.0*phi[2] + 7042.0*phi[3]) + phi[2]*(11003.0*phi[2] - 9402.0*phi[3]) + phi[3]*2107.0*phi[3];		
 	b1 = phi[1]*(267.0*phi[1] - 1642.0*phi[2] + 1602.0*phi[3] - 494.0*phi[4]) + phi[2]*(2843.0*phi[2] - 5966.0*phi[3] + 1922.0*phi[4]) + phi[3]*(3443.0*phi[3] - 2522.0*phi[4]) + phi[4]*547.0*phi[4];
@@ -2110,7 +2532,39 @@ double weno7L(double *phi){
       w2=a2/a_sum;
       w3=a3/a_sum;
       
-#else  
+#elif TYPE_REC == 1  //TENO
+
+      b0 = phi[0]*(547.0*phi[0] - 3882.0*phi[1] + 4642.0*phi[2] - 1854.0*phi[3]) + phi[1]*(7043.0*phi[1] - 17246.0*phi[2] + 7042.0*phi[3]) + phi[2]*(11003.0*phi[2] - 9402.0*phi[3]) + phi[3]*2107.0*phi[3];		
+	b1 = phi[1]*(267.0*phi[1] - 1642.0*phi[2] + 1602.0*phi[3] - 494.0*phi[4]) + phi[2]*(2843.0*phi[2] - 5966.0*phi[3] + 1922.0*phi[4]) + phi[3]*(3443.0*phi[3] - 2522.0*phi[4]) + phi[4]*547.0*phi[4];
+	b2 = phi[2]*(547.0*phi[2] - 2522.0*phi[3] + 1922.0*phi[4] - 494.0*phi[5]) + phi[3]*(3443.0*phi[3] - 5966.0*phi[4] + 1602*phi[5]) + phi[4]*(2843.0*phi[4] - 1642*phi[5]) + phi[5]*267.0*phi[5];
+	b3 = phi[3]*(2107.0*phi[3] - 9402.0*phi[4] + 7042.0*phi[5] - 1854.0*phi[6]) + phi[4]*(11003.0*phi[4] - 17246.0*phi[5] + 4642.0*phi[6]) + phi[5]*(7043.0*phi[5] - 3882.0*phi[6]) + phi[6]*547.0*phi[6];
+   
+	a0=1.0/pow((b0+epsilon2),_Q_);
+	a1=1.0/pow((b1+epsilon2),_Q_);
+      a2=1.0/pow((b2+epsilon2),_Q_);
+	a3=1.0/pow((b3+epsilon2),_Q_);
+	
+	c0 = a0/(a0 + a1 + a2 + a3);
+      c1 = a1/(a0 + a1 + a2 + a3);
+      c2 = a2/(a0 + a1 + a2 + a3);
+	c3 = a3/(a0 + a1 + a2 + a3);
+      
+      c0 = c0 < _CT_ ? 0. : 1.;
+      c1 = c1 < _CT_ ? 0. : 1.;
+      c2 = c2 < _CT_ ? 0. : 1.;
+	c3 = c3 < _CT_ ? 0. : 1.;
+	
+	a0 = g0*c0;
+      a1 = g1*c1;
+      a2 = g2*c2;
+	a3 = g3*c3;
+	
+      w0 = a0/(a0 + a1 + a2 + a3);
+      w1 = a1/(a0 + a1 + a2 + a3);
+      w2 = a2/(a0 + a1 + a2 + a3);
+	w3 = a3/(a0 + a1 + a2 + a3);
+    
+#else //UWC    
     
       w0=g0;
       w1=g1;
@@ -2125,117 +2579,6 @@ double weno7L(double *phi){
 	return UL;
 }
 
-
-
-
-
-double teno5L(double *phi){
-      
-      //Adapted from http://dx.doi.org/10.13140/RG.2.2.36250.34247
-	
-	double b0, b1, b2;		//beta
-	double a0, a1, a2, a_sum;	//alpha
-	double g0, g1, g2;		//gamma optimal weight/
-	double w0, w1, w2;		//WENO weight
-      double c0, c1, c2;
-      double s55;
-	double UL;
-      
-		
-	g0=1.0/10.0;
-	g1=3.0/5.0;
-      g2=3.0/10.0;
-
-	b0=13.0/12.0*(phi[0]-2*phi[1]+phi[2])*(phi[0]-2*phi[1]+phi[2])+0.25*(phi[0]-4*phi[1]+3*phi[2])*(phi[0]-4*phi[1]+3*phi[2]);
-	b1=13.0/12.0*(phi[1]-2*phi[2]+phi[3])*(phi[1]-2*phi[2]+phi[3])+0.25*(phi[1]-phi[3])*(phi[1]-phi[3]);
-      b2=13.0/12.0*(phi[2]-2*phi[3]+phi[4])*(phi[2]-2*phi[3]+phi[4])+0.25*(3*phi[2]-4*phi[3]+phi[4])*(3*phi[2]-4*phi[3]+phi[4]);
-      
-      
-      
-      s55 = fabs(b2 - b0);
-      
-      a0 = pow(1.0 + s55/(b0+1.0e-40),6.0);
-      a1 = pow(1.0 + s55/(b1+1.0e-40),6.0);
-      a2 = pow(1.0 + s55/(b2+1.0e-40),6.0);
-      
-      c0 = a0/(a0 + a1 + a2);
-      c1 = a1/(a0 + a1 + a2);
-      c2 = a2/(a0 + a1 + a2);
-      
-      c0 = c0 < _CT_ ? 0. : 1.;
-      c1 = c1 < _CT_ ? 0. : 1.;
-      c2 = c2 < _CT_ ? 0. : 1.;
-      
-      a0 = g0*c0;
-      a1 = g1*c1;
-      a2 = g2*c2;
-      w0 = a0/(a0 + a1 + a2);
-      w1 = a1/(a0 + a1 + a2);
-      w2 = a2/(a0 + a1 + a2);
-
-     
-	
-	UL = phi[2] + w2*(-4.0/6.0*phi[2]+5.0/6.0*phi[3]-1.0/6.0*phi[4]) + w1*(-1.0/6.0*phi[1]-1.0/6.0*phi[2]+1.0/3.0*phi[3]) + w0*(1.0/3.0*phi[0]-7.0/6.0*phi[1]+5.0/6.0*phi[2]) ;
-
-
-	return UL;
-}
-
-
-
-
-double teno5R(double *phi){
-      
-      //Adapted from http://dx.doi.org/10.13140/RG.2.2.36250.34247
-	
-	double b0, b1, b2;		//beta
-	double a0, a1, a2, a_sum;	//alpha
-	double g0, g1, g2;		//gamma optimal weight/
-	double w0, w1, w2;		//WENO weight
-      double c0, c1, c2;
-      double s55;
-	double UR;
-      
-		
-	g0=3.0/10.0;
-	g1=3.0/5.0;
-      g2=1.0/10.0;
-
-	b0=13.0/12.0*(phi[0]-2*phi[1]+phi[2])*(phi[0]-2*phi[1]+phi[2])+0.25*(phi[0]-4*phi[1]+3*phi[2])*(phi[0]-4*phi[1]+3*phi[2]);
-	b1=13.0/12.0*(phi[1]-2*phi[2]+phi[3])*(phi[1]-2*phi[2]+phi[3])+0.25*(phi[1]-phi[3])*(phi[1]-phi[3]);
-      b2=13.0/12.0*(phi[2]-2*phi[3]+phi[4])*(phi[2]-2*phi[3]+phi[4])+0.25*(3*phi[2]-4*phi[3]+phi[4])*(3*phi[2]-4*phi[3]+phi[4]);
-      
-      
-      
-      s55 = fabs(b2 - b0);
-      
-      a0 = pow(1.0 + s55/(b0+1.0e-40),6.0);
-      a1 = pow(1.0 + s55/(b1+1.0e-40),6.0);
-      a2 = pow(1.0 + s55/(b2+1.0e-40),6.0);
-      
-      c0 = a0/(a0 + a1 + a2);
-      c1 = a1/(a0 + a1 + a2);
-      c2 = a2/(a0 + a1 + a2);
-      
-      c0 = c0 < _CT_ ? 0. : 1.;
-      c1 = c1 < _CT_ ? 0. : 1.;
-      c2 = c2 < _CT_ ? 0. : 1.;
-      
-      a0 = g0*c0;
-      a1 = g1*c1;
-      a2 = g2*c2;
-      w0 = a0/(a0 + a1 + a2);
-      w1 = a1/(a0 + a1 + a2);
-      w2 = a2/(a0 + a1 + a2);
-
-     
-	
-	UR = phi[2] + w0*(-4.0/6.0*phi[2]+5.0/6.0*phi[1]-1.0/6.0*phi[0]) + w1*(-1.0/6.0*phi[3]-1.0/6.0*phi[2]+1.0/3.0*phi[1]) + w2*(1.0/3.0*phi[4]-7.0/6.0*phi[3]+5.0/6.0*phi[2]) ;
-
-
-
-	return UR;
-}
 
 void set_velocity_field(t_mesh *mesh, t_sim *sim){
 	/**This is only for linear transport and
@@ -2619,6 +2962,231 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 }
 
 
+
+
+
+void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
+
+	int m;
+	double WR[6], WL[6], S[6], B[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR, gammaL, gammaR, phiL, phiR;
+      double pLe, pRe, rhoLe, rhoRe;
+	double raizrhoR, raizrhoL, sumRaizRho, r;
+	double u_hat, v_hat, w_hat, H_hat, c_hat, gamma_hat,psi,chi;
+	double S1, S2, diffS, maxS;
+	double FR[5], FL[5];
+	double F_star[5];
+
+	/**Rotation of array of variables**/
+	
+	WR[0]=wall->UR[0];
+	WL[0]=wall->UL[0];
+
+      // This is a simplification of the rotation matrix, only valid for cartesian mesh
+	WR[1]=wall->UR[1]*wall->nx+wall->UR[2]*wall->ny+wall->UR[3]*wall->nz;
+	WL[1]=wall->UL[1]*wall->nx+wall->UL[2]*wall->ny+wall->UL[3]*wall->nz;
+
+	WR[2]=-wall->UR[1]*wall->ny+wall->UR[2]*wall->nx+wall->UR[2]*wall->nz;
+	WL[2]=-wall->UL[1]*wall->ny+wall->UL[2]*wall->nx+wall->UL[2]*wall->nz;
+      
+      WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
+	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
+      
+	WR[4]=wall->UR[4];
+	WL[4]=wall->UL[4];
+	
+#if MULTICOMPONENT
+	WR[5]=wall->UR[5];
+	WL[5]=wall->UL[5];
+	phiL=WL[5]/WL[0];
+	phiR=WR[5]/WR[0];
+	#if MULTI_TYPE==1
+		gammaL=phiL;
+		gammaR=phiR;
+	#else
+		gammaL=1.0+1.0/phiL;
+		gammaR=1.0+1.0/phiR;
+	#endif
+#else
+	gammaL=_gamma_;
+	gammaR=_gamma_;
+#endif	
+	
+	/**Additional variables for the solver**/
+	uL=WL[1]/WL[0];
+	uR=WR[1]/WR[0];
+
+	vL=WL[2]/WL[0];
+	vR=WR[2]/WR[0];
+      
+      wL=WL[3]/WL[0];
+	wR=WR[3]/WR[0];
+
+	pL=(gammaL-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
+	pR=(gammaR-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
+	
+	HL=(WL[4]+pL)/WL[0];
+	HR=(WR[4]+pR)/WR[0];
+	
+	cL=sqrt(gammaL*pL/WL[0]);
+
+	cR=sqrt(gammaR*pR/WR[0]);
+	
+	raizrhoL=sqrt(WL[0]);
+	raizrhoR=sqrt(WR[0]);
+	sumRaizRho=raizrhoR+raizrhoL;
+
+	/**Hat variables (Roe averages)**/
+	u_hat=(uR*raizrhoR+uL*raizrhoL)/sumRaizRho;
+	v_hat=(vR*raizrhoR+vL*raizrhoL)/sumRaizRho;
+      w_hat=(wR*raizrhoR+wL*raizrhoL)/sumRaizRho;
+	H_hat=(HR*raizrhoR+HL*raizrhoL)/sumRaizRho;
+#if MULTICOMPONENT	
+	#if MULTI_TYPE==1
+		gamma_hat=1.0+ 1.0/( (phiR*raizrhoR+phiL*raizrhoL)/sumRaizRho );
+	#else
+		gamma_hat=(gammaR*raizrhoR+gammaL*raizrhoL)/sumRaizRho;
+	#endif
+#else
+	gamma_hat=_gamma_;
+#endif
+
+	c_hat=sqrt((gamma_hat-1)*(H_hat-0.5*(u_hat*u_hat+v_hat*v_hat+w_hat*w_hat)));
+
+	/**Physical flux calculation (the F of the eqs.)**/
+
+	FR[0]=WR[1];
+	FL[0]=WL[1];
+
+	FR[1]=WR[1]*uR+pR;
+	FL[1]=WL[1]*uL+pL;
+
+	FR[2]=WR[1]*vR;
+	FL[2]=WL[1]*vL;
+      
+      FR[3]=WR[1]*wR;
+	FL[3]=WL[1]*wL;
+
+	FR[4]=uR*(WR[4]+pR);
+	FL[4]=uL*(WL[4]+pL);
+
+
+	/**Wave speed estimation**/
+	
+	//S1=MIN(uL-cL,u_hat-c_hat); //***************************-------------REVISAR!!!!!!!!!!!!!!!!!!!!!!!!
+	//S2=MAX(uR+cR, u_hat+c_hat);
+	S1=u_hat-c_hat; 
+	S2=u_hat+c_hat;
+
+	maxS=MAX(ABS(S1),ABS(S2));
+	diffS=S2-S1;
+	
+	
+	/**Source term**/
+      
+      pRe   =wall->pRe; //(gamma_hat-1.0)*wall->URe[4];
+      pLe   =wall->pLe; //(gamma_hat-1.0)*wall->ULe[4];
+      rhoRe = wall->URe[0];
+      rhoLe = wall->ULe[0];
+      
+      
+	S[0]=0.0;
+      if(ABS(wall->nz)>TOL14){ //this is neccessary when considering atm pressures of 1.e5, to keep precision
+            S[1]=(WR[0]+WL[0])*(pRe-pLe)/(rhoRe+rhoLe);
+      }else{
+            S[1]=0.0;
+      }
+	S[2]=0.0;
+	S[3]=0.0;
+	S[4]=S[1]*u_hat;
+	
+	psi=(rhoRe-rhoLe)*c_hat*c_hat/(pRe-pLe+TOL14);
+	chi=0.5*(psi-1.0)*(v_hat*v_hat+w_hat*w_hat);
+	
+	B[0]=-psi*S[1]/(S1*S2);
+	B[1]=0.0;
+	B[2]=-psi*v_hat/(S1*S2)*S[1];
+	B[3]=-psi*w_hat/(S1*S2)*S[1];
+	B[4]=-(H_hat-u_hat*u_hat+chi)/(S1*S2)*S[1]; 
+	
+	/**HLLS flux calculation**/
+	//WR[0]=0.0;
+	//WL[0]=0.0;
+	//fL_star
+	for(m=0;m<5;m++){
+		if(S1>=0){
+			F_star[m]=FL[m];
+		}else if(S2<=0){
+			F_star[m]=FR[m]-S[m];
+		}else{
+                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m])+S1*(S[m]-S2*B[m]))/(diffS);
+            }
+	}	
+	/**Inverse rotation of the flux**/
+	wall->fL_star[0]=F_star[0]; //Mass is not vectorial
+	wall->fL_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
+	wall->fL_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
+      wall->fL_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fL_star[4]=F_star[4]; //Energy is not vectorial
+	
+	//fR_star
+	for(m=0;m<5;m++){
+		if(S1>=0){
+			F_star[m]=FL[m]+S[m];
+		}else if(S2<=0){
+			F_star[m]=FR[m];
+		}else{
+                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m])+S2*(S[m]-S1*B[m]))/(diffS);
+            }
+	}
+	/**Inverse rotation of the flux**/
+	wall->fR_star[0]=F_star[0]; //Mass is not vectorial
+	wall->fR_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
+	wall->fR_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
+      wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fR_star[4]=F_star[4]; //Energy is not vectorial
+	
+	/*if(ABS(S[1])>TOL8 ){
+	printf(" nz: %14.14e\n",wall->nz);
+	printf(" S1,S4: %14.14e %14.14e\n",S[1],S[4]);
+      printf(" rho: %14.14e %14.14e %14.14e %14.14e\n",WR[0],WL[0],rhoRe,rhoLe);
+	printf(" FL,FR: %14.14e %14.14e\n",FL[1],FR[1]);
+	printf(" PLe,PRe: %14.14e %14.14e\n",pLe,pRe);
+	printf(" PL,PR: %14.14e %14.14e\n",pL,pR);
+	
+	printf(" UR,UL: %14.14e %14.14e\n",wall->UR[1]/wall->UR[0],wall->UL[1]/wall->UL[0]);
+
+	printf(" EL,ER: %14.14e %14.14e\n",WR[4],WL[4]);
+	printf(" ELe,ERe: %14.14e %14.14e\n",wall->URe[4],wall->ULe[4]);
+	printf(" rho/rhoE: %14.14e\n",(WR[0]+WL[0])/(rhoRe+rhoLe));
+	printf(" deltaF, deltaP, delta %14.14e %14.14e  %14.14e \n",FR[1]-FL[1],pRe-pLe,FR[1]-FL[1]-(pRe-pLe) );
+	
+	printf(" FL: %14.14e %14.14e\n",wall->fL_star[3],FL[1]);
+	printf(" FR: %14.14e %14.14e\n",wall->fR_star[3],FR[1]);
+	printf(" dF: %14.14e %14.14e\n",(S2*FL[1]-S1*FR[1]+S2*S[1])-(S2-S1)*FR[1],   FR[1]-FL[1]-S[1]);
+	printf(" dF (rho): %14.14e %14.14e\n",wall->fL_star[0]-FL[0],wall->fR_star[0]-FR[0]);
+	printf(" Df-S: %14.14e\n",wall->fR_star[3]-wall->fL_star[3]-S[1]);
+	printf(" Df-S: %14.14e\n",wall->fR_star[0]-wall->fL_star[0]);
+	printf(" Df-S (rho): %14.14e\n",FR[0]-FL[0]-S[0]);
+	printf(" Df-S (rho*u): %14.14e\n",FR[1]-FL[1]-S[1]);
+	printf(" Df-S (rho*v): %14.14e\n",FR[2]-FL[2]-S[2]);
+	printf(" Df-S (rho*w): %14.14e\n",FR[3]-FL[3]-S[3]);
+	printf(" Df-S (E): %14.14e\n",FR[4]-FL[4]-S[4]);
+	printf(" Du-B (rho): %14.14e %14.14e %14.14e %14.14e\n",WR[0],WL[0],B[0],WR[0]-WL[0]-B[0]);
+	printf(" Du-B (rho*u): %14.14e \n",WR[1]-WL[1]-B[1]);
+	printf(" Du-B (rho*v): %14.14e \n",WR[2]-WL[2]-B[2]);
+	printf(" Du-B (rho*w): %14.14e \n",WR[3]-WL[3]-B[3]);
+	printf(" Du-B (E): %14.14e \n",WR[4]-WL[4]-B[4]);
+	getchar();
+      }*/
+      
+      
+	*lambda_max=MAX(*lambda_max,maxS);
+		
+}
+
+
+
 void compute_transmissive_euler(t_wall *wall, int wp){
 
 	int m;   
@@ -2852,7 +3420,8 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
 	wall->fR_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
 	wall->fR_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
       wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
-	wall->fR_star[4]=F_star[4]; //Energy is not vectorial
+	wall->fR_star[4]=F_star[4]; //Energy is not vectorial  
+      //wall->fR_star[5]=0.0; //no solute flux
 	
       for(m=0;m<5;m++){
             wall->fL_star[m]=wall->fR_star[m];
@@ -2904,6 +3473,13 @@ void compute_transport(t_wall *wall){
 		wall->fR_star[5]=wall->fL_star[0]*wall->UL[5]/wall->UL[0];
 		wall->fL_star[5]=wall->fR_star[5];
 	}
+      
+      //printf("%lf\n",wall->UL[5]);
+      //printf("%lf\n",wall->UR[5]);
+      
+      //wall->fR_star[5]=0.0;
+      //wall->fL_star[5]=0.0;
+
       
 #if LINEAR_TRANSPORT
 	wall->fR_star[1]=0.0;
@@ -2968,7 +3544,7 @@ int update_dt(t_mesh *mesh,t_sim *sim){
       dl=MIN(dl,mesh->dz);
 	sim->dt=sim->CFL*dl/mesh->lambda_max;
 	if(sim->dt+sim->t>sim->tf){
-		sim->dt=sim->tf-sim->t+TOL8;
+		sim->dt=sim->tf-sim->t+TOL14;
 	}
 
       
@@ -2988,7 +3564,7 @@ void update_cell(t_mesh *mesh, t_sim *sim){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz );
 		}
-         
+            //printf("%lf\n",cell->w2->fL_star[5]);
             if (cell->U[0]<TOL14){
             	printf("celda %d: rHO: %lf \n",i,cell->U[0]);
 		getchar();
@@ -3012,7 +3588,7 @@ void update_cellK1(t_mesh *mesh, t_sim *sim){
             if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U_aux[k]=cell->U[k];
-			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz);
+			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 		}
             }
 	}
@@ -3030,7 +3606,7 @@ void update_cellK2(t_mesh *mesh, t_sim *sim){
             cell=&(mesh->cell[i]);
             if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
-			cell->U[k]=0.75*cell->U_aux[k]+0.25*cell->U[k]-0.25*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz );
+			cell->U[k]=0.75*cell->U_aux[k]+0.25*cell->U[k]-0.25*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 
 		}
             }
@@ -3049,10 +3625,27 @@ void update_cellK3(t_mesh *mesh, t_sim *sim){
             cell=&(mesh->cell[i]);
             if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
-			cell->U[k]=(1.0/3.0)*cell->U_aux[k]+(2.0/3.0)*cell->U[k]-(2.0/3.0)*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz );
+			cell->U[k]=(1.0/3.0)*cell->U_aux[k]+(2.0/3.0)*cell->U[k]-(2.0/3.0)*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 
 		}
 		}
+	}
+}
+
+
+
+void compute_source(t_mesh *mesh){
+	
+	int i;
+	t_cell *cell;
+
+#pragma omp parallel for default(none) private(cell) shared(mesh)
+	for(i=0;i<mesh->ncells;i++){
+		cell=&(mesh->cell[i]);
+            if(cell->type!=0&&cell->st_sizeZ>1){     //This is the implementation of gravity force in -Z direction
+			cell->S[3]= -_g_*cell->U[0] + cell->S_corr[3];
+			cell->S[4]= -_g_*cell->U[3];
+            }
 	}
 }
 
@@ -3191,7 +3784,7 @@ int write_vtk(t_mesh *mesh, char *filename){
 		
 	int i,j;
 	FILE *fp;
-	double gamma;
+	double gamma,theta;
 	fp=fopen(filename,"w");
 
 	// Write file header
@@ -3236,7 +3829,7 @@ int write_vtk(t_mesh *mesh, char *filename){
 	fprintf(fp,"SCALARS rho DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%lf\n",mesh->cell[j].U[0]);
+	   	fprintf(fp,"%14.14e\n",mesh->cell[j].U[0]);
 	}
       #endif
 
@@ -3255,27 +3848,35 @@ int write_vtk(t_mesh *mesh, char *filename){
 			gamma=_gamma_;
 		#endif
             mesh->cell[j].pres=(gamma-1.0)*(mesh->cell[j].U[4]-0.5*mesh->cell[j].U[0]*(mesh->cell[j].U[1]*mesh->cell[j].U[1]+mesh->cell[j].U[2]*mesh->cell[j].U[2]+mesh->cell[j].U[3]*mesh->cell[j].U[3])/(mesh->cell[j].U[0]*mesh->cell[j].U[0]));
-            fprintf(fp,"%lf \n",mesh->cell[j].pres);
+            fprintf(fp,"%14.14e \n",mesh->cell[j].pres);
       }
+      #endif
+      
+      #if print_OVERPRESSURE
+	fprintf(fp,"SCALARS d_pres DOUBLE \n");
+	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
+	for(j=0;j<mesh->ncells;j++){
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].pres - mesh->cell[j].prese);
+	}
       #endif
       
       #if print_MOMENTUM
 	fprintf(fp,"SCALARS rhoU DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%lf \n",mesh->cell[j].U[1]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[1]);
 	}
 
 	fprintf(fp,"SCALARS rhoV DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%lf \n",mesh->cell[j].U[2]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[2]);
 	}
 
 	fprintf(fp,"SCALARS rhoW DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%lf \n",mesh->cell[j].U[3]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[3]);
 	}
       #endif
 
@@ -3283,7 +3884,7 @@ int write_vtk(t_mesh *mesh, char *filename){
 	fprintf(fp,"SCALARS E DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%lf \n",mesh->cell[j].U[4]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[4]);
 	}
       #endif
       
@@ -3291,9 +3892,20 @@ int write_vtk(t_mesh *mesh, char *filename){
 	fprintf(fp,"SCALARS phi DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%lf \n",mesh->cell[j].U[5]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[5]);
 	}
       #endif
+      
+      #if print_POTENTIALTEM   
+	fprintf(fp,"SCALARS theta DOUBLE \n");
+	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
+	for(j=0;j<mesh->ncells;j++){
+            theta=mesh->cell[j].pres/(_R_*mesh->cell[j].U[0])/( pow((mesh->cell[j].pres/_p0_),((_gamma_-1.0)/_gamma_)) );
+	   	fprintf(fp,"%14.14e \n",theta);
+	}
+      #endif
+      
+      
 #endif
 
 	fclose(fp);
@@ -3360,43 +3972,18 @@ int write_matrix_v(t_mesh *mesh, char *filename){
 }
 
 
-int write_matrix_phi(t_mesh *mesh, char *filename){
-		
-		
-	int i,j,k;
-      double phi;
-	FILE *fp;
-	fp=fopen(filename,"w");
-
-	// Write file header
-
-	for(j=0;j<mesh->ycells;j++){
-            for(i=0;i<mesh->xcells;i++){                  
-                  k=i+j*mesh->xcells;                 
-                  phi=mesh->cell[k].U[5]/mesh->cell[k].U[0];
-                  fprintf(fp,"%14.14e   ",phi);
-            }
-            fprintf(fp,"\n");
-	}
-
-	fclose(fp);
-
-
-	return 1;
-}
-
 
 
 int write_list(t_mesh *mesh, char *filename){
 		
 		
 	int l,m,n,k;
-	double u,v,w,p,rho,phi,gamma;
+	double u,v,w,p,rho,phi,gamma,theta;
 	FILE *fp;
 	fp=fopen(filename,"w");
 
 	// Write file header
-	fprintf(fp,"VARIABLES = X, Y, Z, u, v, w, rho, p, phi \n");
+	fprintf(fp,"VARIABLES = X, Y, Z, u, v, w, rho, p, phi, theta \n");
 	fprintf(fp,"CELLS = %d, %d, %d,\n",mesh->xcells,mesh->ycells,mesh->zcells);
 
     for(l=0;l<mesh->xcells;l++){  
@@ -3418,7 +4005,53 @@ int write_list(t_mesh *mesh, char *filename){
 				gamma=_gamma_;
 			#endif
 			p=(gamma-1.0)*(mesh->cell[k].U[4]-0.5*mesh->cell[k].U[0]*(mesh->cell[k].U[1]*mesh->cell[k].U[1]+mesh->cell[k].U[2]*mesh->cell[k].U[2]+mesh->cell[k].U[3]*mesh->cell[k].U[3])/(mesh->cell[k].U[0]*mesh->cell[k].U[0]));
-			fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e \n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi);
+			theta=p/(_R_*mesh->cell[k].U[0])/( pow((p/_p0_),((_gamma_-1.0)/_gamma_)) );
+                  fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e\n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi,theta);
+                  //fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e\n",u,u,u,u,v,u,u,u,phi,theta);
+            }
+		}
+	}
+
+	fclose(fp);
+
+
+	return 1;
+}
+
+
+int write_list_eq(t_mesh *mesh, char *filename){
+		
+		
+	int l,m,n,k;
+	double u,v,w,p,rho,phi,gamma,theta;
+	FILE *fp;
+	fp=fopen(filename,"w");
+
+	// Write file header
+	fprintf(fp,"VARIABLES = X, Y, Z, u, v, w, rho, p, phi, theta \n");
+	fprintf(fp,"CELLS = %d, %d, %d,\n",mesh->xcells,mesh->ycells,mesh->zcells);
+
+    for(l=0;l<mesh->xcells;l++){  
+		for(m=0;m<mesh->ycells;m++){
+			for(n=0;n<mesh->zcells;n++){
+			k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+			u=mesh->cell[k].Ue[1]/mesh->cell[k].Ue[0];
+			v=mesh->cell[k].Ue[2]/mesh->cell[k].Ue[0];
+			w=mesh->cell[k].Ue[3]/mesh->cell[k].Ue[0];
+			rho=mesh->cell[k].Ue[0];
+			phi=mesh->cell[k].Ue[5]/mesh->cell[k].Ue[0];
+			#if MULTICOMPONENT
+				#if MULTI_TYPE==1
+					gamma=phi;
+				#else
+					gamma=1.0+1.0/phi;
+				#endif
+			#else
+				gamma=_gamma_;
+			#endif
+			p=(gamma-1.0)*(mesh->cell[k].Ue[4]-0.5*mesh->cell[k].Ue[0]*(mesh->cell[k].Ue[1]*mesh->cell[k].Ue[1]+mesh->cell[k].Ue[2]*mesh->cell[k].Ue[2]+mesh->cell[k].Ue[3]*mesh->cell[k].Ue[3])/(mesh->cell[k].Ue[0]*mesh->cell[k].Ue[0]));
+			theta=p/(_R_*mesh->cell[k].Ue[0])/( pow((p/_p0_),((_gamma_-1.0)/_gamma_)) );
+                  fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e \n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi,theta);
             }
 		}
 	}
@@ -3618,7 +4251,100 @@ int read_solids(t_mesh *mesh,t_solid *solids ){
 }
 
 
+void print_info(t_mesh *mesh, t_sim *sim){
 
+      printf("\n\e[94mAuthors:\n - Adrián Navas Montilla\n - Isabel Echeverribar \n");
+      printf("Copyright (C) 2018-2019 The authors.   \n\n");     
+      printf("License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES under the following terms: \n \n - Attribution — You must give appropriate credit and provide a link to the license. \n - NonCommercial — You may not use the material for commercial purposes. \n - NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided.\n\n");     
+      printf("Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.\e[0m\n");
+      
+		
+      printf(" \n");
+      printf(" \e[4mSIMULATION SETUP:\e[0m\n");
+#if TYPE_REC==0
+	printf(" WENO reconstruction of order %d is chosen. \n",sim->order);
+#endif
+#if TYPE_REC==1
+	printf(" TENO reconstruction of order %d is chosen. \n",sim->order);
+#endif
+#if TYPE_REC==2
+	printf("%s UWC (optimal weights) reconstruction of order %d is chosen. \n",WAR,sim->order);
+#endif
+      printf(" Final time: %lf\n",sim->tf);
+      printf(" CFL: %lf\n",sim->CFL);
+      printf(" Number of cells X: %d\n",mesh->xcells);
+      printf(" Number of cells Y: %d\n",mesh->ycells);
+      printf(" Number of cells Z: %d\n",mesh->zcells);
+      printf(" Domain size: %lf x %lf x %lf \n",mesh->Lx,mesh->Ly,mesh->Lz);
+      printf(" Boundaries (1: periodic, 2: user defined, 3: transmissive, 4: solid wall): \n"); // 1: periodic, 2: user defined, 3: transmissive, 4: solid wall
+      printf(" Face_1(-y): %d \n",mesh->bc[0]);
+      printf(" Face_2(+x): %d \n",mesh->bc[1]);
+      printf(" Face_3(+y): %d \n",mesh->bc[2]);
+      printf(" Face_4(-x): %d \n",mesh->bc[3]);
+      printf(" Face_5(-z): %d \n",mesh->bc[4]);
+      printf(" Face_6(+z): %d \n",mesh->bc[5]);
+#if LINEAR_TRANSPORT||LINEAR
+      printf("%s LINEAR TRANPORT IS ACTIVE. \n",WAR);
+      printf(" Linear transport velocity: \n"); 
+      printf(" u_x: %lf \n",mesh->u_x);
+      printf(" u_y: %lf \n",mesh->u_y);
+      printf(" u_z: %lf \n",mesh->u_z);
+#endif
+      
+      printf(" \n");
+      
+      printf("%s Configuration file has been read \n",OK);
+
+#if ST==0&&HLLS==1
+	printf("%s HLLS solver cannot be used when ST=0. Please use HLLE or HLLC. Press any key to exit... \n",ERR);
+	getchar();
+	exit(1);
+#endif
+
+#if HLLE+HLLS+ROE+HLLC > 1 
+	printf("%s More than one solver is selected, please choose only one. Press any key to exit... \n",ERR);
+	getchar();
+	exit(1);
+#endif
+      
+      
+      if((mesh->bc[1]==1 && mesh->bc[3]!=1)||(mesh->bc[1]!=1 && mesh->bc[3]==1)){
+            printf("%s Cyclic BC in X not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
+            getchar();
+            exit(1);
+	}
+      if((mesh->bc[0]==1 && mesh->bc[2]!=1)||(mesh->bc[0]!=1 && mesh->bc[2]==1)){
+            printf("%s Cyclic BC in Y not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
+            getchar();
+            exit(1);
+	}
+      if((mesh->bc[4]==1 && mesh->bc[5]!=1)||(mesh->bc[4]!=1 && mesh->bc[5]==1)){
+            printf("%s Cyclic BC in Z not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
+            getchar();
+            exit(1);
+	}
+      
+      
+      if(mesh->bc[1]==1 && mesh->xcells<=(sim->order-1)/2){
+            printf("%s The number of cells in X is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
+            mesh->bc[1]=3;
+            mesh->bc[3]=3;
+
+	}
+      if(mesh->bc[0]==1 && mesh->ycells<=(sim->order-1)/2){
+            printf("%s The number of cells in Y is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
+            mesh->bc[0]=3;
+            mesh->bc[2]=3;
+
+	}
+      if(mesh->bc[4]==1 && mesh->zcells<=(sim->order-1)/2){
+            printf("%s The number of cells in Z is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
+            mesh->bc[4]=3;
+            mesh->bc[5]=3;
+
+	}
+
+}
 
 
 
@@ -3632,7 +4358,7 @@ int read_solids(t_mesh *mesh,t_solid *solids ){
 
 int main(int argc, char * argv[]){
 	
-	int i, j, k, p;
+	int i, j, k, p, m, n;
 	t_mesh *mesh;
 	t_sim *sim;
 	t_solid *solids;
@@ -3646,6 +4372,7 @@ int main(int argc, char * argv[]){
 	int nIt; //counter for iterations
 	double timeac; //accumulated time before dump
 	double timeac2,tTke; //other counter. dump time for tke
+	double aux1,aux2;
 	t_cell *cell;
       FILE *file_input;
       FILE *file_tke;
@@ -3658,11 +4385,7 @@ int main(int argc, char * argv[]){
 
 #endif
 
-#if WENO&&TENO
-	printf("%s WENO and TENO are set to 1, please only choose one of them. The program will close when pressing a key. \n",ERR);
-      getchar();
-      exit(1);
-#endif
+
 
       
       ////////////////////////////////////////////////////
@@ -3727,95 +4450,9 @@ int main(int argc, char * argv[]){
 	mesh->dx= mesh->Lx/mesh->xcells;
 	mesh->dy= mesh->Ly/mesh->ycells;
       mesh->dz= mesh->Lz/mesh->zcells;
-      
-      
-      printf("\n\e[94mAuthors:\n - Adrián Navas Montilla\n - Isabel Echeverribar \n");
-      printf("Copyright (C) 2018-2019 The authors.   \n\n");     
-      printf("License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES under the following terms: \n \n - Attribution — You must give appropriate credit and provide a link to the license. \n - NonCommercial — You may not use the material for commercial purposes. \n - NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided.\n\n");     
-      printf("Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.\e[0m\n");
-      
-      
-      printf(" \n");
-      printf(" \e[4mSIMULATION SETUP:\e[0m\n");
-#if WENO&&!OPT_WEIGHTS
-	printf(" WENO reconstruction of order %d is chosen. \n",sim->order);
-#endif
-#if TENO
-	printf(" TENO reconstruction of order %d is chosen. \n",sim->order);
-#endif
-#if WENO&&OPT_WEIGHTS
-	printf("%s UWC (optimal weights) reconstruction of order %d is chosen. \n",WAR,sim->order);
-#endif
-      printf(" Final time: %lf\n",sim->tf);
-      printf(" CFL: %lf\n",sim->CFL);
-      printf(" Number of cells X: %d\n",mesh->xcells);
-      printf(" Number of cells Y: %d\n",mesh->ycells);
-      printf(" Number of cells Z: %d\n",mesh->zcells);
-      printf(" Domain size: %lf x %lf x %lf \n",mesh->Lx,mesh->Ly,mesh->Lz);
-      printf(" Boundaries (1: periodic, 2: user defined, 3: transmissive, 4: solid wall): \n"); // 1: periodic, 2: user defined, 3: transmissive, 4: solid wall
-      printf(" Face_1(-y): %d \n",mesh->bc[0]);
-      printf(" Face_2(+x): %d \n",mesh->bc[1]);
-      printf(" Face_3(+y): %d \n",mesh->bc[2]);
-      printf(" Face_4(-x): %d \n",mesh->bc[3]);
-      printf(" Face_5(-z): %d \n",mesh->bc[4]);
-      printf(" Face_6(+z): %d \n",mesh->bc[5]);
-#if LINEAR_TRANSPORT||LINEAR
-      printf("%s LINEAR TRANPORT IS ACTIVE. \n",WAR);
-      printf(" Linear transport velocity: \n"); 
-      printf(" u_x: %lf \n",mesh->u_x);
-      printf(" u_y: %lf \n",mesh->u_y);
-      printf(" u_z: %lf \n",mesh->u_z);
-#endif
-      
-      printf(" \n");
-      
-      printf("%s Configuration file has been read \n",OK);
-      
+          
+      print_info(mesh,sim);
         
-      
-      if((mesh->bc[1]==1 && mesh->bc[3]!=1)||(mesh->bc[1]!=1 && mesh->bc[3]==1)){
-            printf("%s Cyclic BC in X not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
-            getchar();
-            exit(1);
-	}
-      if((mesh->bc[0]==1 && mesh->bc[2]!=1)||(mesh->bc[0]!=1 && mesh->bc[2]==1)){
-            printf("%s Cyclic BC in Y not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
-            getchar();
-            exit(1);
-	}
-      if((mesh->bc[4]==1 && mesh->bc[5]!=1)||(mesh->bc[4]!=1 && mesh->bc[5]==1)){
-            printf("%s Cyclic BC in Z not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
-            getchar();
-            exit(1);
-	}
-      
-      
-      if(mesh->bc[1]==1 && mesh->xcells<=(sim->order-1)/2){
-            printf("%s The number of cells in X is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
-            mesh->bc[1]=3;
-            mesh->bc[3]=3;
-
-	}
-      if(mesh->bc[0]==1 && mesh->ycells<=(sim->order-1)/2){
-            printf("%s The number of cells in Y is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
-            mesh->bc[0]=3;
-            mesh->bc[2]=3;
-
-	}
-      if(mesh->bc[4]==1 && mesh->zcells<=(sim->order-1)/2){
-            printf("%s The number of cells in Z is too small for periodic BC. Transmissive BC are considered instead. \n",WAR);
-            mesh->bc[4]=3;
-            mesh->bc[5]=3;
-
-	}
-      
-      
-      
-      
-      
-      
-
-      
       //Initialization of ac. dump time
 	timeac=0.0;
       timeac2=0.0;
@@ -3841,7 +4478,9 @@ int main(int argc, char * argv[]){
       printf("%s Ghost and solid cells have been identified \n",OK);}
       update_stencils(mesh,sim);
       assign_wall_type(mesh);    //esto da problemas raros -> valgrind?
-	update_initial(mesh);
+	update_initial(mesh,sim);
+      
+      
       #if ALLOW_SOLIDS
       assign_image_cells(mesh,solids);
       update_ghost_cells(sim,mesh,solids);
@@ -3849,9 +4488,7 @@ int main(int argc, char * argv[]){
       printf("%s Image points have been defined and ghost cell values have been computed \n",OK);
       #endif
 	  
-	
-		
-     
+
       
 	#if LINEAR_TRANSPORT == 1
 		set_velocity_field(mesh,sim);
@@ -3865,6 +4502,7 @@ int main(int argc, char * argv[]){
 	write_geo_vtk(mesh,"output-files/inital_geo_mesh.vtk");
 	write_vtk(mesh,"output-files/state000.vtk");
 	write_list(mesh,"output-files/list000.out");
+	write_list_eq(mesh,"output-files/list_eq.out");
       printf("\n");
       printf(" T= 0.0e+0, Initial data printed. Starting time loop.\n\n");
 //    write_matrix_u(mesh,"output-files/u0.dat");
@@ -3921,18 +4559,27 @@ int main(int argc, char * argv[]){
 	////////////////////////////////////////////////////
 	////////////// C A L C U L A T I O N ///////////////
 	////////////////////////////////////////////////////
+      
 	tf=sim->tf;
       sim->t=0.0;
 	t=0.0;
 	nIt=0;
+	
+	#if ST==1
+      equilibrium_reconstruction(mesh,sim);
+	#endif
+      
 	while(t<tf){
 		
 		cell=mesh->cell; 
 		for(k=1;k<=sim->rk_steps;k++){
 			if(k==1){
 				compute_fluxes(mesh,sim);
+				#if ST == 1
+				compute_source(mesh);
+				#endif
 				#if LINEAR_TRANSPORT == 0
-					update_dt(mesh,sim);
+				update_dt(mesh,sim);
 				#endif
 				if(sim->order==1){
 					update_cell(mesh,sim);
@@ -3943,17 +4590,46 @@ int main(int argc, char * argv[]){
 					update_cellK1(mesh,sim);
                               #if ALLOW_SOLIDS
                               update_ghost_cells(sim,mesh,solids);
-                              #endif                              
+                              #endif                               
 				}
+                        
+                        /*for(n=0;n<mesh->zcells;n++){	
+                              m = 1 + 0*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                              //cell=&(mesh->cell[m]);
+                              cell[m].pres=(_gamma_-1.0)*(cell[m].U[4]-0.5*cell[m].U[0]*(cell[m].U[1]*cell[m].U[1]+cell[m].U[2]*cell[m].U[2])/(cell[m].U[0]*cell[m].U[0]));
+                              cell[m].u_int=cell[m].pres/((_gamma_-1.0)*cell[m].U[0]); 
+                              //printf("%lf %lf %lf %lf  \n",cell[m].zc,cell[m].w5->UR[4]*(_gamma_-1.0),cell[m].w6->UL[4]*(_gamma_-1.0),cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz);
+                              //printf("%lf %lf %lf %lf  \n",cell[m].zc,cell[m].w5->UR[4],cell[m].w6->UL[4],cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz);
+                              //printf("%lf %lf %lf  \n",cell[m].zc,cell[m].w5->UR[0],cell[m].w6->UL[0]);
+                              //printf("%lf %14.14e   \n",cell[m].zc,cell[m].S_corr[3]);
+					printf("%lf %lf %lf %lf %14.14e %14.14e %14.14e \n",cell[m].zc,cell[m].S[3],  cell[m].w5->fR_star[3], cell[m].w6->fL_star[3],    cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz,      cell[m].U[3],  cell[m].U_aux[3]);
+				
+			     }
+			     printf("\n");*/
+                       //getchar();
 
 			}else if(k==2){
 				compute_fluxes(mesh,sim);
+				#if ST == 1
+				compute_source(mesh);
+				#endif
 				update_cellK2(mesh,sim);
                         #if ALLOW_SOLIDS
                         update_ghost_cells(sim,mesh,solids);
-                        #endif     
+                        #endif   
+				/*for(n=0;n<mesh->zcells;n++){	
+                              m = 1 + 0*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                              //cell=&(mesh->cell[m]);
+                              cell[m].pres=(_gamma_-1.0)*(cell[m].U[4]-0.5*cell[m].U[0]*(cell[m].U[1]*cell[m].U[1]+cell[m].U[2]*cell[m].U[2])/(cell[m].U[0]*cell[m].U[0]));
+                              cell[m].u_int=cell[m].pres/((_gamma_-1.0)*cell[m].U[0]); 
+                              printf("%lf %lf %lf %lf %lf %lf %14.14e \n",cell[m].zc,cell[m].S[3],cell[m].w5->fR_star[3],cell[m].w6->fL_star[3],cell[m].w5->UR[4]*(_gamma_-1.0),cell[m].w6->UL[4]*(_gamma_-1.0),cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz);
+                        }
+                        getchar();*/				
 			}else{ //k=3
 				compute_fluxes(mesh,sim);
+				#if ST == 1
+				compute_source(mesh);
+				#endif
 				update_cellK3(mesh,sim);
                         #if ALLOW_SOLIDS
                         update_ghost_cells(sim,mesh,solids);
@@ -3984,7 +4660,7 @@ int main(int argc, char * argv[]){
 			sprintf(vtkfile,"output-files/state%03d.vtk",nIt+1);
 			write_vtk(mesh,vtkfile);
 			#endif
-            #if WRITE_LIST 
+			#if WRITE_LIST 
 			sprintf(listfile,"output-files/list%03d.out",nIt+1);
 			write_list(mesh,listfile);
 			#endif
@@ -4005,7 +4681,7 @@ int main(int argc, char * argv[]){
             fprintf(file_tke,"%14.14e %14.14e\n",t+sim->dt,mesh->tke);              
 			timeac2=0.0;
 		}
-        #endif  
+		#endif  
 		
 		
 		t+=sim->dt;	//Time for the next time step
@@ -4027,6 +4703,21 @@ int main(int argc, char * argv[]){
       #if WRITE_TKE 
       fclose(file_tke);
       #endif  
+	
+	
+	
+	/*
+	aux1=0.0;
+	aux2=0.0;
+      cell=mesh->cell; 
+	for(n=5;n<mesh->zcells-5;n++){	
+		m = 1 + 0*mesh->xcells + n*mesh->xcells*mesh->ycells;
+		aux1=aux1+ABS(cell[m].S_corr[3]);
+		aux2=aux2+1.0;
+		//printf("%lf  %14.14e %14.14e\n",cell[m].zc,cell[m].S[3],cell[m].S_corr[3]);
+	}
+	printf("ST correction term is %14.14e \n",aux1/aux2);
+	*/
       
 /*      
       int m, l;
@@ -4050,7 +4741,7 @@ int main(int argc, char * argv[]){
 
 
 
-	printf("%s Under development. Please, be patient. Thanks!\n",END,END);
+	printf("%s Under development. Please, be patient. Thanks!\n",END);
 
 
 
