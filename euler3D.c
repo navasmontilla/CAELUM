@@ -2967,6 +2967,221 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 
 void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
 
+	int m;
+	double WR[6], WL[6], S[6], B[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR, gammaL, gammaR, phiL, phiR;
+      double pLe, pRe, rhoLe, rhoRe;
+	double raizrhoR, raizrhoL, sumRaizRho, r;
+	double u_hat, v_hat, w_hat, H_hat, c_hat, gamma_hat,psi,chi;
+	double S1, S2, diffS, maxS;
+	double FR[5], FL[5];
+	double F_star[5];
+
+	/**Rotation of array of variables**/
+	
+	WR[0]=wall->UR[0];
+	WL[0]=wall->UL[0];
+
+      // This is a simplification of the rotation matrix, only valid for cartesian mesh
+	WR[1]=wall->UR[1]*wall->nx+wall->UR[2]*wall->ny+wall->UR[3]*wall->nz;
+	WL[1]=wall->UL[1]*wall->nx+wall->UL[2]*wall->ny+wall->UL[3]*wall->nz;
+
+	WR[2]=-wall->UR[1]*wall->ny+wall->UR[2]*wall->nx+wall->UR[2]*wall->nz;
+	WL[2]=-wall->UL[1]*wall->ny+wall->UL[2]*wall->nx+wall->UL[2]*wall->nz;
+      
+      WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
+	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
+      
+	WR[4]=wall->UR[4];
+	WL[4]=wall->UL[4];
+	
+#if MULTICOMPONENT
+	WR[5]=wall->UR[5];
+	WL[5]=wall->UL[5];
+	phiL=WL[5]/WL[0];
+	phiR=WR[5]/WR[0];
+	#if MULTI_TYPE==1
+		gammaL=phiL;
+		gammaR=phiR;
+	#else
+		gammaL=1.0+1.0/phiL;
+		gammaR=1.0+1.0/phiR;
+	#endif
+#else
+	gammaL=_gamma_;
+	gammaR=_gamma_;
+#endif	
+	
+	/**Additional variables for the solver**/
+	uL=WL[1]/WL[0];
+	uR=WR[1]/WR[0];
+
+	vL=WL[2]/WL[0];
+	vR=WR[2]/WR[0];
+      
+      wL=WL[3]/WL[0];
+	wR=WR[3]/WR[0];
+
+	pL=(gammaL-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
+	pR=(gammaR-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
+	
+	HL=(WL[4]+pL)/WL[0];
+	HR=(WR[4]+pR)/WR[0];
+	
+	cL=sqrt(gammaL*pL/WL[0]);
+
+	cR=sqrt(gammaR*pR/WR[0]);
+	
+	raizrhoL=sqrt(WL[0]);
+	raizrhoR=sqrt(WR[0]);
+	sumRaizRho=raizrhoR+raizrhoL;
+
+	/**Hat variables (Roe averages)**/
+	u_hat=(uR*raizrhoR+uL*raizrhoL)/sumRaizRho;
+	v_hat=(vR*raizrhoR+vL*raizrhoL)/sumRaizRho;
+      w_hat=(wR*raizrhoR+wL*raizrhoL)/sumRaizRho;
+	H_hat=(HR*raizrhoR+HL*raizrhoL)/sumRaizRho;
+#if MULTICOMPONENT	
+	#if MULTI_TYPE==1
+		gamma_hat=1.0+ 1.0/( (phiR*raizrhoR+phiL*raizrhoL)/sumRaizRho );
+	#else
+		gamma_hat=(gammaR*raizrhoR+gammaL*raizrhoL)/sumRaizRho;
+	#endif
+#else
+	gamma_hat=_gamma_;
+#endif
+
+	c_hat=sqrt((gamma_hat-1)*(H_hat-0.5*(u_hat*u_hat+v_hat*v_hat+w_hat*w_hat)));
+
+	/**Physical flux calculation (the F of the eqs.)**/
+
+	FR[0]=WR[1];
+	FL[0]=WL[1];
+
+	FR[1]=WR[1]*uR+pR;
+	FL[1]=WL[1]*uL+pL;
+
+	FR[2]=WR[1]*vR;
+	FL[2]=WL[1]*vL;
+      
+      FR[3]=WR[1]*wR;
+	FL[3]=WL[1]*wL;
+
+	FR[4]=uR*(WR[4]+pR);
+	FL[4]=uL*(WL[4]+pL);
+
+
+	/**Wave speed estimation**/
+	
+	//S1=MIN(uL-cL,u_hat-c_hat); //***************************-------------REVISAR!!!!!!!!!!!!!!!!!!!!!!!!
+	//S2=MAX(uR+cR, u_hat+c_hat);
+	S1=u_hat-c_hat; 
+	S2=u_hat+c_hat;
+
+	maxS=MAX(ABS(S1),ABS(S2));
+	diffS=S2-S1;
+	
+	
+	/**Source term**/
+      
+      pRe   =wall->pRe; //(gamma_hat-1.0)*wall->URe[4];
+      pLe   =wall->pLe; //(gamma_hat-1.0)*wall->ULe[4];
+      rhoRe = wall->URe[0];
+      rhoLe = wall->ULe[0];
+      
+      
+	S[0]=0.0;
+      if(ABS(wall->nz)>TOL14){ //this is neccessary when considering atm pressures of 1.e5, to keep precision
+            S[1]=(WR[0]+WL[0])*(pRe-pLe)/(rhoRe+rhoLe);
+      }else{
+            S[1]=0.0;
+      }
+	S[2]=0.0;
+	S[3]=0.0;
+	S[4]=S[1]*u_hat;
+	
+	psi=(rhoRe-rhoLe)*c_hat*c_hat/(pRe-pLe+TOL14);
+	chi=0.5*(psi-1.0)*(v_hat*v_hat+w_hat*w_hat);
+	
+	B[0]=-psi*S[1]/(S1*S2);
+	B[1]=0.0;
+	B[2]=-psi*v_hat/(S1*S2)*S[1];
+	B[3]=-psi*w_hat/(S1*S2)*S[1];
+	B[4]=-(H_hat-u_hat*u_hat+chi)/(S1*S2)*S[1]; 
+	
+	/**HLLS flux calculation**/
+	//WR[0]=0.0;
+	//WL[0]=0.0;
+	//fL_star
+	for(m=0;m<5;m++){
+		if(S1>=0){
+			F_star[m]=FL[m];
+		}else if(S2<=0){
+			F_star[m]=FR[m]-S[m];
+		}else{
+                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m])+S1*(S[m]-S2*B[m]))/(diffS);
+            }
+	}	
+	/**Inverse rotation of the flux**/
+	wall->fL_star[0]=F_star[0]; //Mass is not vectorial
+	wall->fL_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
+	wall->fL_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
+      wall->fL_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fL_star[4]=F_star[4]; //Energy is not vectorial
+	
+	//fR_star
+	for(m=0;m<5;m++){
+		if(S1>=0){
+			F_star[m]=FL[m]+S[m];
+		}else if(S2<=0){
+			F_star[m]=FR[m];
+		}else{
+                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m])+S2*(S[m]-S1*B[m]))/(diffS);
+            }
+	}
+	/**Inverse rotation of the flux**/
+	wall->fR_star[0]=F_star[0]; //Mass is not vectorial
+	wall->fR_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
+	wall->fR_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
+      wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fR_star[4]=F_star[4]; //Energy is not vectorial
+	
+	/*if(ABS(S[1])>TOL8 ){
+	printf(" nz: %14.14e\n",wall->nz);
+	printf(" S1,S4: %14.14e %14.14e\n",S[1],S[4]);
+      printf(" rho: %14.14e %14.14e %14.14e %14.14e\n",WR[0],WL[0],rhoRe,rhoLe);
+	printf(" FL,FR: %14.14e %14.14e\n",FL[1],FR[1]);
+	printf(" PLe,PRe: %14.14e %14.14e\n",pLe,pRe);
+	printf(" PL,PR: %14.14e %14.14e\n",pL,pR);
+	
+	printf(" UR,UL: %14.14e %14.14e\n",wall->UR[1]/wall->UR[0],wall->UL[1]/wall->UL[0]);
+
+	printf(" EL,ER: %14.14e %14.14e\n",WR[4],WL[4]);
+	printf(" ELe,ERe: %14.14e %14.14e\n",wall->URe[4],wall->ULe[4]);
+	printf(" rho/rhoE: %14.14e\n",(WR[0]+WL[0])/(rhoRe+rhoLe));
+	printf(" deltaF, deltaP, delta %14.14e %14.14e  %14.14e \n",FR[1]-FL[1],pRe-pLe,FR[1]-FL[1]-(pRe-pLe) );
+	
+	printf(" FL: %14.14e %14.14e\n",wall->fL_star[3],FL[1]);
+	printf(" FR: %14.14e %14.14e\n",wall->fR_star[3],FR[1]);
+	printf(" dF: %14.14e %14.14e\n",(S2*FL[1]-S1*FR[1]+S2*S[1])-(S2-S1)*FR[1],   FR[1]-FL[1]-S[1]);
+	printf(" dF (rho): %14.14e %14.14e\n",wall->fL_star[0]-FL[0],wall->fR_star[0]-FR[0]);
+	printf(" Df-S: %14.14e\n",wall->fR_star[3]-wall->fL_star[3]-S[1]);
+	printf(" Df-S: %14.14e\n",wall->fR_star[0]-wall->fL_star[0]);
+	printf(" Df-S (rho): %14.14e\n",FR[0]-FL[0]-S[0]);
+	printf(" Df-S (rho*u): %14.14e\n",FR[1]-FL[1]-S[1]);
+	printf(" Df-S (rho*v): %14.14e\n",FR[2]-FL[2]-S[2]);
+	printf(" Df-S (rho*w): %14.14e\n",FR[3]-FL[3]-S[3]);
+	printf(" Df-S (E): %14.14e\n",FR[4]-FL[4]-S[4]);
+	printf(" Du-B (rho): %14.14e %14.14e %14.14e %14.14e\n",WR[0],WL[0],B[0],WR[0]-WL[0]-B[0]);
+	printf(" Du-B (rho*u): %14.14e \n",WR[1]-WL[1]-B[1]);
+	printf(" Du-B (rho*v): %14.14e \n",WR[2]-WL[2]-B[2]);
+	printf(" Du-B (rho*w): %14.14e \n",WR[3]-WL[3]-B[3]);
+	printf(" Du-B (E): %14.14e \n",WR[4]-WL[4]-B[4]);
+	getchar();
+      }*/
+      
+      
+	*lambda_max=MAX(*lambda_max,maxS);
 		
 }
 
