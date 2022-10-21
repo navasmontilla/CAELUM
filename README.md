@@ -280,9 +280,9 @@ For *.vkt files, it is posible to choose the variables to print by means of addi
 #define print_MOMENTUM 1
 #define print_ENERGY 0
 #define print_PRESSURE 1
-#define print_OVERPRESSURE 1
+#define print_OVERPRESSURE 0
 #define print_SOLUTES 0
-#define print_POTENTIALTEM 1
+#define print_POTENTIALTEM 0
 ```
 
 The dumping time is set as *DumpTime* in the file *configure.input*. 
