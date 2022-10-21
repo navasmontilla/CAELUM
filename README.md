@@ -186,7 +186,7 @@ Spatial reconstructions are implemented using 1D splitting. The available recons
 
 - UWC 3, 5 and 7
 - WENO 3, 5 and 7
-- TENO 5 (requires the selection of the CT constant!)
+- TENO 3, 5 and 7 (requires the selection of the CT constant!)
 
 ### Time integrator
 
@@ -199,6 +199,10 @@ The available solvers are:
 - HLL solver: 
 ```c 
 void compute_euler_HLLE(t_wall *wall,double *lambda_max) 
+```
+- HLLS solver: 
+```c 
+void compute_euler_HLLS(t_wall *wall,double *lambda_max) 
 ```
 - HLLC solver: 
 ```c 
@@ -276,7 +280,9 @@ For *.vkt files, it is posible to choose the variables to print by means of addi
 #define print_MOMENTUM 1
 #define print_ENERGY 0
 #define print_PRESSURE 1
+#define print_OVERPRESSURE 1
 #define print_SOLUTES 0
+#define print_POTENTIALTEM 1
 ```
 
 The dumping time is set as *DumpTime* in the file *configure.input*. 
