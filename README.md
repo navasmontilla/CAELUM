@@ -10,11 +10,12 @@ This code allows the simulation of:
 
 - Linear scalar transport
 - Burgers' equation
-- Compressible Euler equations (single and multicomponent)
+- Compressible Euler equations 
 
-Regarding the compressible Euler equations, the following features are allowed in EHOW-3D:
+Regarding the compressible Euler equations, the following features are allowed in EHOW3D:
 
-- Compressible flows composed by a mixture of 2 gases
+- Compressible flows single and multicomponent (composed by a mixture of 2 gases)
+- Gravitational source terms
 - Inmersed solid bodies given by *.stl triangulation files (under construction)
 
 Compressible turbulence is a highly nonlinear multiscale phenomenon. It has become one of the most challenging problems in computational physics. Turbulent flows can be numerically reproduced by means of hydrodynamic solvers. A common approach is the use of the Euler equations in combination with a suitable numerical discretization scheme. When the numerical diffusion inherent to the discretization method mimics the physical dissipation of the unresolved turbulent motion, the approach is called Implicit Large Eddy Simulation (ILES). 
@@ -320,7 +321,8 @@ Results are sorted in the following categories:
 - [Benchmark #3: Two-fluid mixture problem](doc/benchmark3.md)
 - [Benchmark #4: Convergence rate test](doc/benchmark4.md)
 - [Benchmark #5: Taylor-Green vortex](doc/benchmark5.md)
--  Benchmark #6: External flow around a solid object
+- [Benchmark #6: Kelvin-Helmholtz instability](doc/benchmark6.md)
+- [Benchmark #7: Colliding thermals](doc/benchmark7.md)
 - Other results
 
 
@@ -331,9 +333,12 @@ Results are sorted in the following categories:
 
 Authors:
  - Adrián Navas Montilla
- - Isabel Echeverribar
+ - Isabel Echeverribar 
+ 
+Collaborators:
+ - Javier Guallart Huertas (2022-present)
 
-Copyright (C) 2018-2019 The authors.  
+Copyright (C) 2019-2023 The authors and collaborators.  
 
 License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms: 
 
