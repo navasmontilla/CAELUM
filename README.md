@@ -1,10 +1,10 @@
-# EHOW3D (Euler High Order WENO 3D)
+# EHOW3D (Euler High Order WENO/TENO 3D)
 
 
 
 ## Introduction
 
-This repository includes a 3D solver of the compressible Euler equations for academic purposes. The solver uses a 1-st, 3-rd, 5-th and 7-th order WENO, TENO and UWC reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
+This repository includes a 3D solver of the compressible Euler equations for academic purposes. The solver uses a 1-st, 3-rd, 5-th and 7-th order WENO, TENO and linear reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
 
 This code allows the simulation of:
 
@@ -185,7 +185,7 @@ CELLS = 40, 40, 40,
 
 Spatial reconstructions are implemented using 1D splitting. The available reconstructions are:
 
-- UWC 3, 5 and 7
+- Linear 3, 5 and 7
 - WENO 3, 5 and 7
 - TENO 3, 5 and 7 (requires the selection of the CT constant!)
 
