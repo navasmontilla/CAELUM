@@ -16,5 +16,5 @@ The following figures show the kinetic energy spectrum for the 3-rd, 5-th and 7-
 The following figures show the kinetic energy dissipation for the 3-rd, 5-th and 7-th order schemes in grids composed of 32x32x32, 64x64x64 and 128x128x128 cells.
 
 <figure style="text-align: center;">
-  <img src="dissipation_rate.png" alt="my alt text"/>
+  <img src="dissipation_rates.png" alt="my alt text"/>
 </figure>
