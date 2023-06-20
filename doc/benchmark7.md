@@ -7,6 +7,7 @@ The colliding thermals test case, recently proposed by Norman (2021), involves t
 </figure>
 
 
+The dotted line is obtained with the UWC reconstruction scheme, the dashed line with WENO and the continuous line with TENO.
 
 <figure style="text-align: center;">
   <img src="colliding_thermals_spectrum.png" alt="my alt text"/>
