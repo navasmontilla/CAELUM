@@ -47,7 +47,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define ABS(x) (x < 0 ? -x : x)
 
 //reconstruction method 
-#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for UWC
+#define TYPE_REC 1 //This is 0 for WENO, 1 for TENO and 2 for UWC
 #define _CT_ 1.0e-6
 #define epsilon  1.0E-6
 #define epsilon2 1.0E-40
@@ -61,16 +61,16 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define SW 0
 
 //Source terms
-#define ST 0 // 0: Source OFF, 1: Source ON
+#define ST 1// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), , 2: Source ON (perturbation version, total energy)
 
 //Multicomponent and multiphase flow
 #define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma). 
 #define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
 
 //Solvers
-#define HLLE 1
+#define HLLE 0
 #define HLLC 0
-#define HLLS 0
+#define HLLS 1
 #define ROE 0
 
 //Debug code 
@@ -81,14 +81,14 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define _stol_ 2.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
 
 //Acceleration functions
-#define NTHREADS 2
+#define NTHREADS 24
 
 //Printing variables (vtk)
 #define WRITE_VTK 1
 #define print_RHO 0
-#define print_MOMENTUM 1
+#define print_VELOCITY 1
 #define print_ENERGY 0
-#define print_PRESSURE 1
+#define print_PRESSURE 0
 #define print_OVERPRESSURE 1
 #define print_SOLUTES 0
 #define print_POTENTIALTEM 1
@@ -98,7 +98,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define WRITE_TKE 0 //write file TKE evolution in time
 
 //Reading data
-#define READ_INITIAL 1
+#define READ_INITIAL 0
 
 ////////////////////////////////////////////////////
 //////////////  S T R U C T U R E S  ///////////////
@@ -182,6 +182,7 @@ struct t_wall_{
 	int cellR_id, cellL_id; //id of the right and left cell
 	t_cell *cellR, *cellL; //pointers to the right and left cells of the wall
 	double nx, ny, nz;
+	double z; //height in z direction
       int wtype, boundId; //wtype: 1 for inner walls, 3 for transmissive boundary walls and 4 for solid walls
       double vel;
 };
@@ -216,7 +217,7 @@ struct t_mesh_{
 	
 	double lambda_max;
 	double tke;
-	double mass;
+	double mass,energy;
 
 	t_sim *sim;
 	
@@ -319,12 +320,16 @@ void compute_burgers_flux(t_wall *wall,double *lambda_max);
 void compute_linear_flux(t_wall *wall,double *lambda_max);
 
 void mass_calculation(t_mesh *mesh, t_sim *sim);
+void energy_calculation(t_mesh *mesh, t_sim *sim);
 void tke_calculation(t_mesh *mesh, t_sim *sim);
 
 int read_solids(t_mesh *mesh, t_solid *solids );
 
 int vector_product(double *input1, double *input2, double *output);
 double dot_product(double *input1, double *input2);
+
+double energy_from_pressure(double gm, double p, double u, double v, double w, double rho, double z);
+double pressure_from_energy(double gm, double E, double u, double v, double w, double rho, double z);
 
 ////////////////////////////////////////////////////
 //////  P R E - P R O C.   F U N C T I O N S ///////
@@ -652,6 +657,15 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 		}
 	}
 	
+	for(n=0;n<mesh->ncells;n++){		
+		cell[n].w1->z=cell[n].zc;
+		cell[n].w4->z=cell[n].zc;
+		cell[n].w2->z=cell[n].zc;
+		cell[n].w3->z=cell[n].zc;
+		cell[n].w5->z=cell[n].zc-0.5*cell[n].dz;
+		cell[n].w6->z=cell[n].zc+0.5*cell[n].dz;
+	}
+	
 
 
 	
@@ -820,7 +834,7 @@ int update_initial(t_mesh *mesh, t_sim *sim){
 	int l,m,k,n,RP;
 	FILE *fp,*fpe;
 	char fname[1024];
-      double d,aux1,aux2,aux3,xaux,yaux,r,umax,ut,wp,r_d,L,xc,yc,zc,rc;
+      double d,aux1,aux2,aux3,xaux,yaux,r,umax,ut,wp,r_d,L,xc,yc,zc,rc,d1,d2;
       double x1,x2,y1,y2,z1,z2,C;
       double p,u,v,w,rho,phi,gamma,tt,p0,tt0,rho0,pexner,T0,BV;
 	  
@@ -869,7 +883,7 @@ int update_initial(t_mesh *mesh, t_sim *sim){
 				cell[k].U[1]=u*cell[k].U[0];
 				cell[k].U[2]=v*cell[k].U[0];
 				cell[k].U[3]=w*cell[k].U[0];
-				cell[k].U[4]=p/(gamma-1.0)+0.5*rho*(u*u + v*v + w*w);
+				cell[k].U[4]=energy_from_pressure(gamma,p,u,v,w,rho,cell[k].zc);
 				cell[k].U[5]=phi*rho;
 				}
 			}
@@ -912,7 +926,16 @@ int update_initial(t_mesh *mesh, t_sim *sim){
                   rho0=p0/(_R_*tt0);
                   
                   tt=tt0;
-                  aux2=(_gamma_-1.0)/_gamma_*_g_/(_R_*tt); 
+                  //aux1=p0*_R_*tt*_gamma_/(_g_*(2.0*_gamma_-1.0));
+                  aux2=(_gamma_-1.0)/_gamma_*_g_/(_R_*tt);
+                  //aux3=(2.0*_gamma_-1.0)/(_gamma_-1.0);
+                  
+			//p= -aux1*( pow((1.0-aux2*x2),aux3) - pow((1.0-aux2*x1),aux3)  )/cell[k].dz;  //integrado
+
+                  //aux3=_gamma_/(_gamma_-1.0);
+                  
+                  //rho=  -p0/_g_*( pow((1.0-aux2*x2),aux3) - pow((1.0-aux2*x1),aux3)  )/cell[k].dz;
+                  
                   p=   p0*  pow((1.0-aux2*cell[k].zc),_gamma_/(_gamma_-1.0));  //pointwise
                   rho= rho0*pow((1.0-aux2*cell[k].zc),1.0/(_gamma_-1.0));
                   
@@ -921,8 +944,8 @@ int update_initial(t_mesh *mesh, t_sim *sim){
 			cell[k].Ue[1]=u*cell[k].Ue[0];
 			cell[k].Ue[2]=v*cell[k].Ue[0];
 			cell[k].Ue[3]=w*cell[k].Ue[0];
-			cell[k].Ue[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
-			cell[k].Ue[5]=phi*rho;
+			cell[k].Ue[4]=energy_from_pressure(_gamma_,p,u,v,w,rho,cell[k].zc);
+			cell[k].Ue[5]=phi;
                   
                   cell[k].prese=p;
 			
@@ -931,16 +954,19 @@ int update_initial(t_mesh *mesh, t_sim *sim){
 			}
 			             
 
-                  xc=500;
-                  zc=260;
-                  rc=250;
-                  r=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].zc-zc)*(cell[k].zc-zc));
-                  if (r>rc) {
-                        aux1=0.0;
-                  }else{
-                        aux1=10.0/2.0*(1.0+cos(PI*r/rc));
-                  }
+                  xc=10000;
+                  zc=2000;
+                  d1=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].zc-zc)*(cell[k].zc-zc));   
                   
+                  xc=10000;
+                  zc=8000;
+                  d2=sqrt((cell[k].xc-xc)*(cell[k].xc-xc)+(cell[k].zc-zc)*(cell[k].zc-zc));
+                  
+                  rc=1000;
+                  
+                  aux1=20.0*(MAX(rc-d1/2.0,0.0)+MIN(d2/2.0-rc,0.0))/1000;
+                  
+                                   
                   tt=tt0+aux1;
                   aux2=(_gamma_-1.0)/_gamma_*_g_/(_R_*tt0);
                   p=   p0*  pow((1.0-aux2*cell[k].zc),_gamma_/(_gamma_-1.0));  //pointwise
@@ -954,8 +980,8 @@ int update_initial(t_mesh *mesh, t_sim *sim){
 			cell[k].U[1]=u*cell[k].U[0];
 			cell[k].U[2]=v*cell[k].U[0];
 			cell[k].U[3]=w*cell[k].U[0];
-			cell[k].U[4]=p/(_gamma_-1.0)+0.5*rho*(u*u + v*v + w*w);
-			cell[k].U[5]=phi*rho;
+			cell[k].U[4]=energy_from_pressure(_gamma_,p,u,v,w,rho,cell[k].zc);
+			cell[k].U[5]=phi;
 			
                   
             }else{
@@ -2108,8 +2134,8 @@ int equilibrium_reconstruction(t_mesh *mesh, t_sim *sim){
 		wL=wall->ULe[3]/wall->ULe[0];
 		wR=wall->URe[3]/wall->URe[0];
 
-		wall->pLe=(_gamma_-1.0)*(wall->ULe[4]-0.5*wall->ULe[0]*(uL*uL+vL*vL+wL*wL));
-		wall->pRe=(_gamma_-1.0)*(wall->URe[4]-0.5*wall->URe[0]*(uR*uR+vR*vR+wR*wR));
+		wall->pLe=pressure_from_energy(_gamma_, wall->ULe[4], uL, vL, wL, wall->ULe[0], wall->z);
+		wall->pRe=pressure_from_energy(_gamma_, wall->URe[4], uR, vR, wR, wall->URe[0], wall->z);
       
 	}
       
@@ -2659,7 +2685,10 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 
 	int m;
 	double WR[6], WL[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double WRe[6], WLe[6];
+	double WRprime[6], WLprime[6];
 	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR, gammaL, gammaR, phiL, phiR;
+	double pLe, pRe, rhoprimeL, rhoprimeR, EprimeL, EprimeR;
 	double raizrhoR, raizrhoL, sumRaizRho;
 	double u_hat, v_hat, w_hat, H_hat, c_hat, gamma_hat;
 	double S1, S2, diffS, maxS;
@@ -2680,11 +2709,49 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
       
       WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
 	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
-      
-
 
 	WR[4]=wall->UR[4];
 	WL[4]=wall->UL[4];
+	
+	
+	#if ST==2||ST==3
+	WRe[0]=wall->URe[0];
+	WLe[0]=wall->ULe[0];
+
+	WRe[1]=wall->URe[1]*wall->nx+wall->URe[2]*wall->ny+wall->URe[3]*wall->nz;
+	WLe[1]=wall->ULe[1]*wall->nx+wall->ULe[2]*wall->ny+wall->ULe[3]*wall->nz;
+
+	WRe[2]=-wall->URe[1]*wall->ny+wall->URe[2]*wall->nx+wall->URe[2]*wall->nz;
+	WLe[2]=-wall->ULe[1]*wall->ny+wall->ULe[2]*wall->nx+wall->ULe[2]*wall->nz;
+      
+      WRe[3]=wall->URe[3]*wall->nx+wall->URe[3]*wall->ny-wall->URe[1]*wall->nz;
+	WLe[3]=wall->ULe[3]*wall->nx+wall->ULe[3]*wall->ny-wall->ULe[1]*wall->nz;
+
+	WRe[4]=wall->URe[4];
+	WLe[4]=wall->ULe[4];
+	#endif
+	
+	/*
+	#if ST==2
+		rhoprimeR=WR[0]-wall->URe[0];
+		rhoprimeL=WL[0]-wall->ULe[0];
+		EprimeR=WR[4]-wall->URe[4];
+		EprimeL=WL[4]-wall->ULe[4];	
+      #endif */
+	for(m=0;m<5;m++){
+		WRprime[m]=WR[m];
+		WLprime[m]=WL[m];
+	}
+	#if ST==2||ST==3
+		WRprime[0]=WR[0]-WRe[0];
+		WLprime[0]=WL[0]-WLe[0];
+		WRprime[2]=WR[2]-WRe[2];
+		WLprime[2]=WL[2]-WLe[2];
+		WRprime[3]=WR[3]-WRe[3];
+		WLprime[3]=WL[3]-WLe[3];
+		WRprime[4]=WR[4]-WRe[4];
+		WLprime[4]=WL[4]-WLe[4];	
+      #endif
 	
 #if MULTICOMPONENT
 	WR[5]=wall->UR[5];
@@ -2713,11 +2780,16 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
       wL=WL[3]/WL[0];
 	wR=WR[3]/WR[0];
 
-	pL=(gammaL-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
-	pR=(gammaR-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
+	pL=pressure_from_energy(gammaL, WL[4], uL, vL, wL, WL[0], wall->z);
+	pR=pressure_from_energy(gammaR, WR[4], uR, vR, wR, WR[0], wall->z);
 	
+#if ST==3	
+	HL=(WL[4]-WL[0]*_g_*wall->z+pL)/WL[0];
+	HR=(WR[4]-WR[0]*_g_*wall->z+pR)/WR[0];
+#else
 	HL=(WL[4]+pL)/WL[0];
 	HR=(WR[4]+pR)/WR[0];
+#endif
 	
 	cL=sqrt(gammaL*pL/WL[0]);
 
@@ -2748,28 +2820,37 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 
 	FR[0]=WR[1];
 	FL[0]=WL[1];
-
+	
+#if ST==2||ST==3
+      pRe  =wall->pRe; 
+      pLe  =wall->pLe; 
+	FR[1]=WR[1]*uR+(pR-pRe);
+	FL[1]=WL[1]*uL+(pL-pLe);
+#else	
 	FR[1]=WR[1]*uR+pR;
 	FL[1]=WL[1]*uL+pL;
+#endif	
 
 	FR[2]=WR[1]*vR;
 	FL[2]=WL[1]*vL;
       
       FR[3]=WR[1]*wR;
 	FL[3]=WL[1]*wL;
-
+	
 	FR[4]=uR*(WR[4]+pR);
 	FL[4]=uL*(WL[4]+pL);
 
-
-
-
+/*#if ST==2
+	WL[0]=rhoprimeL;
+	WR[0]=rhoprimeR;
+	WL[4]=EprimeL;
+	WR[4]=EprimeR;
+#endif*/
 
 	/**Wave speed estimation**/
 	
 	S1=MIN(uL-cL,u_hat-c_hat);
 	S2=MAX(uR+cR, u_hat+c_hat);
-
 
 	maxS=MAX(ABS(S1),ABS(S2));
 	diffS=S2-S1;
@@ -2781,7 +2862,7 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 		}else if(S2<=0){
 			F_star[m]=FR[m];
 		}else{
-                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m]))/(diffS);
+                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WRprime[m]-WLprime[m]))/(diffS);
             }
 	}
 	
@@ -2795,6 +2876,8 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
       for(m=0;m<5;m++){
             wall->fL_star[m]=wall->fR_star[m];
       }
+	
+	//printf("%14.14e %14.14e %14.14e\n",FR[0],FL[0],F_star[0]);
       
       
 	*lambda_max=MAX(*lambda_max,maxS);
@@ -2808,11 +2891,14 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 
 	int m;
 	double WR[5], WL[5]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double WRe[6], WLe[6];
+	double WRprime[6], WLprime[6];
 	double uL, uR, vL, vR, wR, wL, pL, pR, HL, HR, cL, cR;
+	double pLe, pRe;
 	double raizrhoR, raizrhoL, sumRaizRho;
 	double u_hat, v_hat, w_hat, H_hat, c_hat;
 	double S1, S2, diffS, maxS, S_star;
-      double uK, vK, wK, rhoK, SK, pK, EK, aux;
+      double uK, vK, wK, rhoK, SK, pK, EK, aux, rhoK2;
 	double FR[5], FL[5];
 	double F_star[5],W_star[5];
 
@@ -2831,10 +2917,41 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
       WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
 	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
       
-
-
 	WR[4]=wall->UR[4];
 	WL[4]=wall->UL[4];
+	
+	
+	#if ST==2||ST==3
+	WRe[0]=wall->URe[0];
+	WLe[0]=wall->ULe[0];
+
+	WRe[1]=wall->URe[1]*wall->nx+wall->URe[2]*wall->ny+wall->URe[3]*wall->nz;
+	WLe[1]=wall->ULe[1]*wall->nx+wall->ULe[2]*wall->ny+wall->ULe[3]*wall->nz;
+
+	WRe[2]=-wall->URe[1]*wall->ny+wall->URe[2]*wall->nx+wall->URe[2]*wall->nz;
+	WLe[2]=-wall->ULe[1]*wall->ny+wall->ULe[2]*wall->nx+wall->ULe[2]*wall->nz;
+      
+      WRe[3]=wall->URe[3]*wall->nx+wall->URe[3]*wall->ny-wall->URe[1]*wall->nz;
+	WLe[3]=wall->ULe[3]*wall->nx+wall->ULe[3]*wall->ny-wall->ULe[1]*wall->nz;
+
+	WRe[4]=wall->URe[4];
+	WLe[4]=wall->ULe[4];
+	#endif
+	
+	for(m=0;m<5;m++){
+		WRprime[m]=WR[m];
+		WLprime[m]=WL[m];
+	}
+	#if ST==2||ST==3
+		WRprime[0]=WR[0]-WRe[0];
+		WLprime[0]=WL[0]-WLe[0];
+		WRprime[2]=WR[2]-WRe[2];
+		WLprime[2]=WL[2]-WLe[2];
+		WRprime[3]=WR[3]-WRe[3];
+		WLprime[3]=WL[3]-WLe[3];
+		WRprime[4]=WR[4]-WRe[4];
+		WLprime[4]=WL[4]-WLe[4];	
+      #endif
 	
 	/**Additional variables for the solver**/
 	uL=WL[1]/WL[0];
@@ -2873,8 +2990,15 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 	FR[0]=WR[1];
 	FL[0]=WL[1];
 
+#if ST==2 //no funciona...
+      pRe  =wall->pRe; 
+      pLe  =wall->pLe; 
+	FR[1]=WR[1]*uR+(pR-pRe);
+	FL[1]=WL[1]*uL+(pL-pLe);
+#else	
 	FR[1]=WR[1]*uR+pR;
 	FL[1]=WL[1]*uL+pL;
+#endif
 
 	FR[2]=WR[1]*vR;
 	FL[2]=WL[1]*vL;
@@ -2915,7 +3039,8 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
                   uK=uR ;
                   vK=vR;
                   wK=wR;
-                  rhoK=WR[0];
+                  rhoK=WRprime[0];
+			rhoK2=WR[0];
                   SK=S2;
                   pK=pR;
                   EK=WR[4];
@@ -2923,7 +3048,8 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
                   uK=uL; 
                   vK=vL;
                   wK=wL;
-                  rhoK=WL[0];
+                  rhoK=WLprime[0];
+			rhoK2=WL[0];
                   SK=S1;
                   pK=pL;
                   EK=WL[4];            
@@ -2933,12 +3059,12 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
             W_star[1]=aux*S_star;
             W_star[2]=aux*vK;
             W_star[3]=aux*wK;
-            W_star[4]=aux*( EK/rhoK + (S_star-uK)*(S_star + pK/(rhoK*(SK-uK))) );
+            W_star[4]=aux*( EK/rhoK2 + (S_star-uK)*(S_star + pK/(rhoK2*(SK-uK))) );
             for(m=0;m<5;m++){
                   if(S_star<=0){
-                        F_star[m]=FR[m]+S2*(W_star[m]-WR[m]);
+                        F_star[m]=FR[m]+S2*(W_star[m]-WRprime[m]);
                   }else{
-                        F_star[m]=FL[m]+S1*(W_star[m]-WL[m]);
+                        F_star[m]=FL[m]+S1*(W_star[m]-WLprime[m]);
                   }
             }
             
@@ -3192,6 +3318,7 @@ void compute_transmissive_euler(t_wall *wall, int wp){
 	int m;   
       double WR[6], WL[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
 	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR, gammaL, gammaR, phiL, phiR;
+	double pLe, pRe;
 	double FR[5], FL[5];
 	double F_star[5];
       
@@ -3253,8 +3380,15 @@ void compute_transmissive_euler(t_wall *wall, int wp){
       FR[0]=WR[1];
 	FL[0]=WL[1];
 
+#if ST==99
+      pRe  =wall->pRe; 
+      pLe  =wall->pLe; 
+	FR[1]=WR[1]*uR+(pR-pRe);
+	FL[1]=WL[1]*uL+(pL-pLe);
+#else	
 	FR[1]=WR[1]*uR+pR;
 	FL[1]=WL[1]*uL+pL;
+#endif
 
 	FR[2]=WR[1]*vR;
 	FL[2]=WL[1]*vL;
@@ -3296,6 +3430,7 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
 	int m;
 	double WR[5], WL[5]; /**<Auxiliar array of variables rotated for the 1D problem**/
 	double uL, uR, vL, vR, wL, wR, pL, pR, HL, HR, cL, cR;
+	double pLe, pRe, rhoprimeL, rhoprimeR, EprimeL, EprimeR;
 	double raizrhoR, raizrhoL, sumRaizRho;
 	double u_hat, v_hat, w_hat, H_hat, c_hat;
 	double S1, S2, diffS, maxS;
@@ -3338,7 +3473,27 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
                   }
 		}
 	}
-      
+	
+	#if ST==2||ST==3
+	if (wp==1 || wp==4 || wp==5){ //bottom and left interfaces, the innercell state is WR, otherwise is WL			
+		pRe = wall->pRe; 
+		pLe = pRe;
+		rhoprimeR=WR[0]-wall->URe[0];
+		rhoprimeL=rhoprimeR;
+		EprimeR=WR[4]-wall->URe[4];
+		EprimeL=EprimeR;
+	}else{
+		pLe = wall->pLe; 
+		pRe = pLe;
+		EprimeL=WL[4]-wall->ULe[4];
+		EprimeR=EprimeL;
+		rhoprimeL=WL[0]-wall->ULe[0];
+		rhoprimeR=rhoprimeL;
+	}
+	
+	
+	
+      #endif
       
 	
 	/**Additional variables for the solver**/
@@ -3351,11 +3506,16 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
       wL=WL[3]/WL[0];
 	wR=WR[3]/WR[0];
 
-	pL=(_gamma_-1.0)*(WL[4]-0.5*WL[0]*(uL*uL+vL*vL+wL*wL));
-	pR=(_gamma_-1.0)*(WR[4]-0.5*WR[0]*(uR*uR+vR*vR+wR*wR));
+	pL=pressure_from_energy(_gamma_, WL[4], uL, vL, wL, WL[0], wall->z);
+	pR=pressure_from_energy(_gamma_, WR[4], uR, vR, wR, WR[0], wall->z);
 	
+#if ST==3	
+	HL=(WL[4]-WL[0]*_g_*wall->z+pL)/WL[0];
+	HR=(WR[4]-WR[0]*_g_*wall->z+pR)/WR[0];
+#else
 	HL=(WL[4]+pL)/WL[0];
 	HR=(WR[4]+pR)/WR[0];
+#endif
       
 	
 	cL=sqrt(_gamma_*pL/WL[0]);
@@ -3379,8 +3539,13 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
 	FR[0]=WR[1];
 	FL[0]=WL[1];
 
+#if ST==2||ST==3
+	FR[1]=WR[1]*uR+(pR-pRe);
+	FL[1]=WL[1]*uL+(pL-pLe);
+#else	
 	FR[1]=WR[1]*uR+pR;
 	FL[1]=WL[1]*uL+pL;
+#endif
 
 	FR[2]=WR[1]*vR;
 	FL[2]=WL[1]*vL;
@@ -3391,6 +3556,12 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
 	FR[4]=uR*(WR[4]+pR);
 	FL[4]=uL*(WL[4]+pL);
 
+#if ST==2||ST==3
+	WL[0]=rhoprimeL;
+	WR[0]=rhoprimeR;
+	WL[4]=EprimeL;
+	WR[4]=EprimeR;
+#endif
 
 
 
@@ -3414,6 +3585,8 @@ void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp){
                   F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m]))/(diffS);
             }
 	}
+	
+		//printf("%14.14e %14.14e \n",F_star[0],F_star[0]);
 	
 	/**Inverse rotation of the flux**/
 	wall->fR_star[0]=F_star[0]; //Mass is not vectorial
@@ -3642,10 +3815,22 @@ void compute_source(t_mesh *mesh){
 #pragma omp parallel for default(none) private(cell) shared(mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
+		#if ST==1
             if(cell->type!=0&&cell->st_sizeZ>1){     //This is the implementation of gravity force in -Z direction
 			cell->S[3]= -_g_*cell->U[0] + cell->S_corr[3];
 			cell->S[4]= -_g_*cell->U[3];
             }
+		#elif ST==2
+		if(cell->type!=0){     //This is the implementation of gravity force in -Z direction
+			cell->S[3]= -_g_*(cell->U[0]-cell->Ue[0]);
+			cell->S[4]= -_g_*cell->U[3];
+            }
+		#else
+		if(cell->type!=0){     //This is the implementation of gravity force in -Z direction
+			cell->S[3]= -_g_*(cell->U[0]-cell->Ue[0]);
+			cell->S[4]= 0.0;
+            }	
+		#endif
 	}
 }
 
@@ -3666,6 +3851,29 @@ void mass_calculation(t_mesh *mesh, t_sim *sim){
             }
 	}
 	mesh->mass=massAux;
+
+}
+
+
+void energy_calculation(t_mesh *mesh, t_sim *sim){
+
+	int i;
+	double energyAux;
+	double area;
+
+	area=mesh->dx*mesh->dy*mesh->dz;
+	energyAux=0.0;
+#pragma omp parallel for default(none) shared(area,mesh) reduction(+:energyAux)
+	for(i=0;i<mesh->ncells;i++){
+            if(mesh->cell[i].type!=0){
+			#if ST==0||ST==3
+			energyAux+=mesh->cell[i].U[4]*area;
+			#else
+                  energyAux+=(mesh->cell[i].U[4]+mesh->cell[i].U[0]*_g_*mesh->cell[i].zc)*area;
+			#endif
+            }
+	}
+	mesh->energy=energyAux;
 
 }
 
@@ -3784,7 +3992,7 @@ int write_vtk(t_mesh *mesh, char *filename){
 		
 	int i,j;
 	FILE *fp;
-	double gamma,theta;
+	double gamma,theta,u,v,w;
 	fp=fopen(filename,"w");
 
 	// Write file header
@@ -3833,11 +4041,8 @@ int write_vtk(t_mesh *mesh, char *filename){
 	}
       #endif
 
-#if EULER     
-      #if print_PRESSURE
-	fprintf(fp,"SCALARS pres DOUBLE \n");
-	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
-      for(j=0;j<mesh->ncells;j++){
+#if EULER   
+	for(j=0;j<mesh->ncells;j++){
 		#if MULTICOMPONENT
 			#if MULTI_TYPE==1
 				gamma=mesh->cell[j].U[5]/mesh->cell[j].U[0];
@@ -3847,8 +4052,17 @@ int write_vtk(t_mesh *mesh, char *filename){
 		#else
 			gamma=_gamma_;
 		#endif
-            mesh->cell[j].pres=(gamma-1.0)*(mesh->cell[j].U[4]-0.5*mesh->cell[j].U[0]*(mesh->cell[j].U[1]*mesh->cell[j].U[1]+mesh->cell[j].U[2]*mesh->cell[j].U[2]+mesh->cell[j].U[3]*mesh->cell[j].U[3])/(mesh->cell[j].U[0]*mesh->cell[j].U[0]));
-            fprintf(fp,"%14.14e \n",mesh->cell[j].pres);
+		u=mesh->cell[j].U[1]/mesh->cell[j].U[0];
+		v=mesh->cell[j].U[2]/mesh->cell[j].U[0];
+		w=mesh->cell[j].U[3]/mesh->cell[j].U[0];
+            mesh->cell[j].pres=pressure_from_energy(gamma, mesh->cell[j].U[4], u, v, w, mesh->cell[j].U[0], mesh->cell[j].zc);
+		//mesh->cell[j].pres=(gamma-1.0)*(mesh->cell[j].U[4]-0.5*mesh->cell[j].U[0]*(mesh->cell[j].U[1]*mesh->cell[j].U[1]+mesh->cell[j].U[2]*mesh->cell[j].U[2]+mesh->cell[j].U[3]*mesh->cell[j].U[3])/(mesh->cell[j].U[0]*mesh->cell[j].U[0]));
+      }
+      #if print_PRESSURE
+	fprintf(fp,"SCALARS pres DOUBLE \n");
+	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
+      for(j=0;j<mesh->ncells;j++){
+		fprintf(fp,"%14.14e \n",mesh->cell[j].pres);
       }
       #endif
       
@@ -3860,23 +4074,23 @@ int write_vtk(t_mesh *mesh, char *filename){
 	}
       #endif
       
-      #if print_MOMENTUM
-	fprintf(fp,"SCALARS rhoU DOUBLE \n");
+      #if print_VELOCITY
+	fprintf(fp,"SCALARS U DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[1]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[1]/mesh->cell[j].U[0]);
 	}
 
-	fprintf(fp,"SCALARS rhoV DOUBLE \n");
+	fprintf(fp,"SCALARS V DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[2]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[2]/mesh->cell[j].U[0]);
 	}
 
-	fprintf(fp,"SCALARS rhoW DOUBLE \n");
+	fprintf(fp,"SCALARS W DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[3]);
+	   	fprintf(fp,"%14.14e \n",mesh->cell[j].U[3]/mesh->cell[j].U[0]);
 	}
       #endif
 
@@ -4004,7 +4218,8 @@ int write_list(t_mesh *mesh, char *filename){
 			#else
 				gamma=_gamma_;
 			#endif
-			p=(gamma-1.0)*(mesh->cell[k].U[4]-0.5*mesh->cell[k].U[0]*(mesh->cell[k].U[1]*mesh->cell[k].U[1]+mesh->cell[k].U[2]*mesh->cell[k].U[2]+mesh->cell[k].U[3]*mesh->cell[k].U[3])/(mesh->cell[k].U[0]*mesh->cell[k].U[0]));
+			//p=(gamma-1.0)*(mesh->cell[k].U[4]-0.5*mesh->cell[k].U[0]*(mesh->cell[k].U[1]*mesh->cell[k].U[1]+mesh->cell[k].U[2]*mesh->cell[k].U[2]+mesh->cell[k].U[3]*mesh->cell[k].U[3])/(mesh->cell[k].U[0]*mesh->cell[k].U[0]));
+			p=pressure_from_energy(gamma, mesh->cell[k].U[4], u, v, w, mesh->cell[k].U[0], mesh->cell[k].zc);
 			theta=p/(_R_*mesh->cell[k].U[0])/( pow((p/_p0_),((_gamma_-1.0)/_gamma_)) );
                   fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e\n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi,theta);
                   //fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e\n",u,u,u,u,v,u,u,u,phi,theta);
@@ -4049,7 +4264,8 @@ int write_list_eq(t_mesh *mesh, char *filename){
 			#else
 				gamma=_gamma_;
 			#endif
-			p=(gamma-1.0)*(mesh->cell[k].Ue[4]-0.5*mesh->cell[k].Ue[0]*(mesh->cell[k].Ue[1]*mesh->cell[k].Ue[1]+mesh->cell[k].Ue[2]*mesh->cell[k].Ue[2]+mesh->cell[k].Ue[3]*mesh->cell[k].Ue[3])/(mesh->cell[k].Ue[0]*mesh->cell[k].Ue[0]));
+			//p=(gamma-1.0)*(mesh->cell[k].Ue[4]-0.5*mesh->cell[k].Ue[0]*(mesh->cell[k].Ue[1]*mesh->cell[k].Ue[1]+mesh->cell[k].Ue[2]*mesh->cell[k].Ue[2]+mesh->cell[k].Ue[3]*mesh->cell[k].Ue[3])/(mesh->cell[k].Ue[0]*mesh->cell[k].Ue[0]));
+			p=pressure_from_energy(gamma, mesh->cell[k].Ue[4], u, v, w, mesh->cell[k].Ue[0], mesh->cell[k].zc);
 			theta=p/(_R_*mesh->cell[k].Ue[0])/( pow((p/_p0_),((_gamma_-1.0)/_gamma_)) );
                   fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e \n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi,theta);
             }
@@ -4295,8 +4511,8 @@ void print_info(t_mesh *mesh, t_sim *sim){
       
       printf("%s Configuration file has been read \n",OK);
 
-#if ST==0&&HLLS==1
-	printf("%s HLLS solver cannot be used when ST=0. Please use HLLE or HLLC. Press any key to exit... \n",ERR);
+#if ST!=1&&HLLS==1
+	printf("%s HLLS solver cannot be used when ST=0 or ST=2. Please use HLLE or HLLC. Press any key to exit... \n",ERR);
 	getchar();
 	exit(1);
 #endif
@@ -4347,6 +4563,32 @@ void print_info(t_mesh *mesh, t_sim *sim){
 }
 
 
+double energy_from_pressure(double gm, double p, double u, double v, double w, double rho, double z){
+
+	double energy;
+	
+	#if ST==3
+	energy=p/(gm-1.0)+0.5*rho*(u*u + v*v + w*w)+rho*_g_*z;
+	#else
+	energy=p/(gm-1.0)+0.5*rho*(u*u + v*v + w*w);
+	#endif
+
+	return energy;
+}
+
+double pressure_from_energy(double gm, double E, double u, double v, double w, double rho, double z){
+
+	double pressure;
+	
+	#if ST==3
+	pressure=(gm-1.0)*(E-0.5*rho*(u*u + v*v + w*w)-rho*_g_*z);
+	#else
+	pressure=(gm-1.0)*(E-0.5*rho*(u*u + v*v + w*w));
+	#endif
+	
+
+	return pressure;
+}
 
 
 
@@ -4373,6 +4615,7 @@ int main(int argc, char * argv[]){
 	double timeac; //accumulated time before dump
 	double timeac2,tTke; //other counter. dump time for tke
 	double aux1,aux2;
+	double mass0,energy0;
 	t_cell *cell;
       FILE *file_input;
       FILE *file_tke;
@@ -4555,6 +4798,12 @@ int main(int argc, char * argv[]){
 	file_tke=fopen("output-files/tke.out","w");
 	#endif
 	
+	
+	mass_calculation(mesh,sim);
+	energy_calculation(mesh,sim);
+	mass0=mesh->mass;
+	energy0=mesh->energy;
+	
 	      
 	////////////////////////////////////////////////////
 	////////////// C A L C U L A T I O N ///////////////
@@ -4565,7 +4814,7 @@ int main(int argc, char * argv[]){
 	t=0.0;
 	nIt=0;
 	
-	#if ST==1
+	#if ST!=0
       equilibrium_reconstruction(mesh,sim);
 	#endif
       
@@ -4575,7 +4824,7 @@ int main(int argc, char * argv[]){
 		for(k=1;k<=sim->rk_steps;k++){
 			if(k==1){
 				compute_fluxes(mesh,sim);
-				#if ST == 1
+				#if ST!=0
 				compute_source(mesh);
 				#endif
 				#if LINEAR_TRANSPORT == 0
@@ -4607,10 +4856,30 @@ int main(int argc, char * argv[]){
 			     }
 			     printf("\n");*/
                        //getchar();
+			     
+			     /*
+			     for(n=0;n<mesh->zcells;n++){	
+                              m = 1 + 0*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                              //cell=&(mesh->cell[m]);
+                              //cell[m].pres=(_gamma_-1.0)*(cell[m].U[4]-0.5*cell[m].U[0]*(cell[m].U[1]*cell[m].U[1]+cell[m].U[2]*cell[m].U[2])/(cell[m].U[0]*cell[m].U[0]));
+                              //cell[m].u_int=cell[m].pres/((_gamma_-1.0)*cell[m].U[0]); 
+                              //printf("%lf %lf %lf %lf  \n",cell[m].zc,cell[m].w5->UR[4]*(_gamma_-1.0),cell[m].w6->UL[4]*(_gamma_-1.0),cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz);
+                              //printf("%lf %lf %lf %lf  \n",cell[m].zc,cell[m].w5->UR[4],cell[m].w6->UL[4],cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz);
+                              //printf("%lf %lf %lf  \n",cell[m].zc,cell[m].w5->UR[0],cell[m].w6->UL[0]);
+                              //printf("%lf %14.14e   \n",cell[m].zc,cell[m].S_corr[3]);
+					printf("%lf %14.14e %14.14e %14.14e %14.14e \n",cell[m].zc, cell[m].S[0],  cell[m].w5->fR_star[0], cell[m].w6->fL_star[0],    cell[m].w5->fR_star[0]-cell[m].w6->fL_star[0]+cell[m].S[0]*mesh->dz);
+					printf("%lf %14.14e %14.14e %14.14e %14.14e \n",cell[m].zc, cell[m].S[1],  cell[m].w5->fR_star[1], cell[m].w6->fL_star[1],    cell[m].w5->fR_star[1]-cell[m].w6->fL_star[1]+cell[m].S[1]*mesh->dz);
+					printf("%lf %14.14e %14.14e %14.14e %14.14e \n",cell[m].zc, cell[m].S[2],  cell[m].w5->fR_star[2], cell[m].w6->fL_star[2],    cell[m].w5->fR_star[2]-cell[m].w6->fL_star[2]+cell[m].S[2]*mesh->dz);
+					printf("%lf %14.14e %14.14e %14.14e %14.14e \n",cell[m].zc, cell[m].S[3],  cell[m].w5->fR_star[3], cell[m].w6->fL_star[3],    cell[m].w5->fR_star[3]-cell[m].w6->fL_star[3]+cell[m].S[3]*mesh->dz);
+					printf("%lf %14.14e %14.14e %14.14e %14.14e \n",cell[m].zc, cell[m].S[4],  cell[m].w5->fR_star[4], cell[m].w6->fL_star[4],    cell[m].w5->fR_star[4]-cell[m].w6->fL_star[4]+cell[m].S[4]*mesh->dz);
+			     }
+			     printf("\n");
+                       getchar(); */
+
 
 			}else if(k==2){
 				compute_fluxes(mesh,sim);
-				#if ST == 1
+				#if ST!=0
 				compute_source(mesh);
 				#endif
 				update_cellK2(mesh,sim);
@@ -4627,7 +4896,7 @@ int main(int argc, char * argv[]){
                         getchar();*/				
 			}else{ //k=3
 				compute_fluxes(mesh,sim);
-				#if ST == 1
+				#if ST!=0
 				compute_source(mesh);
 				#endif
 				update_cellK3(mesh,sim);
@@ -4668,8 +4937,12 @@ int main(int argc, char * argv[]){
                   printf("\n");
                   printf(" T= %lf, dt= %lf\n",t+sim->dt,sim->dt);
                   mass_calculation(mesh,sim);
+			energy_calculation(mesh,sim);
                   printf(" Total mass: %14.14e\n",mesh->mass);
-                  printf("\n");
+			printf(" Total energy: %14.14e\n",mesh->energy);
+			printf(" Mass error: (M-M0)/M0 = %14.14e\n",(mesh->mass-mass0)/mass0);
+			printf(" Energy error: (E-E0)/E0 = %14.14e\n",(mesh->energy-energy0)/energy0);
+			printf("\n");
 			nIt++;		//Number of iteration for the next time step
 			timeac=0.0;
 		}
