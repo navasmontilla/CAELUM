@@ -61,7 +61,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define SW 0
 
 //Source terms
-#define ST 1// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), , 2: Source ON (perturbation version, total energy)
+#define ST 1// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy)
 
 //Multicomponent and multiphase flow
 #define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma). 
