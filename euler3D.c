@@ -61,16 +61,16 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define SW 0
 
 //Source terms
-#define ST 1// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy)
+#define ST 3// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy)
 
 //Multicomponent and multiphase flow
 #define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma). 
 #define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
 
 //Solvers
-#define HLLE 0
+#define HLLE 1
 #define HLLC 0
-#define HLLS 1
+#define HLLS 0
 #define ROE 0
 
 //Debug code 
