@@ -39,14 +39,14 @@ There is the possibility of solving:
 ```
 and defining the x, y and z velocities in the configuration file.
 
-<img src="https://latex.codecogs.com/svg.image?\frac{\partial&space;u}{\partial&space;t}&space;&plus;&space;\lambda_x\frac{\partial&space;u}{\partial&space;x}&plus;&space;\lambda_y\frac{\partial&space;u}{\partial&space;y}&plus;&space;\lambda_z\frac{\partial&space;u}{\partial&space;z}=0&space;" title="\frac{\partial u}{\partial t} + \lambda_x\frac{\partial u}{\partial x}+ \lambda_y\frac{\partial u}{\partial y}+ \lambda_z\frac{\partial u}{\partial z}=0 " />
+$$\frac{\partial u}{\partial t} + \lambda_x\frac{\partial u}{\partial x}+ \lambda_y\frac{\partial u}{\partial y}+ \lambda_z\frac{\partial u}{\partial z}= 0 $$
 
 - Burgers equation, setting:
 ```c
 #define BURGERS 1 
 ```
 
-<img src="https://latex.codecogs.com/svg.image?\frac{\partial&space;u}{\partial&space;t}&space;&plus;&space;u\frac{\partial&space;u}{\partial&space;x}&plus;&space;u\frac{\partial&space;u}{\partial&space;y}&plus;&space;u\frac{\partial&space;u}{\partial&space;z}=0&space;&space;" title="\frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial y}+ u\frac{\partial u}{\partial z}=0 " />
+$$ \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial y}+ u\frac{\partial u}{\partial z}=0 $$
 
 - Euler equations, setting:
 ```c
