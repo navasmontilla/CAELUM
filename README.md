@@ -26,7 +26,6 @@ ILES methods accurately reproduce the statistical behavior of turbulent flows. T
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
 </figure>
 
-$$ \frac{2x}{\div} $$
 
 ## Quick guide
 
@@ -64,9 +63,9 @@ It is possible to run the two-component Euler equations, setting:
 ```c
 #define MULTICOMPONENT 1
 ```
-and set ```MULTI_TYPE=1``` to choose this Gamma formulation  <img src="https://render.githubusercontent.com/render/math?math=\phi =\gamma"> or  ```MULTI_TYPE=2``` to use this formulation <img src="https://render.githubusercontent.com/render/math?math=\phi =1/(\gamma-1)">  (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001)) for
+and set ```MULTI_TYPE=1``` to choose this Gamma formulation  $\phi =\gamma$ or  ```MULTI_TYPE=2``` to use this formulation $\phi =1/(\gamma-1)$  (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001)) for
 
-<img src="https://render.githubusercontent.com/render/math?math=\frac{\partial \rho\phi}{\partial t}%2B\frac{\partial \rho u\phi}{\partial x}=0">
+$$\frac{\partial \rho\phi}{\partial t} + \frac{\partial \rho u\phi}{\partial x}=0$$
 
 
 *It is possible to run a linear transport module within the euler equations, setting ```#define LINEAR_TRANSPORT 1 ```, but it is an old feature*
