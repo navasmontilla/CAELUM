@@ -26,7 +26,7 @@ ILES methods accurately reproduce the statistical behavior of turbulent flows. T
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
 </figure>
 
-
+$$ \frac{2x}{\div}
 
 ## Quick guide
 
