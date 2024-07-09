@@ -4,9 +4,11 @@
 
 ## Introduction
 
-This repository includes a very high-order CFD solver for academic purposes. The solver allows the use of 1-st, 3-rd, 5-th and 7-th order WENO, TENO and linear reconstruction in space. This code allows the simulation of:
+This repository includes a 3D solver of the compressible Euler equations for academic purposes. The solver uses a 1-st, 3-rd, 5-th and 7-th order WENO, TENO and linear reconstructions, SSPRK3 time updating and HLL/HLLC solvers. 
 
-- Linear transport
+This code allows the simulation of:
+
+- Linear scalar transport
 - Burgers' equation
 - Compressible Euler equations 
 
@@ -14,35 +16,15 @@ Regarding the compressible Euler equations, the following features are allowed i
 
 - Compressible flows single and multicomponent (composed by a mixture of 2 gases)
 - Gravitational source terms
+- Inmersed solid bodies given by *.stl triangulation files (under construction)
+
+Compressible turbulence is a highly nonlinear multiscale phenomenon. It has become one of the most challenging problems in computational physics. Turbulent flows can be numerically reproduced by means of hydrodynamic solvers. A common approach is the use of the Euler equations in combination with a suitable numerical discretization scheme. When the numerical diffusion inherent to the discretization method mimics the physical dissipation of the unresolved turbulent motion, the approach is called Implicit Large Eddy Simulation (ILES). 
+
+ILES methods accurately reproduce the statistical behavior of turbulent flows. The  truncation errors of the scheme play the role of the common sub-grid scale filters used in traditional LES methods. High-fidelity simulations can be achieved when using this approach. The high order WENO and TENO schemes implemented in this code allow the simulation of turbulent flows using a ILES framework. A Kelvin-Helmholtz instability computed by EHOW-3D is shown below.
 
 <figure style="text-align: center;">
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
 </figure>
-
-## Installation
-
-Clone the repository in your local computer:
-
-```git clone https://github.com/navasmontilla/EHOW3D_public.git```
-
-Compile the program as follows:
-
-```make```
-
-Note that the *Makefile* considers the following default definition 
-
-```
-DEBUG = 0
-CFLAGS =  -Wall  -fopenmp
-```
-
-but the user can customize the compiling flags as desired. 
-
-This software relies on other dependencies, listed below:
-
-- [GCC](https://gcc.gnu.org/) or other C compiler
-- [Python3](https://www.python.org/downloads/), for pre- and post-processing
-- [Paraview](https://www.paraview.org/), for data visualization
 
 
 ## Quick guide
