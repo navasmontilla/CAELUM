@@ -78,7 +78,7 @@ Within this test, the program is compiled and executed for every benchmark, givi
 ## Example usage
 
 
-## Quick guide
+## Functionality documentation
 
 ### Code organization and libraries
 
@@ -116,6 +116,37 @@ EHow3D/
 │   └── out/
 └── README.md
 ```
+
+
+- **ehow3d.c**: Main source file for the EHow3D solver.
+- **Makefile**: Makefile for compiling the code.
+- **lib/**: Directory containing library files and utilities.
+- **python/**: Directory containing Python scripts for pre/post-processing and automation.
+- **case/**: Directory for case configuration and output files.
+- **README.md**: Documentation for the EHow3D solver.
+
+#### lib Directory
+- **closures.c/h**: Functions and headers related to closures.
+- **definitions.h**: Definitions and constants used across the code.
+- **ibmutils.c/h**: Utilities for immersed boundary method.
+- **mathutils.c/h**: Mathematical utilities and helper functions.
+- **numcore.c/h**: Core numerical methods and routines.
+- **postproc.c/h**: Post-processing utilities.
+- **preproc.c/h**: Pre-processing utilities.
+- **reconst.c/h**: Reconstruction methods for high-order schemes.
+- **solvers.c/h**: Solver routines.
+- **structures.h**: Data structures used in the code.
+
+#### python Directory
+- **utils.py**: Utility functions for various tasks.
+- **autotest.py**: Script for automated testing of the solver.
+- **generatecase.py**: Script for generating case configurations.
+
+#### case Directory
+- **configure.input**: Input configuration file for running a case.
+- **equilibrium.out**: Output file for equilibrium state.
+- **initial.out**: Output file for initial conditions.
+- **out/**: Directory for storing simulation output files.
 
 
 ### Equations solved
