@@ -209,7 +209,10 @@ $$\begin{align}
 \frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
 \end{align}$$
 
-where
+where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\( \mathbf{g} = (0, 0, g)^T \)$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy
+$$E=\rho(\frac{1}{2}\mathbf{v}+e)
+One should note the relations $p=(\gamma-1)\rho e\equiv (\gamma-1)(E-\frac{1}{2}\rho\mathbf{v})$.
+
 
 
 
