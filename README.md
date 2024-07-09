@@ -139,7 +139,9 @@ EHow3D/
 - **initial.out**: Input file for initial conditions.
 - **out/**: Directory for storing simulation output files.
 
-Amongst the files listed above, we would like to highlight the file ```lib/definitions.h```, where some definitions and constants are set and will be used for compilation. The most relevant for the user are:
+## Configuration of the solvers for compilation
+
+The file ```lib/definitions.h``` contains some definitions and constants that will be used for compilation. The most relevant for the user are:
 
 ```c
 //reconstruction method
@@ -152,8 +154,8 @@ Amongst the files listed above, we would like to highlight the file ```lib/defin
 #define ST 3// 0: Source OFF, 1: Source ON (augmented version using HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy is conserved)
 
 //Multicomponent flow
-#define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma).
-#define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
+#define MULTICOMPONENT 0 // 0: Single component Euler equations, 1: Multicomponent Euler equations (two components with different gamma).
+#define MULTI_TYPE 2     //1: gamma formulation, :2  1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
 
 //Solvers
 #define SOLVER 0 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
@@ -178,14 +180,13 @@ Amongst the files listed above, we would like to highlight the file ```lib/defin
 #define READ_INITIAL 1 //1: Initial data is read from file, 2: Iinitial data is set in update_initial()
 ```
 
-
 ### Equations solved
 
 There is the possibility of solving:
 
 - Linear scalar transport, setting:
 ```c
-#define LINEAR 1 
+#define EQUATION_SYSTEM 0 
 ```
 and defining the x, y and z velocities in the configuration file.
 
@@ -193,20 +194,24 @@ $$\frac{\partial u}{\partial t} + \lambda_x\frac{\partial u}{\partial x}+ \lambd
 
 - Burgers equation, setting:
 ```c
-#define BURGERS 1 
+#define EQUATION_SYSTEM 1 
 ```
 
 $$ \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial y}+ u\frac{\partial u}{\partial z}=0 $$
 
 - Euler equations, setting:
 ```c
-#define EULER 1 
+#define EQUATION_SYSTEM 2 
 ```
-<img src="https://latex.codecogs.com/svg.image?\dpi{150}&space;\frac{\partial}{\partial&space;t}\left[\begin{array}{c}&space;\rho\\&space;\rho&space;u\\&space;\rho&space;v\\&space;\rho&space;w\\&space;E&space;\end{array}\right]&plus;\frac{\partial}{\partial&space;x}\left[\begin{array}{c}&space;\rho&space;u\\&space;\rho&space;u^{2}&plus;p\\&space;\rho&space;uv\\&space;\rho&space;uw\\&space;u(E+p)&space;\end{array}\right]&plus;\frac{\partial}{\partial&space;y}\left[\begin{array}{c}&space;\rho&space;v\\&space;\rho&space;vu\\&space;\rho&space;v^{2}&plus;p\\&space;\rho&space;vw\\&space;v(E+p)&space;\end{array}\right]&plus;\frac{\partial}{\partial&space;z}\left[\begin{array}{c}&space;\rho&space;w\\&space;\rho&space;wu\\&space;\rho&space;wv\\&space;\rho&space;w^{2}&plus;p\\&space;w(E+p)&space;\end{array}\right]=\left[\begin{array}{c}&space;0\\&space;0\\&space;-\rho&space;g\\&space;-\rho&space;g&space;w&space;\end{array}\right]" title="euler eqs" />
+$$\begin{align}
+\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
+\frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
+\frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
+\end{align}$$
 
 where
 
-<img src="https://latex.codecogs.com/svg.image?\begin{matrix}&space;E=\rho\left&space;&space;(&space;\frac{1}{2}\mathbf{v}^2&space;&plus;&space;e&space;\right&space;),&space;\quad&space;p=(\gamma-1)\rho&space;e\equiv&space;(\gamma&space;-1)&space;\left&space;(&space;E-&space;\rho\frac{1}{2}\mathbf{v}^2&space;\right&space;)\\&space;\\\quad&space;H=\frac{E&plus;p}{\rho}\equiv&space;\frac{1}{2}\mathbf{v}^2&space;&plus;&space;h&space;,&space;\quad&space;h=e&plus;\frac{p}{\rho}\end{matrix}&space;" title="\begin{matrix} E=\rho\left ( \frac{1}{2}\mathbf{v}^2 + e \right ), \quad p=(\gamma-1)\rho e\equiv (\gamma -1) \left ( E- \rho\frac{1}{2}\mathbf{v}^2 \right )\\ \\\quad H=\frac{E+p}{\rho}\equiv \frac{1}{2}\mathbf{v}^2 + h , \quad h=e+\frac{p}{\rho}\end{matrix} " />
+
 
 
 It is possible to run the two-component Euler equations, setting:
@@ -216,11 +221,6 @@ It is possible to run the two-component Euler equations, setting:
 and set ```MULTI_TYPE=1``` to choose this Gamma formulation  $\phi =\gamma$ or  ```MULTI_TYPE=2``` to use this formulation $\phi =1/(\gamma-1)$  (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001)) for
 
 $$\frac{\partial \rho\phi}{\partial t} + \frac{\partial \rho u\phi}{\partial x}=0$$
-
-
-*It is possible to run a linear transport module within the euler equations, setting ```#define LINEAR_TRANSPORT 1 ```, but it is an old feature*
-
-
 
 
 ### The computational mesh
