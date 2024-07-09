@@ -139,7 +139,44 @@ EHow3D/
 - **initial.out**: Input file for initial conditions.
 - **out/**: Directory for storing simulation output files.
 
+Amongst the files listed above, we would like to highlight the file ```lib/definitions.h```, where some definitions and constants are set and will be used for compilation. The most relevant for the user are:
 
+```c
+//reconstruction method
+#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for optimal polynomial reconstruction
+
+//Equations
+#define EQUATION_SYSTEM 2 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 
+
+//Source terms for Euler
+#define ST 3// 0: Source OFF, 1: Source ON (augmented version using HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy is conserved)
+
+//Multicomponent flow
+#define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma).
+#define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
+
+//Solvers
+#define SOLVER 0 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
+
+//OpenMP configuration
+#define NTHREADS 4 //This is the number of threads
+
+//Output files
+#define WRITE_VTK 1  //1: vtk file is printed
+#define WRITE_LIST 1 //1: list *.out file is printed
+
+//Printing variables (vtk). Select what variables will be printed in vtk files:
+#define print_RHO 0
+#define print_VELOCITY 1
+#define print_ENERGY 0
+#define print_PRESSURE 0
+#define print_OVERPRESSURE 1
+#define print_SOLUTES 0
+#define print_POTENTIALTEM 1
+
+//Reading initial data
+#define READ_INITIAL 1 //1: Initial data is read from file, 2: Iinitial data is set in update_initial()
+```
 
 
 ### Equations solved
