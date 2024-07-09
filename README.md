@@ -49,15 +49,6 @@ This software relies on other dependencies, listed below:
 	- *numpy*
 	- *scipy*
 
-The code in this repository is structured as follows:
-
-- ```main.c```: this is the main *c file of the program.
-- ```/lib```: this folder contains the libraries called in ```main.c```, including *.h and *.c files.
-- ```/python```: this folder contains some python scripts for automated testing and simulation setup.
-- ```/case```: this folder contains the data for the simulation of a test case.
-
-Further details about each of the files are given below.
-
 
 ## Automated test
 
@@ -117,7 +108,7 @@ EHow3D/
 └── README.md
 ```
 
-
+#### main Directory
 - **ehow3d.c**: Main source file for the EHow3D solver.
 - **Makefile**: Makefile for compiling the code.
 - **lib/**: Directory containing library files and utilities.
@@ -126,27 +117,29 @@ EHow3D/
 - **README.md**: Documentation for the EHow3D solver.
 
 #### lib Directory
-- **closures.c/h**: Functions and headers related to closures.
 - **definitions.h**: Definitions and constants used across the code.
+- **structures.h**: Data structures used in the code.
+- **closures.c/h**: Functions and headers related to pressure closures.
 - **ibmutils.c/h**: Utilities for immersed boundary method.
-- **mathutils.c/h**: Mathematical utilities and helper functions.
+- **mathutils.c/h**: Mathematical utilities.
 - **numcore.c/h**: Core numerical methods and routines.
 - **postproc.c/h**: Post-processing utilities.
 - **preproc.c/h**: Pre-processing utilities.
 - **reconst.c/h**: Reconstruction methods for high-order schemes.
-- **solvers.c/h**: Solver routines.
-- **structures.h**: Data structures used in the code.
+- **solvers.c/h**: Riemann solver routines.
 
 #### python Directory
-- **utils.py**: Utility functions for various tasks.
+- **utils.py**: Utility functions.
 - **autotest.py**: Script for automated testing of the solver.
 - **generatecase.py**: Script for generating case configurations.
 
 #### case Directory
 - **configure.input**: Input configuration file for running a case.
-- **equilibrium.out**: Output file for equilibrium state.
-- **initial.out**: Output file for initial conditions.
+- **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases).
+- **initial.out**: Input file for initial conditions.
 - **out/**: Directory for storing simulation output files.
+
+
 
 
 ### Equations solved
