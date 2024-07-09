@@ -15,6 +15,8 @@ Regarding the compressible Euler equations, the following features are allowed i
 - Compressible flows single and multicomponent (composed by a mixture of 2 gases)
 - Gravitational source terms
 
+The high order WENO and TENO schemes implemented in this code allow the simulation of turbulent flows using an Implicit Large Eddy Simulation (ILES) framework. ILES methods accurately reproduce the statistical behavior of turbulent flows. The  truncation errors of the scheme play the role of the common sub-grid scale filters used in traditional LES methods. High-fidelity simulations can be achieved when using this approach. A Kelvin-Helmholtz instability computed by EHOW-3D is shown below.
+
 <figure style="text-align: center;">
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
 </figure>
