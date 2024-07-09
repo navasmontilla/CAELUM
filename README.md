@@ -209,12 +209,13 @@ $$\begin{align}
 \frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
 \end{align}$$
 
-where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\( \mathbf{g} = (0, 0, g)^T \)$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy
-$$E=\rho(\frac{1}{2}\mathbf{v}+e)
+where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $ \mathbf{g} = (0, 0, g)^T $ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy
+$$E=\rho(\frac{1}{2}\mathbf{v}+e)$$
 One should note the relations $p=(\gamma-1)\rho e\equiv (\gamma-1)(E-\frac{1}{2}\rho\mathbf{v})$.
 
+When setting ```#define ST 3``` the equation for the conservation of energy is solved in fully conservative form, defining energy as $E_T=\rho(\frac{1}{2}\mathbf{v}+e+gz)$, yielding to
 
-
+$$\frac{\partial E_T}{\partial t} + \nabla \cdot \left((E_T + p) \mathbf{v}\right) &= 0 $$
 
 
 It is possible to run the two-component Euler equations, setting:
