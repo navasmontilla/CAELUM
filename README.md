@@ -43,11 +43,34 @@ but the user can customize the compiling flags as desired.
 This software relies on other dependencies, listed below:
 
 - [GCC](https://gcc.gnu.org/) or other C compiler
+- [Paraview](https://www.paraview.org/), for data visualization
 - [Python3](https://www.python.org/downloads/), for pre- and post-processing. The following packages need to be installed using ```pip install```:
 	- *matplotlib*
 	- *numpy*
 	- *scipy*
-- [Paraview](https://www.paraview.org/), for data visualization
+
+The code in this repository is structured as follows:
+
+- ```main.c```: this is the main *c file of the program.
+- ```/lib```: this folder contains the libraries called in ```main.c```, including *.h and *.c files.
+- ```/python```: this folder contains some python scripts for automated testing and simulation setup.
+
+
+## Automated test
+
+To check the functionality of the software, an automated test composed of 6 benchmarks can be run as follows:
+
+```python3 python/autotest.py```
+
+These benchmarks include:
+
+- 1D linear transport of a sinusoidal function, compared with exact solution
+- 4 Riemann Problems (RP) for the Euler equations, compared with exact solution
+- The colliding thermals test case for the Euler equations with gravity, compared with a reference solution
+
+Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. Prior to the execution of this automated test, please set the number of OPM threads as desired in ```lib/definitions.h``` as follows (e.g. for 32 threads):
+
+```#define NTHREADS 32``` 
 
 
 ## Quick guide
