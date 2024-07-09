@@ -54,6 +54,9 @@ The code in this repository is structured as follows:
 - ```main.c```: this is the main *c file of the program.
 - ```/lib```: this folder contains the libraries called in ```main.c```, including *.h and *.c files.
 - ```/python```: this folder contains some python scripts for automated testing and simulation setup.
+- ```/case```: this folder contains the data for the simulation of a test case.
+
+Further details about each of the files are given below.
 
 
 ## Automated test
@@ -72,8 +75,48 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 ```#define NTHREADS 32``` 
 
+## Example usage
+
 
 ## Quick guide
+
+### Code organization and libraries
+
+```
+EHow3D/
+├── ehow3d.c
+├── Makefile
+├── lib/
+│   ├── closures.c
+│   ├── closures.h
+│   ├── definitions.h
+│   ├── ibmutils.c
+│   ├── ibmutils.h
+│   ├── mathutils.c
+│   ├── mathutils.h
+│   ├── numcore.c
+│   ├── numcore.h
+│   ├── postproc.c
+│   ├── postproc.h
+│   ├── preproc.c
+│   ├── preproc.h
+│   ├── reconst.c
+│   ├── reconst.h
+│   ├── solvers.c
+│   ├── solvers.h
+│   └── structures.h
+├── python/
+│   ├── utils.py
+│   ├── autotest.py
+│   ├── generatecase.py
+├── case/
+│   ├── configure.input
+│   ├── equilibrium.out
+│   ├── initial.out
+│   └── out/
+└── README.md
+```
+
 
 ### Equations solved
 
