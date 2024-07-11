@@ -69,13 +69,13 @@ The benchmarks include:
 - 4 Riemann Problems (RP) for the Euler equations
 - The colliding thermals test case for the Euler equations with gravity
 
-Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. 
+Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. The results can be visualized in [autotest/autotest.md](autotest/autotest.md)
 
 ## Example usage
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
-- Setting up an atmospheric simulation case (colliding thermals test case): [caseBubble](doc/caseBubble.md)
+- Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](doc/caseExample.ipynb)
 
 ## Functionality documentation
 
