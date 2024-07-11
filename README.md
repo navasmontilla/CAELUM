@@ -54,20 +54,28 @@ This software relies on other dependencies, listed below:
 
 To check the functionality of the software, an automated test composed of 6 benchmarks can be run as follows:
 
-```python3 python/autotest.py```
+```python3 python/autotest.py nt rec ord```
 
-These benchmarks include:
+where 
+- ```nt``` is the number of threads
+- ```rec``` is the reconstruction method (0: WENO, 1: TENO, 2: Optimal)
+- ```ord``` is the order of accuracy (Only 1, 3, 5 and 7 are available)
 
-- 1D linear transport of a sinusoidal function, compared with exact solution
-- 4 Riemann Problems (RP) for the Euler equations, compared with exact solution
-- The colliding thermals test case for the Euler equations with gravity, compared with a reference solution
+Example usage for 8 threads, using WENO and order 3: ```python3 python/autotest.py 8 0 3```
+  
+The benchmarks include:
 
-Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. Prior to the execution of this automated test, please set the number of OPM threads as desired in ```lib/definitions.h``` as follows (e.g. for 32 threads):
+- A convergence rate test for the linear scalar equation
+- 4 Riemann Problems (RP) for the Euler equations
+- The colliding thermals test case for the Euler equations with gravity
 
-```#define NTHREADS 32``` 
+Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. 
 
 ## Example usage
 
+To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
+
+- Setting up an atmospheric simulation case (colliding thermals test case): [caseBubble](doc/caseBubble.md)
 
 ## Functionality documentation
 
@@ -99,7 +107,8 @@ EHow3D/
 ├── python/
 │   ├── utils.py
 │   ├── autotest.py
-│   ├── generatecase.py
+│   ├── caseExample.py
+│   └── caseExample.ipynb
 ├── case/
 │   ├── configure.input
 │   ├── equilibrium.out
