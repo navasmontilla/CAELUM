@@ -142,67 +142,8 @@ EHow3D/
 - **autotest.py**: Script for automated testing of the solver.
 - **caseExample.ipynb**: Script for generating case configurations.
 
-### Input and output files
 
-Inside the **case/** directory we will find all files corresponding to the simulation case, we need as input files:
-
-- **configure.input**: Input configuration file for running a case, that includes the global configuration and is of the following form:
-
-```
-/////SIMULATION_SETUP//////
-FinalTime		0.2
-DumpTime		0.05
-CFL			0.25
-Order			5
-
-////////MESH_SETUP/////////
-xcells			80
-ycells			100
-zcells			80
-SizeX			0.80
-SizeY			1.0
-SizeZ			0.80
-
-///////BOUNDARY_COND///////
-Face_1(-y)			3
-Face_2(+x)			3
-Face_3(+y)			3
-Face_4(-x)			3
-Face_5(-z)			3
-Face_6(+z)			3
-
-///////LINEAR_TRANSPORT///////(if_applicable)
-u_x                     1.0
-u_y                     1.0
-u_z                     1.0
-```
-
-- **initial.out**: Input file for initial conditions, that is of the following form:
-	- For scalar equations:
-``` 
-VARIABLES = X, Y, Z, u 
-CELLS = 40, 40, 40,
-0.0075 0.0075 0.0075 0.0 
-0.0075 0.0075 0.0225 0.0
-0.0075 0.0075 0.0375 0.0 
-...
-```
-
-
-	- For euler equations
- 
-``` 
-VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
-CELLS = 40, 40, 40,
-0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
-0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
-0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
-...
- ```
-
-- **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases). Similar structure than above.
-
-## Configuration of the solvers for compilation
+### Configuration of the solvers for compilation
 
 The file ```lib/definitions.h``` contains some definitions and constants that will be used for compilation. The most relevant for the user are:
 
@@ -292,6 +233,67 @@ and set ```MULTI_TYPE=1``` to choose this Gamma formulation  $\phi =\gamma$ or  
 $$\frac{\partial \rho\phi}{\partial t} + \frac{\partial \rho u\phi}{\partial x}=0$$
 
 
+### Input and output files
+
+Inside the **case/** directory we will find all files corresponding to the simulation case, we need as input files:
+
+- **configure.input**: Input configuration file for running a case, that includes the global configuration and is of the following form:
+
+```
+/////SIMULATION_SETUP//////
+FinalTime		0.2
+DumpTime		0.05
+CFL			0.25
+Order			5
+
+////////MESH_SETUP/////////
+xcells			80
+ycells			100
+zcells			80
+SizeX			0.80
+SizeY			1.0
+SizeZ			0.80
+
+///////BOUNDARY_COND///////
+Face_1(-y)			3
+Face_2(+x)			3
+Face_3(+y)			3
+Face_4(-x)			3
+Face_5(-z)			3
+Face_6(+z)			3
+
+///////LINEAR_TRANSPORT///////(if_applicable)
+u_x                     1.0
+u_y                     1.0
+u_z                     1.0
+```
+
+- **initial.out**: Input file for initial conditions, that is of the following form (for scalar and Euler equations respectively):
+``` 
+VARIABLES = X, Y, Z, u 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0.0 
+0.0075 0.0075 0.0225 0.0
+0.0075 0.0075 0.0375 0.0 
+...
+```
+ 
+``` 
+VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
+...
+ ```
+The initial conditions can also be set in, when setting ```READ_INITIAL = 0```:
+```c 
+int update_initial(t_mesh *mesh);
+```
+
+- **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases). Similar structure than above.
+
+
 ### The computational mesh
 
 The computational mesh is constructed as follows:
@@ -342,62 +344,19 @@ int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids); // Update the v
 
 The available boundary conditions are:
 
-* 1: Periodic.
+* 1: Periodic
 
-* 2: (not available)
+* 2: User defined
 
-* 3: Transmissive. The numerical flux is set as the physical flux at the interface, using:
+* 3: Transmissive (for Euler eqs.). The numerical flux is set as the physical flux at the interface, using:
 ```c 
 void compute_transmissive_euler(t_wall *wall, int wp)
 ```
 
-* 4: Solid wall. Defined as a slip boundary condition which is based on the HLL flux, using:
+* 4: Solid wall (for Euler eqs.). Defined as a slip boundary condition which is based on the HLL flux, using:
 ```c 
 void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp)
 ```
-
-### Initial conditions
-
-Generally, the initial conditions can be implemented in:
-```c 
-int update_initial(t_mesh *mesh);
-```
-
-For Euler equations, the problem variables can be assigned for instance as follows:
-```c
-for(k=0;k<mesh->ncells;k++){
-	p= ... ;
-	rho= ... ;  
-	phi= ... ;
-	u= ... ;
-	v= ... ;
-	w= ... ;
-	
-	...
-	
-}
-```
-
-For Burgers' and linear transport, only one variable must be assigned:
-```c
-for(k=0;k<mesh->ncells;k++){
-	cell[k].U[0]= ... ;
-}
-```
-
-
-For Euler equations, **the initial conditions can also be set in the file** ```initial.out```:
-
-```c 
-VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
-CELLS = 40, 40, 40,
-0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
-0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
-0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
-...
-```
-
-
 
 ### Spatial reconstructions
 
@@ -405,7 +364,7 @@ Spatial reconstructions are implemented using 1D splitting. The available recons
 
 - Linear 3, 5 and 7
 - WENO 3, 5 and 7
-- TENO 3, 5 and 7 (requires the selection of the CT constant!)
+- TENO 3, 5 and 7 
 
 ### Time integrator
 
