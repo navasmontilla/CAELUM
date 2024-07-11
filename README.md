@@ -233,7 +233,7 @@ and set ```MULTI_TYPE=1``` to choose this Gamma formulation  $\phi =\gamma$ or  
 $$\frac{\partial \rho\phi}{\partial t} + \frac{\partial \rho u\phi}{\partial x}=0$$
 
 
-### Input and output files
+### Input data
 
 Inside the **case/** directory we will find all files corresponding to the simulation case, we need as input files:
 
@@ -293,6 +293,27 @@ int update_initial(t_mesh *mesh);
 
 - **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases). Similar structure than above.
 
+### Output data
+
+This software allows printing data in *.vtk format and ASCII *.out files. To activate each of those output file types, use the macros:
+
+```c
+#define WRITE_VTK 1  //print *.vtk
+#define WRITE_LIST 1 //print ASCII *.out
+```
+
+For *.vkt files, it is posible to choose the variables to print by means of additional macros. For instance, if we want to print X,Y,Z momentum and pressure, do:
+```c
+#define print_RHO 0
+#define print_MOMENTUM 1
+#define print_ENERGY 0
+#define print_PRESSURE 1
+#define print_OVERPRESSURE 0
+#define print_SOLUTES 0
+#define print_POTENTIALTEM 0
+```
+
+The time lapse for writing files is set as *DumpTime* in the file *configure.input*. 
 
 ### The computational mesh
 
@@ -443,27 +464,7 @@ u_z                     1.0
 ```
 
 
-### Output data
 
-EHOW-3D allows printing data in *.vtk format and ASCII *.out files. To activate each of those output file types, use the macros:
-
-```c
-#define WRITE_VTK 1  //print *.vtk
-#define WRITE_LIST 1 //print ASCII *.out
-```
-
-For *.vkt files, it is posible to choose the variables to print by means of additional macros. For instance, if we want to print X,Y,Z momentum and pressure, do:
-```c
-#define print_RHO 0
-#define print_MOMENTUM 1
-#define print_ENERGY 0
-#define print_PRESSURE 1
-#define print_OVERPRESSURE 0
-#define print_SOLUTES 0
-#define print_POTENTIALTEM 0
-```
-
-The dumping time is set as *DumpTime* in the file *configure.input*. 
 
 ### Parallel implementation
 
