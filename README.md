@@ -75,7 +75,7 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
-- Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](doc/caseExample.ipynb)
+- Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.ipynb)
 
 ## Functionality documentation
 
