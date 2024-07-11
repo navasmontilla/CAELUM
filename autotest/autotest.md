@@ -158,5 +158,5 @@ This is a test case from Rémi Abgrall, Smadar Karni, *Computations of Compressi
  </table>
 
  <figure style="text-align: center;">
-  <img src="caseRPs/out/RP_3.png" width="100%" alt="my alt text"/>
+  <img src="caseRPs/out/RP_4.png" width="100%" alt="my alt text"/>
 </figure>
