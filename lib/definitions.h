@@ -49,7 +49,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define ABS(x) (x < 0 ? -x : x)
 
 //reconstruction method
-#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for UWC
+#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for optimal reconstruction
 #define _CT_ 1.0e-6
 #define epsilon  1.0E-6
 #define epsilon2 1.0E-40
