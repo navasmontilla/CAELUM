@@ -140,13 +140,64 @@ EHow3D/
 #### python Directory
 - **utils.py**: Utility functions.
 - **autotest.py**: Script for automated testing of the solver.
-- **generatecase.py**: Script for generating case configurations.
+- **caseExample.ipynb**: Script for generating case configurations.
 
-#### case Directory
-- **configure.input**: Input configuration file for running a case.
-- **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases).
-- **initial.out**: Input file for initial conditions.
-- **out/**: Directory for storing simulation output files.
+### Input and output files
+
+Inside the **case/** directory we will find all files corresponding to the simulation case, we need as input files:
+
+- **configure.input**: Input configuration file for running a case, that includes the global configuration and is of the following form:
+
+```
+/////SIMULATION_SETUP//////
+FinalTime		0.2
+DumpTime		0.05
+CFL			0.25
+Order			5
+
+////////MESH_SETUP/////////
+xcells			80
+ycells			100
+zcells			80
+SizeX			0.80
+SizeY			1.0
+SizeZ			0.80
+
+///////BOUNDARY_COND///////
+Face_1(-y)			3
+Face_2(+x)			3
+Face_3(+y)			3
+Face_4(-x)			3
+Face_5(-z)			3
+Face_6(+z)			3
+
+///////LINEAR_TRANSPORT///////(if_applicable)
+u_x                     1.0
+u_y                     1.0
+u_z                     1.0
+```
+
+- **initial.out**: Input file for initial conditions, that is of the following form:
+	- For scalar equations:
+``` 
+VARIABLES = X, Y, Z, u 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0.0 
+0.0075 0.0075 0.0225 0.0
+0.0075 0.0075 0.0375 0.0 
+...
+```
+	- For euler equations
+ ``` 
+VARIABLES = X, Y, Z, u, v, w, rho, p, phi 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0225 0.0 0.0 0.0 1.0 1.0 0.0
+0.0075 0.0075 0.0375 0.0 0.0 0.0 1.0 1.0 0.0
+...
+ ```
+
+- **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases). Similar structure than above.
 
 ## Configuration of the solvers for compilation
 
