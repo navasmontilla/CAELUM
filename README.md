@@ -48,6 +48,7 @@ This software relies on other dependencies, listed below:
 	- *matplotlib*
 	- *numpy*
 	- *scipy*
+ 	- *imageio*
 
 
 ## Automated test
@@ -75,6 +76,7 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
+- Setting up a simulation case for the homogeneous Euler equations (shock-bubble test case): [caseExample](python/caseShockBubl.ipynb)
 - Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.ipynb)
 
 ## Functionality documentation
