@@ -348,26 +348,6 @@ struct t_cell_{
 	//...
 }; 
 ```
-### Solid domains (*under development*)
-
-Solid domains are allowed by setting the macro: 
-```c
-#define ALLOW_SOLIDS 1 
-```
-
-and involve the following functions:
-
-```c
-int read_solids(t_mesh *mesh, t_solid *solids ); // Read STL triangulation files
-int assign_cell_type(t_mesh *mesh,t_solid *solids); // Define ghost and solid cells
-int update_stencils(t_mesh *mesh,t_sim *sim); // Update stencil sizes depending on ghost cell layers
-int assign_wall_type(t_mesh *mesh); // Define calculation walls 
-int assign_image_cells(t_mesh *mesh,t_solid *solids); // Define image points for immersed boundaries
-int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids); // Update the values of ghost cells using image points
-```
-
-*This  feature is still under development.*
-
 
 ### Boundary conditions
 
@@ -377,12 +357,12 @@ The available boundary conditions are:
 
 * 2: User defined
 
-* 3: Transmissive (for Euler eqs.). The numerical flux is set as the physical flux at the interface, using:
+* 3: Transmissive (Euler). The numerical flux is set as the physical flux at the interface, using:
 ```c 
 void compute_transmissive_euler(t_wall *wall, int wp)
 ```
 
-* 4: Solid wall (for Euler eqs.). Defined as a slip boundary condition which is based on the HLL flux, using:
+* 4: Solid wall (Euler). Defined as a slip boundary condition which is based on the HLL flux, using:
 ```c 
 void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp)
 ```
@@ -393,16 +373,28 @@ Spatial reconstructions are implemented using 1D splitting. The available recons
 
 - Linear 3, 5 and 7
 - WENO 3, 5 and 7
-- TENO 3, 5 and 7 
+- TENO 3, 5 and 7
+
+To select the spatial reconstruction method, use:
+ ```c
+#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for UWC
+```
 
 ### Time integrator
 
-The time stepping is done using a Strong Stability Preserving Runge-Kutta 3 (SSPRK3) method.
+The time stepping is done using a Strong Stability Preserving Runge-Kutta 3 (SSPRK3) method when the spatial order is greater than 1, or with a 1-st order explicit Euler method, when the spatial order is 1.
 
 ### Riemann solvers
 
-The available solvers are:
-
+For the **linear scalar equation**, we use an upwind flux definition, implemented in:
+```c 
+void compute_linear_flux(t_wall *wall,double *lambda_max);
+```
+For the **Burgers equation**, we also use an upwind flux definition, implemented in:
+```c 
+void compute_burgers_flux(t_wall *wall,double *lambda_max);
+```
+For **Euler equations**, the available solvers are:
 - HLL solver: 
 ```c 
 void compute_euler_HLLE(t_wall *wall,double *lambda_max) 
