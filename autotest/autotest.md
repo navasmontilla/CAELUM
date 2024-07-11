@@ -170,16 +170,16 @@ This is a test case from Rémi Abgrall, Smadar Karni, *Computations of Compressi
   <table style="width: 100%; border-collapse: collapse;">
     <tr>
       <td style="width: 50%; text-align: center;">
-        <img src="caseBubble/out/state000.out_theta2D.png" width="80%" alt="my alt text"/>
-        <img src="caseBubble/out/state001.out_theta2D.png" width="80%" alt="my alt text"/>
-        <img src="caseBubble/out/state002.out_theta2D.png" width="80%" alt="my alt text"/>
-        <img src="caseBubble/out/state003.out_theta2D.png" width="80%" alt="my alt text"/>
+        <img src="caseBubble/out/state000.out_theta2D.png" width="99%" alt="my alt text"/>
+        <img src="caseBubble/out/state001.out_theta2D.png" width="99%" alt="my alt text"/>
+        <img src="caseBubble/out/state002.out_theta2D.png" width="99%" alt="my alt text"/>
+        <img src="caseBubble/out/state003.out_theta2D.png" width="99%" alt="my alt text"/>
       </td>
       <td style="width: 50%; text-align: center;">
-        <img src="caseBubble/out/state004.out_theta2D.png" width="80%" alt="my alt text"/>
-        <img src="caseBubble/out/state005.out_theta2D.png" width="80%" alt="my alt text"/>
-        <img src="caseBubble/out/state006.out_theta2D.png" width="80%" alt="my alt text"/>
-        <img src="caseBubble/out/state007.out_theta2D.png" width="80%" alt="my alt text"/>
+        <img src="caseBubble/out/state004.out_theta2D.png" width="99%" alt="my alt text"/>
+        <img src="caseBubble/out/state005.out_theta2D.png" width="99%" alt="my alt text"/>
+        <img src="caseBubble/out/state006.out_theta2D.png" width="99%" alt="my alt text"/>
+        <img src="caseBubble/out/state007.out_theta2D.png" width="99%" alt="my alt text"/>
       </td>
     </tr>
   </table>
