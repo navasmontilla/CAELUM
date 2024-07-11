@@ -45,3 +45,118 @@ This RP involves a equilibrium state that must be preserved with machine accurac
     <td>0.0</td>
   </tr>
  </table>
+
+ <figure style="text-align: center;">
+  <img src="caseRPs/out/RP_1.png" width="100%" alt="my alt text"/>
+</figure>
+
+
+### Test 3: Riemann Problem RP2
+
+This RP consists of the typical sod-shock tube problem:
+
+<table>
+  <tr>
+    <td></td>
+    <td>Left</td>
+    <td>Right</td>
+  </tr>
+  <tr>
+    <td>$\rho$</td>
+    <td>1.0</td>
+    <td>0.125</td>
+  </tr>
+  <tr>
+    <td>$p$</td>
+    <td>1.0</td>
+    <td>0.1</td>
+  </tr>
+  <tr>
+    <td>$u$</td>
+    <td>0.0</td>
+    <td>0.0</td>
+  </tr>
+  <tr>
+    <td>$\phi$</td>
+    <td>1.666</td>
+    <td>5.0</td>
+  </tr>
+ </table>
+
+ <figure style="text-align: center;">
+  <img src="caseRPs/out/RP_2.png" width="100%" alt="my alt text"/>
+</figure>
+
+
+### Test 4: Riemann Problem RP3
+
+This RP considers a nonz-zero velocity:
+
+<table>
+  <tr>
+    <td></td>
+    <td>Left</td>
+    <td>Right</td>
+  </tr>
+  <tr>
+    <td>$\rho$</td>
+    <td>5.99924</td>
+    <td>5.99242</td>
+  </tr>
+  <tr>
+    <td>$p$</td>
+    <td>460.894</td>
+    <td>46.0950</td>
+  </tr>
+  <tr>
+    <td>$u$</td>
+    <td>19.5975</td>
+    <td>-6.19633</td>
+  </tr>
+  <tr>
+    <td>$\phi$</td>
+    <td>1.0</td>
+    <td>0.0</td>
+  </tr>
+ </table>
+
+ <figure style="text-align: center;">
+  <img src="caseRPs/out/RP_3.png" width="100%" alt="my alt text"/>
+</figure>
+
+
+### Test 5: Riemann Problem RP4
+
+This is a test case from Rémi Abgrall, Smadar Karni, *Computations of Compressible Multifluids*, Journal of Computational Physics, Volume 169, Issue 2, 2001, Pages 594-623.
+
+<table>
+  <tr>
+    <td></td>
+    <td>Left</td>
+    <td>Right</td>
+  </tr>
+  <tr>
+    <td>$\rho$</td>
+    <td>1.0</td>
+    <td>0.125</td>
+  </tr>
+  <tr>
+    <td>$p$</td>
+    <td>1.0</td>
+    <td>0.1</td>
+  </tr>
+  <tr>
+    <td>$u$</td>
+    <td>0.0</td>
+    <td>0.0</td>
+  </tr>
+  <tr>
+    <td>$\gamma$</td>
+    <td>1.40</td>
+    <td>1.60</td>
+  </tr>
+ </table>
+
+ <figure style="text-align: center;">
+  <img src="caseRPs/out/RP_3.png" width="100%" alt="my alt text"/>
+</figure>
