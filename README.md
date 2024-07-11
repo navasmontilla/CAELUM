@@ -217,7 +217,13 @@ where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure an
 $$E=\rho(\frac{1}{2}\mathbf{v}+e)$$
 One should note the relations $p=(\gamma-1)\rho e\equiv (\gamma-1)(E-\frac{1}{2}\rho\mathbf{v})$.
 
-When setting ```#define ST 3``` the equation for the conservation of energy is solved in fully conservative form, defining energy as $E_T=\rho(\frac{1}{2}\mathbf{v}+e+gz)$, yielding to
+When setting ```#define ST 0```, we assume $g=0$. 
+
+When setting  ```#define ST 1```, we consider non-zero gravity and use the solver HLLS. 
+
+When setting  ```#define ST 2```, we consider non-zero gravity and use the solver HLL in fluctuation version. 
+
+When setting ```#define ST 3```  we consider non-zero gravity and use the solver HLL in fluctuation version. Besides,the equation for the conservation of energy is solved in fully conservative form, defining energy as $E_T=\rho(\frac{1}{2}\mathbf{v}+e+gz)$, yielding to
 
 $$\begin{align}
 \frac{\partial E_T}{\partial t} + \nabla \cdot \left((E_T + p) \mathbf{v}\right) &= 0 
