@@ -166,6 +166,19 @@ This is a test case from Rémi Abgrall, Smadar Karni, *Computations of Compressi
 
 ### Test 6: Colliding thermals
 
- <figure style="text-align: center;">
-  <img src="caseBubble/out/state000.out_theta2D.png" width="50%" alt="my alt text"/><img src="caseBubble/out/state001.out_theta2D.png" width="50%" alt="my alt text"/>
+<figure style="text-align: center;">
+  <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+    <div style="flex: 1; max-width: 48%;">
+      <img src="caseBubble/out/state000.out_theta2D.png" width="100%" alt="my alt text"/>
+      <img src="caseBubble/out/state001.out_theta2D.png" width="100%" alt="my alt text"/>
+      <img src="caseBubble/out/state002.out_theta2D.png" width="100%" alt="my alt text"/>
+      <img src="caseBubble/out/state003.out_theta2D.png" width="100%" alt="my alt text"/>
+    </div>
+    <div style="flex: 1; max-width: 48%;">
+      <img src="caseBubble/out/state004.out_theta2D.png" width="100%" alt="my alt text"/>
+      <img src="caseBubble/out/state005.out_theta2D.png" width="100%" alt="my alt text"/>
+      <img src="caseBubble/out/state006.out_theta2D.png" width="100%" alt="my alt text"/>
+      <img src="caseBubble/out/state007.out_theta2D.png" width="100%" alt="my alt text"/>
+    </div>
+  </div>
 </figure>
