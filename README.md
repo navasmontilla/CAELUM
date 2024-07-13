@@ -44,6 +44,7 @@ This software relies on other dependencies, listed below:
 	- *numpy*
 	- *scipy*
  	- *imageio*
+    
   - [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing
 
 
