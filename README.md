@@ -39,11 +39,12 @@ This software relies on other dependencies, listed below:
 
 - [GCC](https://gcc.gnu.org/) or other C compiler
 - [Paraview](https://www.paraview.org/), for data visualization
-- [Python3](https://www.python.org/downloads/) and [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing. The following packages need to be installed using ```pip install```:
+- [Python3](https://www.python.org/downloads/), for pre- and post-processing. The following packages need to be installed using ```pip install```:
 	- *matplotlib*
 	- *numpy*
 	- *scipy*
  	- *imageio*
+  - [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing
 
 
 ## Automated test
@@ -55,7 +56,7 @@ To check the functionality of the software, an automated test composed of 6 benc
 where 
 - ```nt``` is the number of threads
 - ```rec``` is the reconstruction method (0: WENO, 1: TENO, 2: Optimal)
-- ```ord``` is the order of accuracy (Only 1, 3, 5 and 7 are available)
+- ```ord``` is the order of accuracy (**Only 1, 3, 5 and 7 are available**)
 
 Example usage for 8 threads, using WENO and order 3: ```python3 python/autotest.py 8 0 3```
   
@@ -390,6 +391,8 @@ To select the spatial reconstruction method, use:
 #define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for UWC
 ```
 
+Note that **only orders 1, 3, 5 and 7 are available**.
+
 ### Time integrator
 
 The time stepping is done using a Strong Stability Preserving Runge-Kutta 3 (SSPRK3) method when the spatial order is greater than 1, or with a 1-st order explicit Euler method, when the spatial order is 1.
@@ -426,52 +429,7 @@ The x-split version of the solvers is implemented. It must be noted that the rot
 	WL[2]=-wall->UL[1]*wall->ny+wall->UL[2]*wall->nx+wall->UL[2]*wall->nz;
 	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
 ```
-where ``` WL``` is the 3D vector in the (cell) local coordinates and  ``` UL``` in the absolute coordinates.
-
-### Input data
-
-Input data must be placed in the folder ```case/```, and contains:
-
-- *configure.input*: Configuration file.
-- *initial.out* (optional): Initial condition file described above, same format and filetype than the ASCII *.out output file.
-- *solid_list.txt* (optional): Contains the number of solid bodies and the path to their files.
-- *solid1.txt* (optional): 1-st solid body file (ASCII STL format).
-- ...
-- *solidN.txt* (optional): N-th solid body file (ASCII STL format).
-
-
-#### Configuration file
-
-The configuration file *configure.input* has the following format:
-
-```
-/////SIMULATION_SETUP//////
-FinalTime		0.2
-DumpTime		0.05
-CFL			0.25
-Order			5
-
-////////MESH_SETUP/////////
-xcells			80
-ycells			100
-zcells			80
-SizeX			0.80
-SizeY			1.0
-SizeZ			0.80
-
-///////BOUNDARY_COND///////
-Face_1(-y)			3
-Face_2(+x)			3
-Face_3(+y)			3
-Face_4(-x)			3
-Face_5(-z)			3
-Face_6(+z)			3
-
-///////LINEAR_TRANSPORT///////(if_applicable)
-u_x                     1.0
-u_y                     1.0
-u_z                     1.0
-```
+where ```WL``` is the 3D vector in the local coordinates and  ```UL``` in the absolute coordinates.
 
 
 ## Numerical results
