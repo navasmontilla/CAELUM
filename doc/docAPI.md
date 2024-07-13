@@ -1,5 +1,7 @@
 ## API documentation
 
+Here, we offer a summary of the main programming structures and functions for the user to implement additional functionalities. The implementation of other spatial reconstructions and Riemann solvers is straightforward.
+
 ### Data structures
 
 In EHOW3D, the variables are organized using c structures. Below, there is a summary of the most relevant structures and variables (note that some variables are ommited in this document).
@@ -190,7 +192,7 @@ void compute_burgers_flux(t_wall *wall,double *lambda_max);
 void compute_linear_flux(t_wall *wall,double *lambda_max);
 ```
 
-The main logic of a solver function is to use the left and right reconstructed data (```wall->UL``` and ```wall->UR```) to compute the fluxes (```wall->fL``` and ```wall->UR```). These solvers are implemented using the x-split equations, that means that the vector variables must be rotated to the x-reference axis (```WL``` and ```WR```) before computing the numerical flux. Afterwards, the fluxes are rotated to the original direction (wall normal).
+The main logic of a solver function is to use the left and right reconstructed data (```wall->UL``` and ```wall->UR```) to compute the fluxes (```wall->fL_star``` and ```wall->fR_star```). These solvers are implemented using the x-split equations, that means that the vector variables must be rotated to the x-reference axis (```WL``` and ```WR```) before computing the numerical flux. Afterwards, the fluxes are rotated to the original direction (wall normal).
 
 
 ```c
