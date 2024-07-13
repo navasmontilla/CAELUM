@@ -79,6 +79,8 @@ To setup a simulation case, some Jupyter Notebooks has been created, including a
 
 ## Functionality documentation
 
+For a detailed documentation of the main programming structures and functions of the code, see [the API documentation](doc/docAPI.md)
+
 ### Code organization and libraries
 
 ```
@@ -355,7 +357,7 @@ Each reference element (volume cell) is defined as follows:
   <img src="doc/cell.png" width="30%" alt="my alt text"/>
 </figure>
 
-with wall numbers in red and node numbers in blue. These are defined in the corresponding data structures in *structures.h*.
+with wall numbers in red and node numbers in blue. These are defined in the corresponding data structures in *structures.h* (see [the API documentation](doc/docAPI.md)).
 
 ### Boundary conditions
 
@@ -472,35 +474,9 @@ u_z                     1.0
 ```
 
 
-
-
-### Parallel implementation
-
-The code is parallelized using OpenMP. To set the number of threads, for example 24 threads, the following macro is used:
-```c
-#define NTHREADS 24
-```
-If compiling without the OMP flag, the code will run as a serial program.
-
-
-### Compilation
-
-To compile using *gcc* and the OpenMP *-fopenmp* flag, type:
-
-```
-$ gcc -lm -fopenmp euler3D.c -o euler3D
-```
-
-It can also be compiled using PGI NVIDIA compiler, with the OpenMP *-mp* flag:
-```
-$ pgcc -mp -o euler3D euler3D.c
-```
-
-
-
 ## Numerical results
 
-Results are sorted in the following categories:
+Some results are sorted in the following categories:
 
 - [Benchmark #1: 1D Riemann problems](doc/benchmark1.md)
 - [Benchmark #2: 2D Riemann problems](doc/benchmark2.md)
@@ -509,11 +485,6 @@ Results are sorted in the following categories:
 - [Benchmark #5: Taylor-Green vortex](doc/benchmark5.md)
 - [Benchmark #6: Kelvin-Helmholtz instability](doc/benchmark6.md)
 - [Benchmark #7: Colliding thermals](doc/benchmark7.md)
-- Other results
-
-
-
-
 
 ## Authorship
 
@@ -522,9 +493,9 @@ Authors:
  - Isabel Echeverribar 
  
 Collaborators:
- - Javier Guallart Huertas (2022-present)
+ - Javier Guallart Huertas (2022-2023)
 
-Copyright (C) 2019-2023 The authors and collaborators.  
+Copyright (C) 2019-2024 The authors and collaborators.  
 
 License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms: 
 
