@@ -53,32 +53,18 @@ struct t_node_{
 struct t_cell_{
 	int id;
 	int l,m,n;//index in cartesian reference
-		//double u,v,H,e_i,p; //primitive variables: density, x velocity, y velocity, specific enthalpy, specific internal energy, pressure
-		//double rho,ru,rv,E,rp;//conserved variables: density, mass flow x, mass flow y, internal energy,  pasive scalar (rho*p);
-		//double rho_aux,ru_aux,rv_aux,E_aux,rp_aux;//conserved variables: density, mass flow x, mass flow y, internal energy, pasive scalar (rho*p);
-	double *U; //this is the array of vars.
-			//When using Euler: rho, rhou, rhov, E, rhop
-			//When using SW: h, hu, hv
+	double *U; //this is the array of conserved variables. When using Euler: rho, rhou, rhov, E, rhophi
 	double *U_aux;
 	double *Ue; //equilibrium state
 	double *S;
       double *S_corr;
-	double pres,prese,u_int; //pressure
+	double pres,prese,u_int; 
 	double dx,dy,dz;
 	double xc,yc,zc;
+	
 	int n1,n2,n3,n4,n5,n6,n7,n8; //ID's of the nodes of the cell
-	//        (4)------------(3)
-	//         |		  |
-	//         |		  |
-	//        (1)------------(2)
-	//
 	int w1_id,w2_id,w3_id,w4_id,w5_id,w6_id; //ID's of the walls of the cell
 	t_wall *w1, *w2, *w3, *w4, *w5, *w6;
-	// 	      ------(3)-----
-	//          |		 |
-	//         (4)		(2)
-	//          |		 |
-	//          ------(1)-----
 
       int type; //0=solid, 1=nomal
       int ghost; //0=no, 1=yes
@@ -89,10 +75,8 @@ struct t_cell_{
       int solid_id,triangle_id;
       int out; //auxiliary variable for assing_cell_type() . It indicates that a cell is outside of a surface
       t_triangle *tri;
-      int st_sizeX, st_sizeY, st_sizeZ;		//stencil size
+      int st_sizeX, st_sizeY, st_sizeZ;	//stencil size
 	int stX[9], stY[9], stZ[9];		//id's of the cells in the X and Y stencil.
-					//Initally set to 9 to avoid the use of malloc
-					//But only filled up to st_size.
 
 };
 
@@ -100,15 +84,12 @@ struct t_cell_{
 struct t_wall_{
 	int id;
 	int stencil; //this could be 1, 3, 5 or 7, depending on the method stencil
-		//double rhoL, ruL, rvL, EL, rpL, rhoR, ruR, rvR, ER, rpR;
-		//extrapolated values at the left and right side of the wall, coming from (WENO) reconstruction
-
-	double *UL, *UR; //array of extrapolated values at the left and right side of the wall, coming from (WENO) reconstruction
+	double *UL, *UR; //array of reconstructed values on the left and right hand side of the wall, coming from (WENO/TENO) reconstruction
 	double *fR_star,*fL_star;
-      double *ULe, *URe; //array of extrapolated values at the left and right side of the wall, coming from (WENO) reconstruction, for the EQUILIBRIUM
+      double *ULe, *URe; //array of reconstructed values on the left and right hand side of the wall, coming from (WENO/TENO) reconstruction, for the EQUILIBRIUM
 	double pRe,pLe; //equilibrium pressures
 	int cellR_id, cellL_id; //id of the right and left cell
-	t_cell *cellR, *cellL; //pointers to the right and left cells of the wall
+	t_cell *cellR, *cellL; //pointers to the left and right hand cells of the wall
 	double nx, ny, nz;
 	double z; //height in z direction
       int wtype, boundId; //wtype: 1 for inner walls, 3 for transmissive boundary walls and 4 for solid walls
@@ -118,7 +99,7 @@ struct t_wall_{
 
 
 struct t_mesh_{
-	int xcells, ycells, zcells; //values given by the user
+	int xcells, ycells, zcells; 
 	double dx, dy, dz;
       double Lx, Ly, Lz;
       double u_x, u_y, u_z;
@@ -127,21 +108,11 @@ struct t_mesh_{
 	int nnodes;
 	int bc[6]; //boundary type
 	int flux_bc_flag,cell_bc_flag; //cell_bc_flag is 1 if all the boundaries are updated imposing cell averages
-					//flux_bc_flag is 1 if all the boundaries are updated with numerical fluxes
+						 //flux_bc_flag is 1 if all the boundaries are updated with numerical fluxes
       int periodicX,periodicY,periodicZ;
 	t_cell *cell;
 	t_wall *wall;
-  	// 	      ------(5)-----------(7)-----
-	//          |		 |	         |
-	//         (1)		(3)		  (4)
-	//          |		 |	         |
-	//          ------(0)-----------(2)-----
 	t_node *node;
-	//        (3)------------(4)------------(5)
-	//         |		  |		     |
-	//         |		  |		     |
-	//        (0)------------(1)------------(2)
-	//
 
 	double lambda_max;
 	double tke;
@@ -152,11 +123,11 @@ struct t_mesh_{
 };
 
 struct t_sim_{
-	double dt,t,CFL; //dynamic variables
+	double dt,t,CFL;  //dynamic variables
 	double tf, tVolc; //static variables
-	int rk_steps; //number of iterations of Runge-Kutta (1 if 1st order, 3 otherwise)
+	int rk_steps; //number of Runge-Kutta steps (1 if 1-st order, 3 otherwise)
 	int order; //order of accuracy
-	int nvar; //number of variables
+	int nvar;  //number of variables
 
 };
 
