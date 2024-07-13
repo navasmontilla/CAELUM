@@ -32,9 +32,7 @@ Content:
   void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim);
   void compute_transmissive_euler(t_wall *wall, int wp);
   void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp);
-  void compute_euler_Roe(t_wall *wall,double *lambda_max); //ESTA LA BORRAREMOS 
-  void compute_sw_HLLE(t_wall *wall,double *lambda_max);   //ESTA LA BORRAREMOS 
-  void compute_sw_Roe(t_wall *wall,double *lambda_max);    //ESTA LA BORRAREMOS 
+  void compute_euler_Roe(t_wall *wall,double *lambda_max);
   void compute_burgers_flux(t_wall *wall,double *lambda_max);
   void compute_linear_flux(t_wall *wall,double *lambda_max);
 

@@ -44,7 +44,7 @@ Content:
   void energy_calculation(t_mesh *mesh, t_sim *sim);
   void tke_calculation(t_mesh *mesh, t_sim *sim);
   
-  void update_euler(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps);
+  void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps);
 
 
 #endif

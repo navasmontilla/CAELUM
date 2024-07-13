@@ -183,7 +183,7 @@ int main(int argc, char * argv[]){
 
 	while(sim->t<tf){
 		
-		update_euler(mesh,sim,solids,sim->rk_steps); //updates all Euler variables one dt
+		update_solution(mesh,sim,solids,sim->rk_steps); //updates all variables one dt
 
 		if(mesh->cell_bc_flag!=1){
 			update_cell_boundaries(mesh);

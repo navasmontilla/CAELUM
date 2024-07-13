@@ -903,20 +903,6 @@ void compute_euler_Roe(t_wall *wall,double *lambda_max){
 	abort();
 }
 
-void compute_sw_HLLE(t_wall *wal,double *lambda_maxl){
-
-	printf("%s We are working on it. Sorry!\n",WAR);
-	abort();
-
-
-}
-
-void compute_sw_Roe(t_wall *wall,double *lambda_max){
-
-	printf("%s We are working on it. Sorry!\n",WAR);
-	abort();
-
-}
 
 void compute_burgers_flux(t_wall *wall,double *lambda_max){
 
