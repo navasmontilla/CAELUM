@@ -77,6 +77,9 @@ Within this test, the program is compiled and executed for every benchmark, givi
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
 - Setting up a simulation case for the homogeneous Euler equations (shock-bubble test case): [caseExample](python/caseShockBubl.ipynb)
+  <figure style="text-align: center;">
+  <img src="caseShockBub/out/animation.gif" width="50%" alt="my alt text"/>
+  </figure>
 - Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.ipynb)
 
 ## Functionality documentation
