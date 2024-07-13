@@ -77,6 +77,9 @@ Within this test, the program is compiled and executed for every benchmark, givi
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
 - Setting up a simulation case for the homogeneous Euler equations (shock-bubble test case): [caseExample](python/caseShockBubl.ipynb)
+  <figure style="text-align: center;">
+  <img src="caseShockBub/out/animation.gif" width="50%" alt="my alt text"/>
+  </figure>
 - Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.ipynb)
 
 ## Functionality documentation
@@ -216,7 +219,9 @@ $$\begin{align}
 \end{align}$$
 
 where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy
+
 $$E=\rho(\frac{1}{2}\mathbf{v}+e)$$
+
 One should note the relations $p=(\gamma-1)\rho e\equiv (\gamma-1)(E-\frac{1}{2}\rho\mathbf{v})$.
 
 When setting ```#define ST 0```, we assume $g=0$. 
