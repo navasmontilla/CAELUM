@@ -39,13 +39,12 @@ This software relies on other dependencies, listed below:
 
 - [GCC](https://gcc.gnu.org/) or other C compiler
 - [Paraview](https://www.paraview.org/), for data visualization
+- [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing
 - [Python3](https://www.python.org/downloads/), for pre- and post-processing. The following packages need to be installed using ```pip install```:
 	- *matplotlib*
 	- *numpy*
 	- *scipy*
  	- *imageio*
-    
-  - [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing
 
 
 ## Automated test
