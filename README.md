@@ -8,12 +8,7 @@ This repository includes a very high-order CFD solver for academic purposes. The
 
 - Linear transport
 - Burgers' equation
-- Compressible Euler equations 
-
-Regarding the compressible Euler equations, the following features are allowed in EHOW3D:
-
-- Compressible flows single and multicomponent (composed by a mixture of 2 gases)
-- Gravitational source terms
+- Compressible Euler equations with gravitational source term.
 
 The high order WENO and TENO schemes implemented in this code allow the simulation of turbulent flows using an Implicit Large Eddy Simulation (ILES) framework. ILES methods accurately reproduce the statistical behavior of turbulent flows. The  truncation errors of the scheme play the role of the common sub-grid scale filters used in traditional LES methods. High-fidelity simulations can be achieved when using this approach. A Kelvin-Helmholtz instability computed by EHOW-3D is shown below.
 
@@ -193,25 +188,41 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 
 There is the possibility of solving:
 
-- Linear scalar transport, setting:
+#### Linear scalar transport:
+
+To run this model, we must define:
+
 ```c
 #define EQUATION_SYSTEM 0 
 ```
-and defining the x, y and z velocities in the configuration file.
 
-$$\frac{\partial u}{\partial t} + \lambda_x\frac{\partial u}{\partial x}+ \lambda_y\frac{\partial u}{\partial y}+ \lambda_z\frac{\partial u}{\partial z}= 0 $$
+and the following equation is solved:
 
-- Burgers equation, setting:
+$$\frac{\partial u}{\partial t} + v_x\frac{\partial u}{\partial x}+ v_y\frac{\partial u}{\partial y}+ v_z\frac{\partial u}{\partial z}= 0 $$
+
+where $v_x$, $v_y$ and $v_z$ the are x, y and z velocities.
+
+#### Burgers equation
+
+To run this model, we must define:
+
 ```c
 #define EQUATION_SYSTEM 1 
 ```
 
+and the following equation is solved:
+
 $$ \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x}+ u\frac{\partial u}{\partial y}+ u\frac{\partial u}{\partial z}=0 $$
 
-- Euler equations, setting:
+#### Euler equations:
+To run this model, we must define:
+
 ```c
 #define EQUATION_SYSTEM 2 
 ```
+
+and the followingsystem of equations is solved:
+
 $$\begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
@@ -344,15 +355,7 @@ Each reference element (volume cell) is defined as follows:
   <img src="doc/cell.png" width="30%" alt="my alt text"/>
 </figure>
 
-with wall numbers in red and node numbers in blue. These are defined in the structure ``` t_cell_``` as:
-```c
-struct t_cell_{
-	//...
-	int n1,n2,n3,n4,n5,n6,n7,n8; //ID's of the nodes 
-	int w1_id,w2_id,w3_id,w4_id,w5_id,w6_id; //ID's of the walls 
-	//...
-}; 
-```
+with wall numbers in red and node numbers in blue. These are defined in the corresponding data structures in *structures.h*.
 
 ### Boundary conditions
 
