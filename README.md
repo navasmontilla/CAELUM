@@ -77,6 +77,9 @@ To setup a simulation case, some Jupyter Notebooks has been created, including a
   <img src="caseShockBub/out/animation.gif" width="50%" alt="my alt text"/>
   </figure>
 - Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.ipynb)
+    <figure style="text-align: center;">
+    <img src="caseExample/out/animation.gif" width="50%" alt="my alt text"/>
+    </figure>
 
 ## Functionality documentation
 
