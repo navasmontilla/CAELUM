@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import re
 from glob import glob
 from utils import modify_header_file,write_config,write_initial,write_equilibrium,backup_file,restore_file,compile_program,run_program,initialize_variables,read_data_euler
-
+import imageio
 
 # ### Setting up the paths
 # 
@@ -49,7 +49,8 @@ folder_case = os.path.join(script_dir, "../"+folder_case)
 folder_lib = os.path.join(script_dir, "../"+folder_lib)
 folder_exe = os.path.join(script_dir, "../")
 
-
+os.makedirs(folder_case, exist_ok=True)
+os.makedirs(folder_out, exist_ok=True)
 # ### Setting up the compilation variables (*definitions.h*)
 # 
 # Here, we can modify those variables that need to be set before compilation and are found in the file *definitions.h*. Don't worry if you mess up things here, a backup of the original file is created before modification and will be restored at the end of this script, after compilation and execution.
@@ -60,7 +61,7 @@ folder_exe = os.path.join(script_dir, "../")
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
-modify_header_file(folder_lib+'/definitions.h', 'NTRHEADS', 2)         #number of threads
+modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 32)         #number of threads
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'ST', 3)               #Source term type
 modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann solver used
@@ -76,14 +77,14 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 
 #Simulation setup
 FinalTime = 800.0
-DumpTime = 100.0  #for file printing
+DumpTime = 50.0  #for file printing
 CFL = 0.45
 Order = 7
 
 #Mesh setup
-xcells = 100
+xcells = 400
 ycells = 1
-zcells = 50
+zcells = 200
 SizeX = 20000.0
 SizeY = 1000.0
 SizeZ = 10000.0
@@ -196,14 +197,16 @@ restore_file(folder_lib+'/definitions.h')
 
 # In[23]:
 
-
-files = glob(folder_out+"/*.out")
+os.remove(folder_out + "list_eq.out")
+files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
+#files = glob(folder_out+"/*.out")
 lf=len(files)
 print(files)
 
 gamma=1.4
 j=0
 print("Printing figures in folder"+folder_out)
+images = []  # List to hold all the images for the GIF
 for fname in files:
     
     u, v, w, rho, p, phi, theta, E = read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j)
@@ -237,8 +240,11 @@ for fname in files:
     fig.text(0.15, 0.72, "θ_max="+str(round(np.max(Sth),3)), fontsize=9.5)
     fig.text(0.15, 0.68, "θ_min="+str(round(np.min(Sth),3)), fontsize=9.5)
     
-    fig.savefig(filename+".png",dpi=500)
+    image_path = filename + ".png"
+    fig.savefig(image_path,dpi=400)
+    images.append(imageio.imread(image_path)) 
     
     j=j+1
          
-
+gif_path = os.path.join(folder_out, "animation.gif")
+imageio.mimsave(gif_path, images, duration=8, loop=0)  # Adjust the duration as needed

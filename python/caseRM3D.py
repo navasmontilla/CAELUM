@@ -30,7 +30,7 @@ import imageio
 #This test case will run in the folder "caseShockBub/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseShockBub/" 
+folder_case="caserRM3D/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -61,7 +61,7 @@ os.makedirs(folder_out, exist_ok=True)
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
-modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 48)         #number of threads
+modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 60)         #number of threads
 modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
@@ -76,16 +76,16 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 
 
 #Simulation setup
-FinalTime = 0.60
-DumpTime = 0.0250  #for file printing
-CFL = 0.4
+FinalTime = 5.0
+DumpTime = 0.5  #for file printing
+CFL = 0.2
 Order = 7
 
 #Mesh setup
-xcells = 600
-ycells = 300
-zcells = 1
-SizeX = 2.0
+xcells = 200
+ycells = 200
+zcells = 200
+SizeX = 1.0
 SizeY = 1.0
 SizeZ = 1.0
 
@@ -94,8 +94,8 @@ Face_1 = 1 #-y
 Face_2 = 3 #+x
 Face_3 = 1 #+y
 Face_4 = 3 #-x
-Face_5 = 4 #-z
-Face_6 = 4 #+z
+Face_5 = 1 #-z
+Face_6 = 1 #+z
 
 #Linear transport, only if applicable
 u_x = 1.0
@@ -126,29 +126,27 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 for l in range(0,xcells): 
         for m in range(0,ycells): 
             for n in range(0,zcells):
-                
-                xaux=xc[l,m,n]-0.6
-                yaux=yc[l,m,n]-0.5
-                r=np.sqrt(xaux*xaux+yaux*yaux)
-                
-                if xc[l,m,n] < 0.1:
-                    p  [l,m,n] = 10.0
-                    rho[l,m,n] = 3.81
-                    u  [l,m,n] = 2.85
-                    v  [l,m,n] = 0.0
+                u[l,m,n] = 0.0
+                v[l,m,n] = 0.0
+                w[l,m,n] = 0.0
+
+                # Compute conditions
+                if xc[l,m,n] < 0.47:
+                    p[l,m,n] = 1.86  # 10.956
+                    rho[l,m,n] = 1.93  # 3.936
+                    u[l,m,n] = 0.26  # 2.7245
                     phi[l,m,n] = 0.0
-                elif r < 0.15:
-                    p  [l,m,n] = 1.0
-                    rho[l,m,n] = 0.1
-                    u  [l,m,n] = 0.0
-                    v  [l,m,n] = 0.0
-                    phi[l,m,n] = 1.0
-                else:
-                    p  [l,m,n] = 1.0
+                elif xc[l,m,n] < 0.59 + 0.04 * np.cos(2.0 * math.pi * yc[l,m,n]) + 0.04 * np.cos(2.0 * math.pi * zc[l,m,n]):
+                    p[l,m,n] = 0.77  # 1.0
                     rho[l,m,n] = 1.0
-                    u  [l,m,n] = 0.0
-                    v  [l,m,n] = 0.0
+                    u[l,m,n] = -0.47  # 0.0
+                    v[l,m,n] = 0.0
                     phi[l,m,n] = 0.0
+                else:
+                    p[l,m,n] = 0.77  # 1.0
+                    rho[l,m,n] = 4.88  # 0.50  # 0.1
+                    u[l,m,n] = -0.47  # 0.0
+                    phi[l,m,n] = 1.0
 
 
 # Now, the configuration and initial condition (and equilibrium) files are written: 
@@ -193,44 +191,39 @@ print("Printing figures in folder"+folder_out)
 
 images = []  # List to hold all the images for the GIF
 
-for fname in files:
+# for fname in files:
     
-    u, v, w, rho, p, phi, theta, E = read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j)
+    # u, v, w, rho, p, phi, theta, E = read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j)
                   
-    filename = fname+"_shockbubble"
+    # filename = fname+"_shockbubble"
     
-    xp = xc[:,0,0]     
-    yp = yc[0,:,0]      
-    X, Y = np.meshgrid(xp, yp)    #matriz de puntos
-    Srho=np.transpose(rho[:,:,0,j])
-    Spres=np.transpose(p[:,:,0,j])
-    Svel=np.transpose(np.sqrt(u[:,:,0,j]**2+w[:,:,0,j]**2))
-    Senr=np.transpose(E[:,:,0,j])
-    Sphi=np.transpose(phi[:,:,0,j])
-    Su=np.transpose(u[:,:,0,j])
+    # xp = xc[:,0,0]     
+    # yp = yc[0,:,0]      
+    # X, Y = np.meshgrid(xp, yp)    #matriz de puntos
+    # Srho=np.transpose(rho[:,:,0,j])
+
     
-    fig, ax = plt.subplots(figsize=(10, 5))   
-    levels = np.linspace(0, 4, 10)
-    #print(levels)
-    plot1=ax.contour(X, Y, Srho, levels=levels,colors="k",linewidths=0.2)  
-    plot1=ax.contourf(X, Y, Srho, cmap='plasma')   
-    ax.set_title('Density')
-    ax.set_xlabel("x") 
-    ax.set_ylabel("y") 
-    ax.set_aspect('equal', 'box')
-    plot1.set_clim( 0, 4 )
+    # fig, ax = plt.subplots(figsize=(10, 5))   
+    # levels = np.linspace(0, 4, 10)
+    # plot1=ax.contour(X, Y, Srho, levels=levels,colors="k",linewidths=0.2)  
+    # plot1=ax.contourf(X, Y, Srho, cmap='plasma')   
+    # ax.set_title('Density')
+    # ax.set_xlabel("x") 
+    # ax.set_ylabel("y") 
+    # ax.set_aspect('equal', 'box')
+    # plot1.set_clim( 0, 4 )
     # Create colorbar
-    cbar = plt.colorbar(plot1)
-    cbar.ax.set_title('ρ')
-    fig.text(0.15, 0.72, "ρ_max="+str(round(np.max(Srho),3)), fontsize=9.5)
-    fig.text(0.15, 0.68, "ρ_min="+str(round(np.min(Srho),3)), fontsize=9.5)
+    # cbar = plt.colorbar(plot1)
+    # cbar.ax.set_title('ρ')
+    # fig.text(0.15, 0.72, "ρ_max="+str(round(np.max(Srho),3)), fontsize=9.5)
+    # fig.text(0.15, 0.68, "ρ_min="+str(round(np.min(Srho),3)), fontsize=9.5)
     
-    image_path = filename + ".png"
-    fig.savefig(image_path,dpi=400)
-    images.append(imageio.imread(image_path)) 
+    # image_path = filename + ".png"
+    #fig.savefig(image_path,dpi=400)
+    #images.append(imageio.imread(image_path)) 
     
-    j=j+1
+    # j=j+1
          
 
-gif_path = os.path.join(folder_out, "animation.gif")
-imageio.mimsave(gif_path, images, duration=8, loop=0)  # Adjust the duration as needed
+#gif_path = os.path.join(folder_out, "animation.gif")
+#imageio.mimsave(gif_path, images, duration=8, loop=0)  # Adjust the duration as needed
