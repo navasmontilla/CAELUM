@@ -64,21 +64,13 @@ scientific explorations of forthcoming data releases from the *Gaia* mission
 Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
 
 This software allows to compute the solution of the scalar linear advection equation
-
 $$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
-
-where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity. We can also compute the Burgers' equation 
-
-$$\frac{\partial u}{\partial t} + u \nabla  u = 0$$
-
-and the compressible Euler equations with gravitational source term, given by
-
+where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When setting considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation. We can also compute the compressible Euler equations with gravitational source term, given by
 \begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
 \frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
 \end{align}
-
 where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}+e)$.
 
 You can also use plain \LaTeX for equations
