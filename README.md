@@ -227,7 +227,7 @@ To run this model, we must define:
 #define EQUATION_SYSTEM 2 
 ```
 
-and the followingsystem of equations is solved:
+and the following system of equations is solved:
 
 $$\begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
