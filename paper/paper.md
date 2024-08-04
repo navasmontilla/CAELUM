@@ -1,40 +1,28 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'EHOW3D: An academic High Order Finite Volume solver for hyperbolic problems'
 tags:
-  - Python
-  - astronomy
-  - dynamics
-  - galactic dynamics
-  - milky way
+  - fluid mechanics
+  - compressible flow
+  - atmospheric flow
+  - finite volume
+  - high order
 authors:
-  - name: Adrian M. Price-Whelan
+  - name: Adrian Navas-Montilla
+    orcid: 0000-0002-3465-6898
+    equal-contrib: true
+    affiliation: 1 # (Multiple affiliations must be quoted)
+  - name: Isabel Echeverribar
     orcid: 0000-0000-0000-0000
     equal-contrib: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: 2
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 3
-  - given-names: Ludwig
-    dropping-particle: van
-    surname: Beethoven
-    affiliation: 3
+    affiliation: 1 # (Multiple affiliations must be quoted)
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
+ - name: Fluid Dynamics Technologies, i3A-University of Zaragoza, Spain
    index: 1
  - name: Institution Name, Country
    index: 2
- - name: Independent Researcher, Country
-   index: 3
-date: 13 August 2017
+date: 4 August 2024
 bibliography: paper.bib
 
-# Optional fields if submitting to a AAS journal too, see this blog post:
-# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ---
 
 # Summary
