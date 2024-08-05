@@ -27,15 +27,9 @@ bibliography: paper.bib
 
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+In the last decade, very high order numerical methods have become very popular within the Computational Fluid Dynamics (CFD) community. Traditional low order --i.e. equal or lower than 2-- methods have been widely adopted by industry and academia to simulate fluid flows, but they show important limitations as they feature high diffusion and dispersion errors which may lead to non-physical solutions []. On the other hand, high order schemes are able to provide accurate solutions, with small diffusion and dispersion errors, and feature a high computational efficiency. They are well suited for multi-scale problems, e.g. turbulent flows, flows involving sharp gradients such as shocks, acoustic phenomena, etc. These cutting-edge approaches have gained attention due to their notable performance when running on modern High-Performance Computing (HPC) architectures.
+
+The increased accuracy and computational efficiency have favored the development and utilization of Large Eddy Simulation (LES) models. They are designed to capture the largest turbulent structures by numerically solving a filtered version of the Navier–Stokes equations, while modeling the smaller eddies explicitly using a dissipative sub-grid model. Implicit Large Eddy Simulation (iLES) methods offer an alternative to traditional LES methods. In iLES methods, numerical diffusion plays the role of the explicit dissipative sub-grid model. They are a favorable choice when seeking simplicity and computational efficiency, as they do not require the implementation of a sub-grid model.
 
 # Statement of need
 
