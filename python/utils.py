@@ -317,7 +317,9 @@ def singleRP(case,ord):
     modify_header_file(folder_lib+'/definitions.h', 'ST', 0)
     modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)
     modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)
-
+    if case==4: 
+        modify_header_file(folder_lib+'/definitions.h', 'MULTICOMPONENT', 1)
+        
     # COMPILING
 
     compile_program()
