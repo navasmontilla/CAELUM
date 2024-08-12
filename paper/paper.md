@@ -31,7 +31,7 @@ In the last decade, very high order numerical methods have become very popular w
 
 The increased accuracy and computational efficiency have favored the development and utilization of Large Eddy Simulation (LES) models. They are designed to capture the largest turbulent structures by numerically solving a filtered version of the Navier–Stokes equations, while modeling the smaller eddies explicitly using a dissipative sub-grid model. Implicit Large Eddy Simulation (iLES) methods offer an alternative to traditional LES methods. In iLES methods, numerical diffusion plays the role of the explicit dissipative sub-grid model. They are a favorable choice when seeking simplicity and computational efficiency, as they do not require the implementation of a sub-grid model. 
 
-`EHOW3D` is a hydrodynamic iLES solver for compressible flows, which solves the Euler equations of gas dynamics by means of very high order essentially non-oscillatory finite volume schemes in cartesian meshes. The Weighted Essentially Non-Oscillatory (WENO) and Targeted Essentially Non-Oscillatory (TENO) spatial reconstructions, in combination with Runge-Kutta integrators, are excellent candidates for this purpose and are used in `EHOW3D`. The resulting hydrodynamic solver can be applied to the computation of compressible turbulence, shock waves and shock-induced turbulence. Additionally, it can also be applied to low Mach number flows, such as atmospheric flows and other wave propagation phenomena.  
+`EHOW3D` is a hydrodynamic solver for compressible flows, which solves the Euler equations of gas dynamics by means of very high order essentially non-oscillatory finite volume schemes in cartesian meshes. The Weighted Essentially Non-Oscillatory (WENO) and Targeted Essentially Non-Oscillatory (TENO) spatial reconstructions, in combination with Runge-Kutta integrators, are used in `EHOW3D` allowing to adopt an iLES framework. The resulting hydrodynamic solver can be applied to the computation of compressible turbulence, shock waves and shock-induced turbulence. Additionally, it can also be applied to low Mach number flows, such as atmospheric flows and other wave propagation phenomena.  
 
 # Statement of need
 
@@ -61,7 +61,7 @@ Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
 
 This software allows to compute the solution of the scalar linear advection equation
 $$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
-where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When setting considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation. We can also compute the compressible Euler equations with gravitational source term, given by
+where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation. We can also compute the compressible Euler equations with gravitational source term, given by
 \begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
