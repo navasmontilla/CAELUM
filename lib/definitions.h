@@ -84,11 +84,11 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define WRITE_TKE 0 //write file TKE evolution in time
 
 //Printing variables (vtk)
-#define print_RHO 0
+#define print_RHO 1
 #define print_VELOCITY 1
 #define print_ENERGY 0
-#define print_PRESSURE 0
-#define print_OVERPRESSURE 1
+#define print_PRESSURE 1
+#define print_OVERPRESSURE 0
 #define print_SOLUTES 0
 #define print_POTENTIALTEM 1
 
