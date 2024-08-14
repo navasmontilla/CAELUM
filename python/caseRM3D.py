@@ -30,7 +30,7 @@ import imageio
 #This test case will run in the folder "caseShockBub/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caserRM3D/" 
+folder_case="caseRM3D/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -66,7 +66,12 @@ modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
 modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 1)           #Riemann solver used
-modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1    
+modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1   
+modify_header_file(folder_lib+'/definitions.h', 'WRITE_LIST', 0)       
+modify_header_file(folder_lib+'/definitions.h', 'print_VELOCITY', 0)     
+modify_header_file(folder_lib+'/definitions.h', 'print_POTENTIALTEM', 0)     
+modify_header_file(folder_lib+'/definitions.h', 'print_PRESSURE', 1)   
+modify_header_file(folder_lib+'/definitions.h', 'print_RHO', 1)    
 
 # ### Configure the global simulation parameters
 # 
@@ -77,7 +82,7 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 
 #Simulation setup
 FinalTime = 5.0
-DumpTime = 0.5  #for file printing
+DumpTime = 0.2  #for file printing
 CFL = 0.2
 Order = 7
 

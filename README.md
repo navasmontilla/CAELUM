@@ -72,13 +72,21 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
-- Setting up a simulation case for the homogeneous Euler equations (shock-bubble test case): [caseExample](python/caseShockBubl.ipynb)
+- Setting up a 1D Riemann Problem for the homogeneous Euler equations (sod shock problem): [caseRP](python/caseRP.py)
   <figure style="text-align: center;">
-  <img src="caseShockBub/out/animation.gif" width="50%" alt="my alt text"/>
+  <img src="doc/animationRP.gif" width="50%" alt="my alt text"/>
   </figure>
-- Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.ipynb)
+- Setting up a 2D simulation case for the homogeneous Euler equations (shock-bubble test case): [caseShockBub](python/caseShockBub.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>
+  </figure>
+- Setting up a 3D simulation case for the homogeneous Euler equations (Richtmeyer Meschkov instability): [caseRM3D](python/caseRM3D.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationRM.gif" width="50%" alt="my alt text"/>
+  </figure>
+- Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.py)
     <figure style="text-align: center;">
-    <img src="caseExample/out/animation.gif" width="50%" alt="my alt text"/>
+    <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
     </figure>
 
 ## Functionality documentation

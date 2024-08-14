@@ -86,7 +86,7 @@ CFL = 0.4
 Order = 5
 
 #Mesh setup
-xcells = 100
+xcells = 200
 ycells = 1
 zcells = 1
 SizeX = 1.0
@@ -125,7 +125,7 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 
 # In[20]:
 
-case = 4
+case = 2
 
 if case==1: #RP1 Steady
     FinalTime = 0.011

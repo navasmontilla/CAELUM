@@ -82,9 +82,9 @@ CFL = 0.45
 Order = 7
 
 #Mesh setup
-xcells = 400
+xcells = 800
 ycells = 1
-zcells = 200
+zcells = 400
 SizeX = 20000.0
 SizeY = 1000.0
 SizeZ = 10000.0
