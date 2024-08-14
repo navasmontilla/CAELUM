@@ -45,6 +45,8 @@ This software relies on other dependencies, listed below:
 	- *numpy*
 	- *scipy*
  	- *imageio*
+	- *vtk*
+	- *pyvista*
 
 
 ## Automated test
@@ -72,18 +74,20 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
-- Setting up a 1D Riemann Problem for the homogeneous Euler equations (sod shock problem): [caseRP](python/caseRP.py)
+- Setting up a 1D Riemann Problem for the  Euler equations (sod shock problem): [caseRP](python/caseRP.py)
   <figure style="text-align: center;">
   <img src="doc/animationRP.gif" width="50%" alt="my alt text"/>
   </figure>
-- Setting up a 2D simulation case for the homogeneous Euler equations (shock-bubble test case): [caseShockBub](python/caseShockBub.py)
+- Setting up a 2D simulation case for the  Euler equations (shock-bubble test case): [caseShockBub](python/caseShockBub.py)
   <figure style="text-align: center;">
   <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>
   </figure>
-- Setting up a 3D simulation case for the homogeneous Euler equations (Richtmeyer Meschkov instability): [caseRM3D](python/caseRM3D.py)
+- Setting up a 3D simulation case for the  Euler equations (Richtmeyer Meshkov instability): [caseRM3D](python/caseRM3D.py)
+
   <figure style="text-align: center;">
   <img src="doc/animationRM.gif" width="50%" alt="my alt text"/>
   </figure>
+  
 - Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.py)
     <figure style="text-align: center;">
     <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
