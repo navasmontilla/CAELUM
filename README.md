@@ -26,14 +26,7 @@ Compile the program as follows:
 
 ```make```
 
-Note that the *Makefile* considers the following default definition 
-
-```
-DEBUG = 0
-CFLAGS =  -Wall  -fopenmp
-```
-
-but the user can customize the compiling flags as desired. 
+Note that the *Makefile* considers the flags ```-Wall  -fopenmp``` by default, but the user can customize the compiling flags as desired. 
 
 This software relies on other dependencies, listed below:
 
@@ -74,6 +67,14 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
+### Scalar transport
+
+- Setting up a 1D linear transport case:
+
+- Setting up a 3D linear transport case:
+
+### Compressible flow (homogeneus Euler equations)
+
 - Setting up a 1D Riemann Problem for the  Euler equations (sod shock problem): [caseRP](python/caseRP.py)
   <figure style="text-align: center;">
   <img src="doc/animationRP.gif" width="50%" alt="my alt text"/>
@@ -83,12 +84,13 @@ To setup a simulation case, some Jupyter Notebooks has been created, including a
   <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>
   </figure>
 - Setting up a 3D simulation case for the  Euler equations (Richtmeyer Meshkov instability): [caseRM3D](python/caseRM3D.py)
-
   <figure style="text-align: center;">
   <img src="doc/animationRM.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Setting up an atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.py)
+### Atmospheric flow (Euler equations with gravity source term)
+  
+- Setting up a 2D atmospheric simulation case (colliding thermals test case): [caseExample](python/caseExample.py)
     <figure style="text-align: center;">
     <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
     </figure>
