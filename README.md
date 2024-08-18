@@ -71,12 +71,12 @@ To setup a simulation case, some Jupyter Notebooks has been created, including a
 
 - Setting up a 1D linear transport case: [caseLinear](python/caseLinear.py)
   <figure style="text-align: center;">
-  <img src="doc/animationLin.gif" width="50%" alt="my alt text"/>
+  <img src="doc/animationLin.gif" width="30%" alt="my alt text"/>
   </figure>
 
 - Setting up a 1D Burgers problem: [caseBurgers](python/caseBurgers.py)
   <figure style="text-align: center;">
-  <img src="doc/animationBurg.gif" width="50%" alt="my alt text"/>
+  <img src="doc/animationBurg.gif" width="30%" alt="my alt text"/>
   </figure>
 
 - Setting up a 3D linear transport case: [caseLinear3D](python/caseLinear3D.py)
