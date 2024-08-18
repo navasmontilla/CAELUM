@@ -67,11 +67,22 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 To setup a simulation case, some Jupyter Notebooks has been created, including all the relevant information for the user:
 
-### Scalar transport
+### Scalar problems
 
-- Setting up a 1D linear transport case:
+- Setting up a 1D linear transport case: [caseLinear](python/caseLinear.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationLin.gif" width="50%" alt="my alt text"/>
+  </figure>
 
-- Setting up a 3D linear transport case:
+- Setting up a 1D Burgers problem: [caseBurgers](python/caseBurgers.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationBurg.gif" width="50%" alt="my alt text"/>
+  </figure>
+
+- Setting up a 3D linear transport case: [caseLinear3D](python/caseLinear3D.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationLin3D.gif" width="50%" alt="my alt text"/>
+  </figure>
 
 ### Compressible flow (homogeneus Euler equations)
 
