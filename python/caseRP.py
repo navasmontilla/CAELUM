@@ -7,9 +7,6 @@
 # 
 # Some of these are well known libraries such as *numpy* and *matplotlib* (they can be installed using pip). We also need to import the library *utils* containing predefined functionalities for this software. 
 
-# In[14]:
-
-
 import os
 import math                    
 import numpy as np             
@@ -24,19 +21,12 @@ import imageio
 # 
 # First, the name of the folder for this test case must be specified:
 
-# In[15]:
-
-
-#This test case will run in the folder "caseShockBub/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
 folder_case="caseRP/" 
 
 
 # Then, all the paths are automatically assigned:
-
-# In[16]:
-
 
 #Do not modify the folders and paths below
 script_dir = os.path.dirname(os.path.abspath(__file__))

@@ -18,6 +18,7 @@ import re
 from glob import glob
 from utils import modify_header_file,write_config,write_initial,write_initial_scalar,write_equilibrium,backup_file,restore_file,compile_program,run_program,initialize_variables,read_data_euler,read_data_scalar
 import imageio
+import pyvista as pv
 
 
 # ### Setting up the paths
@@ -26,7 +27,7 @@ import imageio
 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseLinear/" 
+folder_case="caseLinear3D/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -69,14 +70,14 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 
 #Simulation setup
 FinalTime = 1.00
-DumpTime = 0.05
-CFL = 0.4
+DumpTime = 0.025
+CFL = 0.2
 Order = 7
 
 #Mesh setup
-xcells = 100
-ycells = 1
-zcells = 1
+xcells = 40
+ycells = 40
+zcells = 40
 SizeX = 1.0
 SizeY = 1.0
 SizeZ = 1.0
@@ -107,8 +108,7 @@ xc, yc, zc, u, uex, *_  = initialize_variables(xcells, ycells, zcells, SizeX, Si
 for l in range(0,xcells): 
         for m in range(0,ycells): 
             for n in range(0,zcells):
-                u[l,m,n]=1.0+np.sin(xc[l,m,n]*2.0*math.pi)                      #imposed as pointwise values for simplicity. For cell averaged data see ordersLinear() in utils.py.
-                uex[l,m,n]=1.0+np.sin((xc[l,m,n]-u_x*FinalTime)*2.0*math.pi) 
+                u[l,m,n]=np.sin(xc[l,m,n]*math.pi)*np.sin(yc[l,m,n]*math.pi)*np.sin(zc[l,m,n]*math.pi)                       #imposed as pointwise values for simplicity. For cell averaged data see ordersLinear() in utils.py.
   
 # WRITING CONFIGURATION AND INITIAL DATA
 
@@ -127,47 +127,67 @@ run_program(folder_exe+"./exehow3d "+folder_case)
 restore_file(folder_lib+'/definitions.h')
 
 
-# ### Reading data and plotting
+# ## RENDERING IN 3D
 
+# Start the virtual framebuffer (Xvfb) to enable off-screen rendering
+pv.start_xvfb()
 
-files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
-lf = len(files)
+# Find output files
+vtk_files = glob(folder_out + "/*.vtk")
+
+# Filter files that contain digits in their filenames
+vtk_files_with_digits = [f for f in vtk_files if re.search(r'\d+', os.path.basename(f))]
+
+# Sort the filtered files by the first sequence of digits found in the filenames
+files = sorted(vtk_files_with_digits, key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
 lf=len(files)
 print(files)
 
+j=0
+images = [] 
 print("Printing figures in folder"+folder_out)
 
-filename = folder_out+"linear_scalar_plot"
-fig, ax  = plt.subplots(figsize=(6, 4))
-ax.set_xlabel("x") 
-ax.set_ylabel("u") 
-
-images = []  # List to hold all the images for the GIF
-
-j=0
 for fname in files:
-    u = read_data_scalar(fname, xcells, ycells, zcells, lf, j)   
-    ax.plot(xc[:,0,0],u[:,0,0,j],'o--')
     
-    fig2, ax2  = plt.subplots(figsize=(6, 4))
-    ax2.plot(xc[:,0,0],u[:,0,0,j],'o-')
-    ax2.set_xlabel("x") 
-    ax2.set_ylabel("u") 
-    image_path = filename + ".png"
-    fig2.savefig(image_path,dpi=200)
-    images.append(imageio.imread(image_path)) 
+    vtk_file=fname
+    data = pv.read(vtk_file)
+    grid = data.compute_cell_sizes().cell_data_to_point_data()
+    plotter = pv.Plotter(off_screen=True,window_size=[2200, 1400])
+
+    #opacity = [0.1, 0.1, 0.1, 0.1, 0.9, 0.9, 0.90, 1.0]  
+    #plotter.add_volume(grid, scalars="rho", cmap="RdGy_r",opacity=opacity,opacity_unit_distance=0.2,clim=[1.5, 11.5]) #antes 0.1
+    
+    contour_values = [0.7,0.8,0.9] 
+    contours = grid.contour(isosurfaces=contour_values, scalars="U") 
+    if contours.n_points > 0:
+        plotter.add_mesh(contours, cmap="viridis", scalars="U", opacity=0.7)
+
+    plotter.camera_position = [
+        (-1.8, 3.2, 2.1),  # Camera position (x, y, z)
+        (0.5, 0.5, 0.5),  # Focal point (center of the object)
+        (0, 0, 1),  # View up vector (defines the up direction)
+    ]
+
+    
+    bounds = [0, 1, 0, 1, 0, 1]  # Adjust to your desired box size
+    box = pv.Box(bounds=bounds)
+    plotter.add_mesh(box, color="white", line_width=1.0, opacity=0.1) 
+    
+    plotter.show_axes()
+
+    
+    image_path = fname+".png"
+    plotter.show(screenshot=image_path)
+    img = plotter.screenshot(return_img=True)
+    images.append(img)
+    
     
     j=j+1
-
-ax.plot(xc[:,0,0],u[:,0,0,-1],'o-')
-ax.plot(xc[:,0,0],uex[:,0,0],'-k')
-ax.set_xlabel("x") 
-ax.set_ylabel("u") 
-
-fig.savefig(filename+".png",dpi=300)
+         
 
 gif_path = os.path.join(folder_out, "animation.gif")
-imageio.mimsave(gif_path, images, duration=4, loop=0)  # Adjust the duration as needed
+imageio.mimsave(gif_path, images, duration=12, loop=0)  # Adjust the duration as needed
+
 
 
     

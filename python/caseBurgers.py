@@ -26,7 +26,7 @@ import imageio
 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseLinear/" 
+folder_case="caseBurgers/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -57,7 +57,7 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
 modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 4)         #number of threads
-modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 0)  #System of equations solved
+modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 1)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1    
 
 # ### Configure the global simulation parameters
@@ -153,6 +153,7 @@ for fname in files:
     ax2.plot(xc[:,0,0],u[:,0,0,j],'o-')
     ax2.set_xlabel("x") 
     ax2.set_ylabel("u") 
+    ax2.set_ylim([0,2])
     image_path = filename + ".png"
     fig2.savefig(image_path,dpi=200)
     images.append(imageio.imread(image_path)) 
