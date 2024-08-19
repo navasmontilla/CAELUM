@@ -31,7 +31,6 @@ Note that the *Makefile* considers the flags ```-Wall  -fopenmp``` by default, b
 This software relies on other dependencies, listed below:
 
 - [GCC](https://gcc.gnu.org/) or other C compiler
-- [Paraview](https://www.paraview.org/), for data visualization
 - [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing
 - [Python3](https://www.python.org/downloads/), for pre- and post-processing. The following packages need to be installed using ```pip install```:
 	- *matplotlib*
@@ -40,7 +39,14 @@ This software relies on other dependencies, listed below:
  	- *imageio*
 	- *vtk*
 	- *pyvista*
+	
+To install Python3 and the above packages:
 
+```
+sudo apt update
+sudo apt install -y python3 python3-pip
+pip3 install pyvista matplotlib numpy scipy imageio
+```
 
 ## Automated test
 
@@ -457,28 +463,16 @@ void compute_euler_HLLS(t_wall *wall,double *lambda_max)
 void compute_euler_HLLC(t_wall *wall,double *lambda_max)
 ```
 
-**Note**: A positivity fix must be implemented in the HLLC solver to avoid stability issues
-
-The x-split version of the solvers is implemented. It must be noted that the rotation matrices are simplified for the particular case of Cartesian geometries, leading to:
-```c
-	WL[1]=wall->UL[1]*wall->nx+wall->UL[2]*wall->ny+wall->UL[3]*wall->nz;
-	WL[2]=-wall->UL[1]*wall->ny+wall->UL[2]*wall->nx+wall->UL[2]*wall->nz;
-	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
-```
-where ```WL``` is the 3D vector in the local coordinates and  ```UL``` in the absolute coordinates.
 
 
-## Numerical results
+## Other numerical results
 
-Some results are sorted in the following categories:
+Some additional results are presented below:
 
-- [Benchmark #1: 1D Riemann problems](doc/benchmark1.md)
-- [Benchmark #2: 2D Riemann problems](doc/benchmark2.md)
-- [Benchmark #3: Two-fluid mixture problem](doc/benchmark3.md)
-- [Benchmark #4: Convergence rate test](doc/benchmark4.md)
-- [Benchmark #5: Taylor-Green vortex](doc/benchmark5.md)
-- [Benchmark #6: Kelvin-Helmholtz instability](doc/benchmark6.md)
-- [Benchmark #7: Colliding thermals](doc/benchmark7.md)
+- [Benchmark #1: Convergence rate test](doc/benchmark4.md)
+- [Benchmark #2: Taylor-Green vortex](doc/benchmark5.md)
+- [Benchmark #3: Kelvin-Helmholtz instability](doc/benchmark6.md)
+- [Benchmark #4: Colliding thermals](doc/benchmark7.md)
 
 ## Authorship
 
