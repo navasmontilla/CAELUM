@@ -90,6 +90,14 @@ To setup a simulation case, some Jupyter Notebooks has been created, including a
   <figure style="text-align: center;">
   <img src="doc/animationRP.gif" width="50%" alt="my alt text"/>
   </figure>
+- Setting up a 2D Riemann Problem for the Euler equations: [caseRP2D](python/caseRP2D.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationRP2D.gif" width="50%" alt="my alt text"/>
+  </figure>
+- Setting up a 3D Riemann Problem for the Euler equations: [caseRP3D](python/caseRP3D.py)
+  <figure style="text-align: center;">
+  <img src="doc/animationRP3D.gif" width="50%" alt="my alt text"/>
+  </figure>
 - Setting up a 2D simulation case for the  Euler equations (shock-bubble test case): [caseShockBub](python/caseShockBub.py)
   <figure style="text-align: center;">
   <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>

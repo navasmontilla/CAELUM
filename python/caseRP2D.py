@@ -30,7 +30,7 @@ import imageio
 #This test case will run in the folder "caseShockBub/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseShockBub/" 
+folder_case="caseRP2D/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -69,7 +69,8 @@ modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
 modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 1)           #Riemann solver used
-modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1    
+modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1
+modify_header_file(folder_lib+'/definitions.h', 'WRITE_VTK', 0)       
 
 # ### Configure the global simulation parameters
 # 
@@ -79,26 +80,26 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 
 
 #Simulation setup
-FinalTime = 0.60
-DumpTime = 0.0250  #for file printing
+FinalTime = 0.4
+DumpTime = 0.02
 CFL = 0.4
 Order = 7
 
 #Mesh setup
-xcells = 600
-ycells = 300
+xcells = 2000
+ycells = 2000
 zcells = 1
-SizeX = 2.0
+SizeX = 1.0
 SizeY = 1.0
 SizeZ = 1.0
 
 #Boundary conditions
-Face_1 = 1 #-y
+Face_1 = 3 #-y
 Face_2 = 3 #+x
-Face_3 = 1 #+y
+Face_3 = 3 #+y
 Face_4 = 3 #-x
-Face_5 = 4 #-z
-Face_6 = 4 #+z
+Face_5 = 3 #-z
+Face_6 = 3 #+z
 
 #Linear transport, only if applicable
 u_x = 1.0
@@ -127,31 +128,31 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 
 #Initial condition and equilibrium state            
 for l in range(0,xcells): 
-        for m in range(0,ycells): 
-            for n in range(0,zcells):
-                
-                xaux=xc[l,m,n]-0.6
-                yaux=yc[l,m,n]-0.5
-                r=np.sqrt(xaux*xaux+yaux*yaux)
-                
-                if xc[l,m,n] < 0.1:
-                    p  [l,m,n] = 10.0
-                    rho[l,m,n] = 3.81
-                    u  [l,m,n] = 2.85
-                    v  [l,m,n] = 0.0
-                    phi[l,m,n] = 0.0
-                elif r < 0.15:
-                    p  [l,m,n] = 1.0
-                    rho[l,m,n] = 0.1
-                    u  [l,m,n] = 0.0
-                    v  [l,m,n] = 0.0
-                    phi[l,m,n] = 1.0
-                else:
-                    p  [l,m,n] = 1.0
-                    rho[l,m,n] = 1.0
-                    u  [l,m,n] = 0.0
-                    v  [l,m,n] = 0.0
-                    phi[l,m,n] = 0.0
+    for m in range(0,ycells):
+        if (xc[l,m,:]<0.5 and yc[l,m,:]<0.5):
+            rho[l,m,:]=77.0/558.0
+            p  [l,m,:]=9.0/310.0
+            u  [l,m,:]=4.0/np.sqrt(11.0)
+            v  [l,m,:]=4.0/np.sqrt(11.0)
+            phi[l,m,:]=1.0
+        elif (xc[l,m,:]<0.5 and yc[l,m,:]>0.5):
+            rho[l,m,:]=33.0/62.0
+            p  [l,m,:]=0.30
+            u  [l,m,:]=4.0/np.sqrt(11.0)
+            v  [l,m,:]=0.0
+            phi[l,m,:]=0.0 
+        elif (xc[l,m,:]>0.5 and yc[l,m,:]>0.5):
+            rho[l,m,:]=1.50
+            p  [l,m,:]=1.50
+            u  [l,m,:]=0.0
+            v  [l,m,:]=0.0
+            phi[l,m,:]=0.0 
+        else:
+            rho[l,m,:]=33.0/62.0
+            p  [l,m,:]=0.30
+            u  [l,m,:]=0.0
+            v  [l,m,:]=4.0/np.sqrt(11.0)
+            phi[l,m,:]=0.0 
 
 
 # Now, the configuration and initial condition (and equilibrium) files are written: 
@@ -212,16 +213,18 @@ for fname in files:
     Sphi=np.transpose(phi[:,:,0,j])
     Su=np.transpose(u[:,:,0,j])
     
-    fig, ax = plt.subplots(figsize=(10, 5))   
-    levels = np.linspace(0, 4, 10)
+    fig, ax = plt.subplots(figsize=(6, 6))   
+    #levels = np.linspace(0, 4, 10)
     #print(levels)
-    plot1=ax.contour(X, Y, Srho, levels=levels,colors="k",linewidths=0.2)  
-    plot1=ax.contourf(X, Y, Srho, cmap='plasma')   
+    plot1=ax.contour(X, Y, Srho, 10, colors="k",linewidths=0.1)  
+    plot1=ax.contourf(X, Y, Srho, 100,cmap='plasma')   
     ax.set_title('Density')
     ax.set_xlabel("x") 
     ax.set_ylabel("y") 
+    ax.set_xlim([0,0.6]) 
+    ax.set_ylim([0,0.6]) 
     ax.set_aspect('equal', 'box')
-    plot1.set_clim( 0, 4 )
+    #plot1.set_clim( 0, 4 )
     # Create colorbar
     cbar = plt.colorbar(plot1)
     cbar.ax.set_title('ρ')
@@ -229,8 +232,10 @@ for fname in files:
     fig.text(0.15, 0.68, "ρ_min="+str(round(np.min(Srho),3)), fontsize=9.5)
     
     image_path = filename + ".png"
-    fig.savefig(image_path,dpi=400)
+    fig.savefig(image_path,dpi=250)
     images.append(imageio.imread(image_path)) 
+    
+    plt.close(fig)
     
     j=j+1
          

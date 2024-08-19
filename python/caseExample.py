@@ -51,6 +51,9 @@ folder_exe = os.path.join(script_dir, "../")
 
 os.makedirs(folder_case, exist_ok=True)
 os.makedirs(folder_out, exist_ok=True)
+
+for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder_out + "/*.png"):
+    os.remove(f) 
 # ### Setting up the compilation variables (*definitions.h*)
 # 
 # Here, we can modify those variables that need to be set before compilation and are found in the file *definitions.h*. Don't worry if you mess up things here, a backup of the original file is created before modification and will be restored at the end of this script, after compilation and execution.
