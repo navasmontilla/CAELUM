@@ -31,13 +31,11 @@ Note that the *Makefile* considers the flags ```-Wall  -fopenmp``` by default, b
 This software relies on other dependencies, listed below:
 
 - [GCC](https://gcc.gnu.org/) or other C compiler
-- [Jupyter Notebook](https://jupyter.org/) (optional), for pre- and post-processing
 - [Python3](https://www.python.org/downloads/), for pre- and post-processing. The following packages need to be installed using ```pip install```:
 	- *matplotlib*
 	- *numpy*
 	- *scipy*
  	- *imageio*
-	- *vtk*
 	- *pyvista*
 	
 To install Python3 and the above packages:
