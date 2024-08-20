@@ -121,7 +121,40 @@ def compile_program(make_command='make'):
     else:
         print("Compilation successful")
         
-        
+def compile_program_jupyter(make_command='make', makefile_directory='../'): 
+    """
+    Compiles the program using the specified command after running `make clean`,
+    and streams the output to the console in real-time.
+    
+    Args:
+        make_command (str): Command to compile the program. Default is 'make'.
+        makefile_directory (str): Directory where the Makefile is located. Default is the current directory.
+    """
+    # Run the clean command (if required)
+    clean_command = 'make clean'
+    print("Running clean command...")
+    clean_result = subprocess.run(clean_command, shell=True, cwd=makefile_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    print(clean_result.stdout)
+
+    if clean_result.returncode != 0:
+        print(f"Clean error: {clean_result.stdout}")
+        return
+
+    # Run the compile command
+    print("Running compile command...")
+    compile_process = subprocess.Popen(make_command, shell=True, cwd=makefile_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    
+    # Stream the output to the console
+    for line in iter(compile_process.stdout.readline, ''):
+        print(line, end='')
+
+    compile_process.stdout.close()
+    compile_process.wait()
+
+    if compile_process.returncode != 0:
+        print(f"Compilation error with exit code {compile_process.returncode}")
+    else:
+        print("Compilation successful")        
 
 def run_program(executable_path):
     """
