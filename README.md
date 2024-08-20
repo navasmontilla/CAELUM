@@ -22,11 +22,9 @@ Clone the repository in your local computer:
 
 ```git clone https://github.com/navasmontilla/EHOW3D_public.git```
 
-Compile the program as follows:
+Compile the program using *Makefile* as follows:
 
 ```make```
-
-Note that the *Makefile* considers the flags ```-Wall  -fopenmp``` by default, but the user can customize the compiling flags as desired. 
 
 This software relies on other dependencies, listed below:
 
@@ -37,13 +35,14 @@ This software relies on other dependencies, listed below:
 	- *scipy*
  	- *imageio*
 	- *pyvista*
+	- *jupyter*
 	
 To install Python3 and the above packages:
 
 ```
 sudo apt update
 sudo apt install -y python3 python3-pip
-pip3 install pyvista matplotlib numpy scipy imageio
+pip3 install pyvista matplotlib numpy scipy imageio jupyter
 ```
 
 ## Automated test
