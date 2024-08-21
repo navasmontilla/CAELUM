@@ -1,6 +1,29 @@
 # EHOW3D (Euler High Order WENO/TENO 3D)
 
 
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Installation](#installation)
+3. [Automated test](#automated-test)
+4. [Example usage](#example-usage)
+   - [Scalar problems](#scalar-problems)
+   - [Compressible flow (homogeneous Euler equations)](#compressible-flow-homogeneous-euler-equations)
+   - [Atmospheric flow (Euler equations with gravity source term)](#atmospheric-flow-euler-equations-with-gravity-source-term)
+5. [Functionality documentation](#functionality-documentation)
+   - [Code organization and libraries](#code-organization-and-libraries)
+   - [Configuration of the code for compilation](#configuration-of-the-code-for-compilation)
+   - [Equations solved](#equations-solved)
+   - [Input data](#input-data)
+   - [Output data](#output-data)
+   - [The computational mesh](#the-computational-mesh)
+   - [Boundary conditions](#boundary-conditions)
+   - [Spatial reconstructions](#spatial-reconstructions)
+   - [Time integrator](#time-integrator)
+   - [Riemann solvers](#riemann-solvers)
+6. [Other numerical results](#other-numerical-results)
+7. [Authorship](#authorship)
+
 
 ## Introduction
 
