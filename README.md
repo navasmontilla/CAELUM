@@ -68,9 +68,9 @@ Within this test, the program is compiled and executed for every benchmark, givi
 
 ## Example usage
 
-To setup a simulation case, some Jupyter Notebooks have been created including all the relevant information for the user.
+To get started in a user-friendly environment, some Jupyter Notebooks have been created:
 
--  [Getting started: setting up a 1D linear transport case](python/caseLinear.ipynb)
+-  [Getting started: setting up a linear transport case](python/caseScalar.ipynb)
 
 -  [Computing and visualizing shock waves](python/caseRP3D.ipynb)
 
@@ -81,16 +81,19 @@ A more complete set of examples, scripted in Python, are listed below:
 ### Scalar problems
 
 - Setting up a 1D linear transport case: [caseLinear](python/caseLinear.py)
+  
   <figure style="text-align: center;">
   <img src="doc/animationLin.gif" width="30%" alt="my alt text"/>
   </figure>
 
 - Setting up a 1D Burgers problem: [caseBurgers](python/caseBurgers.py)
+  
   <figure style="text-align: center;">
   <img src="doc/animationBurg.gif" width="30%" alt="my alt text"/>
   </figure>
 
 - Setting up a 3D linear transport case: [caseLinear3D](python/caseLinear3D.py)
+  
   <figure style="text-align: center;">
   <img src="doc/animationLin3D.gif" width="50%" alt="my alt text"/>
   </figure>
@@ -98,22 +101,31 @@ A more complete set of examples, scripted in Python, are listed below:
 ### Compressible flow (homogeneus Euler equations)
 
 - Setting up a 1D Riemann Problem for the  Euler equations (sod shock problem): [caseRP](python/caseRP.py)
+
   <figure style="text-align: center;">
   <img src="doc/animationRP.gif" width="50%" alt="my alt text"/>
   </figure>
+  
 - Setting up a 2D Riemann Problem for the Euler equations: [caseRP2D](python/caseRP2D.py)
+
   <figure style="text-align: center;">
   <img src="doc/animationRP2D.gif" width="50%" alt="my alt text"/>
   </figure>
+  
 - Setting up a 3D Riemann Problem for the Euler equations: [caseRP3D](python/caseRP3D.py)
+
   <figure style="text-align: center;">
   <img src="doc/animationRP3D.gif" width="50%" alt="my alt text"/>
   </figure>
+  
 - Setting up a 2D simulation case for the  Euler equations (shock-bubble test case): [caseShockBub](python/caseShockBub.py)
+
   <figure style="text-align: center;">
   <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>
   </figure>
+  
 - Setting up a 3D simulation case for the  Euler equations (Richtmeyer Meshkov instability): [caseRM3D](python/caseRM3D.py) [caseRM3D_plots](python/caseRM3D_plots.py)
+  
   <figure style="text-align: center;">
   <img src="doc/animationRM.gif" width="50%" alt="my alt text"/>
   </figure>
@@ -121,6 +133,7 @@ A more complete set of examples, scripted in Python, are listed below:
 ### Atmospheric flow (Euler equations with gravity source term)
   
 - Setting up a 2D atmospheric simulation case (colliding thermals test case): [caseCollidingBub](python/caseCollidingBub.py)
+    
     <figure style="text-align: center;">
     <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
     </figure>
