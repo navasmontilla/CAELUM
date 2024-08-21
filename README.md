@@ -118,13 +118,13 @@ A more complete set of examples, scripted in Python, are listed below:
   <img src="doc/animationRP3D.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Setting up a 2D simulation case for the  Euler equations (shock-bubble test case): [caseShockBub](python/caseShockBub.py)
+- Advanced case: the shock-bubble test case: [caseShockBub](python/caseShockBub.py)
 
   <figure style="text-align: center;">
   <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Setting up a 3D simulation case for the  Euler equations (Richtmeyer Meshkov instability): [caseRM3D](python/caseRM3D.py) [caseRM3D_plots](python/caseRM3D_plots.py)
+- Advanced case: shock-induced turbulent mixing (Richtmeyer Meshkov instability): [caseRM3D](python/caseRM3D.py) [caseRM3D_plots](python/caseRM3D_plots.py)
   
   <figure style="text-align: center;">
   <img src="doc/animationRM.gif" width="50%" alt="my alt text"/>
