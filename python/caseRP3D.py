@@ -128,7 +128,7 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 # In[20]:
 
 
-#Initial condition and equilibrium state            
+#Initial condition and equilibrium state  #╔from https://doi.org/10.1016/j.compfluid.2024.106298          
 for l in range(0,xcells): 
     for m in range(0,ycells):
         for n in range(0,zcells):
@@ -209,9 +209,10 @@ write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, 
 
 
 compile_program()
+restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./exehow3d "+folder_case)
-restore_file(folder_lib+'/definitions.h')
+
 
 
 # ## RENDERING IN 3D

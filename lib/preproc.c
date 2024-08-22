@@ -1669,7 +1669,11 @@ void print_info(t_mesh *mesh, t_sim *sim, const char *folder_path){
 	exit(1);
 #endif
 
-
+#if MULTICOMPONENT>0&&SOLVER==1
+	printf("%s HLLC solver cannot handle multicomponent flow. Please use HLL (SOLVER = 0). Press any key to exit... \n",ERR);
+	getchar();
+	exit(1);
+#endif
 
       if((mesh->bc[1]==1 && mesh->bc[3]!=1)||(mesh->bc[1]!=1 && mesh->bc[3]==1)){
             printf("%s Cyclic BC in X not properly set, only one of the boundaries is set as cyclic. The program will close when pressing a key. \n",ERR);
@@ -1711,6 +1715,12 @@ void print_info(t_mesh *mesh, t_sim *sim, const char *folder_path){
 		mesh->bc[4]=3;
             mesh->bc[5]=3;}
 
+	}
+    
+    if((sim->order==2)||(sim->order==4)||(sim->order==6)){
+            printf("%s Only odd orders are allowed (Order = 1, 3, 5 or 7). The program will close when pressing a key. \n",ERR);
+            getchar();
+            exit(1);
 	}
 	
 	

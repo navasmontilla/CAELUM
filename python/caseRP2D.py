@@ -172,9 +172,10 @@ write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, 
 
 
 compile_program()
+restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./exehow3d "+folder_case)
-restore_file(folder_lib+'/definitions.h')
+
 
 
 # ### Reading data and plotting

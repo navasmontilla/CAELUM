@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Configuration of a simulation case (*caseShockBub*)
+# ## Configuration of a simulation case (*caseExample*)
 # 
 # ### Importing required libraries
 # 
 # Some of these are well known libraries such as *numpy* and *matplotlib* (they can be installed using pip). We also need to import the library *utils* containing predefined functionalities for this software. 
+
+# In[14]:
+
 
 import os
 import math                    
@@ -16,29 +19,34 @@ from glob import glob
 from utils import modify_header_file,write_config,write_initial,write_equilibrium,backup_file,restore_file,compile_program,run_program,initialize_variables,read_data_euler
 import imageio
 
-
 # ### Setting up the paths
 # 
 # First, the name of the folder for this test case must be specified:
 
+# In[15]:
+
+
+#This test case will run in the folder "caseCollidingBub/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseRP/" 
+folder_case="caseCollidingBub/" 
 
 
 # Then, all the paths are automatically assigned:
+
+# In[16]:
+
 
 #Do not modify the folders and paths below
 script_dir = os.path.dirname(os.path.abspath(__file__))
 folder_out="out/"
 folder_lib="lib"
-folder_exact="autotest/caseRPs/exact/"
 fname_config="configure.input"
+fname_eq="equilibrium.out"
 fname_ini="initial.out"
 folder_out = os.path.join(script_dir, "../"+folder_case+"/"+folder_out)
 folder_case = os.path.join(script_dir, "../"+folder_case)
 folder_lib = os.path.join(script_dir, "../"+folder_lib)
-folder_exact = os.path.join(script_dir, "../"+folder_exact)
 folder_exe = os.path.join(script_dir, "../")
 
 os.makedirs(folder_case, exist_ok=True)
@@ -56,12 +64,12 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
-modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 4)         #number of threads
-modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
+modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 48)         #number of threads
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
-modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
+modify_header_file(folder_lib+'/definitions.h', 'ST', 3)               #Source term type
 modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann solver used
-modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1    
+modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1
+
 
 # ### Configure the global simulation parameters
 # 
@@ -71,25 +79,26 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 
 
 #Simulation setup
-DumpTime = 0.5
-CFL = 0.4
-Order = 5
+FinalTime = 800.0
+DumpTime = 50.0  #for file printing
+CFL = 0.45
+Order = 7
 
 #Mesh setup
-xcells = 400
+xcells = 800
 ycells = 1
-zcells = 1
-SizeX = 1.0
-SizeY = 1.0
-SizeZ = 1.0
+zcells = 400
+SizeX = 20000.0
+SizeY = 1000.0
+SizeZ = 10000.0
 
 #Boundary conditions
-Face_1 = 3 #-y
-Face_2 = 3 #+x
-Face_3 = 3 #+y
-Face_4 = 3 #-x
-Face_5 = 3 #-z
-Face_6 = 3 #+z
+Face_1 = 4 #-y
+Face_2 = 4 #+x
+Face_3 = 4 #+y
+Face_4 = 4 #-x
+Face_5 = 4 #-z
+Face_6 = 4 #+z
 
 #Linear transport, only if applicable
 u_x = 1.0
@@ -115,89 +124,49 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 
 # In[20]:
 
-case = 4
 
-if case==1: #RP1 Steady
-    FinalTime = 0.011
-    for l in range(0,xcells): 
-        if (xc[l,:,:]<0.5):
-            rho[l,:,:]=1.0
-            p  [l,:,:]=1.0
-            u  [l,:,:]=0.0
-            phi[l,:,:]=1.0
-        else:
-            rho[l,:,:]=1.0
-            p  [l,:,:]=1.0
-            u  [l,:,:]=0.0
-            phi[l,:,:]=0.0 
+#Some auxiliary parameters (must be equal to those in definitions.h)
+tt0=300
+p0=1.e5
+R=287.058
+gamma=1.4
+g=9.8
+rho0=p0/(R*tt0)
+aux2=(gamma-1.0)/gamma*g/(R*tt0)
 
+#Initial condition and equilibrium state            
+for l in range(0,xcells): 
+        for m in range(0,ycells): 
+            for n in range(0,zcells):
+                
+                #This is the equilibrium state (in this case, adiabatic equilibrium):
+                rhoe[l,m,n]=rho0*(1.0-aux2*zc[l,m,n])**(1.0/(gamma-1.0))
+                pe  [l,m,n]=p0*  (1.0-aux2*zc[l,m,n])**(gamma/(gamma-1.0))
+                ue  [l,m,n]=0.0
+                ve  [l,m,n]=0.0
+                we  [l,m,n]=0.0
+                
+                #This is the initial condition
+                xp=10000;
+                zp=2000;
+                d1=np.sqrt((xc[l,m,n]-xp)*(xc[l,m,n]-xp)+(zc[l,m,n]-zp)*(zc[l,m,n]-zp));
 
-if case==2: #RP2 Sod shock
-    FinalTime = 0.2
-    DumpTime = 0.01
-    for l in range(0,xcells): 
-        if (xc[l,:,:]<0.5):
-            rho[l,:,:]=1.0
-            p  [l,:,:]=1.0
-            u  [l,:,:]=0.0
-            phi[l,:,:]=1/(1.6-1) 
-        else:
-            rho[l,:,:]=0.125
-            p  [l,:,:]=0.1
-            u  [l,:,:]=0.0
-            phi[l,:,:]=1/(1.2-1)
-    exactS  = np.loadtxt(folder_exact+"RP1.txt") 
-    
-if case==3: #RP3
-    FinalTime = 0.035
-    DumpTime = 0.002
-    for l in range(0,xcells): 
-        if (xc[l,:,:]<0.4):
-            rho[l,:,:]=5.99924
-            p  [l,:,:]=460.894
-            u  [l,:,:]=19.5975
-            phi[l,:,:]=1.0
-        else:
-            rho[l,:,:]=5.99242
-            p  [l,:,:]=46.0950
-            u  [l,:,:]=-6.19633
-            phi[l,:,:]=0.0
-    exactS  = np.loadtxt(folder_exact+"RP3.txt")  
-    
-if case==4: #RP4
-    modify_header_file(folder_lib+'/definitions.h', 'MULTICOMPONENT', 1)
-    modify_header_file(folder_lib+'/definitions.h', 'MULTI_TYPE', 2)
-    FinalTime = 0.16
-    DumpTime = 0.01
-    for l in range(0,xcells): 
-        if (xc[l,:,:]<0.5):
-            rho[l,:,:]=1.0
-            p  [l,:,:]=1.0
-            u  [l,:,:]=0.0
-            phi[l,:,:]=1/(1.4-1) #1/(gamma-1) for gamma formulation
-        else:
-            rho[l,:,:]=0.125
-            p  [l,:,:]=0.1
-            u  [l,:,:]=0.0
-            phi[l,:,:]=1/(1.6-1)
-    exactSm = np.loadtxt(folder_exact+"RP1_multi.txt")   
-    
-    
-if case==5: #RP5 
-    FinalTime = 0.011
-    DumpTime = 0.001
-    for l in range(0,xcells): 
-        if (xc[l,:,:]<0.5):
-            rho[l,:,:]=1.0
-            p  [l,:,:]=1000.0
-            u  [l,:,:]=0.0
-            phi[l,:,:]=1.0
-        else:
-            rho[l,:,:]=1.0
-            p  [l,:,:]=0.01
-            u  [l,:,:]=0.0
-            phi[l,:,:]=0.0
-    exactS  = np.loadtxt(folder_exact+"RP2.txt")  
+                xp=10000;
+                zp=8000;
+                d2=np.sqrt((xc[l,m,n]-xp)*(xc[l,m,n]-xp)+(zc[l,m,n]-zp)*(zc[l,m,n]-zp));
+
+                rc=1000;
+                aux1=20.0*(max(rc-d1/2.0,0.0)+min(d2/2.0-rc,0.0))/1000;
+
+                tt=tt0+aux1;
+                aux2=(gamma-1.0)/gamma*g/(R*tt0);
+                
+                rho[l,m,n]=p0/(R*tt)*(1.0-aux2*zc[l,m,n])**(1.0/(gamma-1.0)) #density
+                p  [l,m,n]=p0* (1.0-aux2*zc[l,m,n])**(gamma/(gamma-1.0)) #pressure
+                u  [l,m,n]=0.0 #x-velocity
+                v  [l,m,n]=0.0 #y-velocity
+                w  [l,m,n]=0.0 #z-velocity
+                phi[l,m,n]=0.0 #solute
 
 
 # Now, the configuration and initial condition (and equilibrium) files are written: 
@@ -205,7 +174,8 @@ if case==5: #RP5
 # In[21]:
 
 
-write_config(folder_case, fname_config, FinalTime, DumpTime, CFL, Order, xcells, ycells, zcells, SizeX, SizeY, SizeZ, Face_1, Face_2, Face_3, Face_4, Face_5, Face_6, u_x, u_y, u_z)      
+write_config(folder_case, fname_config, FinalTime, DumpTime, CFL, Order, xcells, ycells, zcells, SizeX, SizeY, SizeZ, Face_1, Face_2, Face_3, Face_4, Face_5, Face_6, u_x, u_y, u_z)
+write_equilibrium(folder_case, fname_eq, xcells, ycells, zcells, xc, yc, zc, ue, ve, we, rhoe, pe)       
 write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, w, rho, p, phi)
 
 
@@ -217,10 +187,9 @@ write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, 
 
 
 compile_program()
-restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./exehow3d "+folder_case)
-
+restore_file(folder_lib+'/definitions.h')
 
 
 # ### Reading data and plotting
@@ -231,57 +200,54 @@ run_program(folder_exe+"./exehow3d "+folder_case)
 
 # In[23]:
 
-
+os.remove(folder_out + "list_eq.out")
 files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
-lf = len(files)
+#files = glob(folder_out+"/*.out")
 lf=len(files)
 print(files)
 
 gamma=1.4
 j=0
 print("Printing figures in folder"+folder_out)
-
 images = []  # List to hold all the images for the GIF
-
 for fname in files:
     
     u, v, w, rho, p, phi, theta, E = read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j)
                   
-    filename = fname+"_RP"+str(case)
+    filename = fname+"_theta2D"
     
-    fig, ax  = plt.subplots(2,2,figsize=(14, 8))
-    ax[0,0].plot(xc[:,0,0],rho[:,0,0,j],'o-')
-    if 'exactS' in locals():
-        ax[0,0].plot(exactS[:,0],exactS[:,1],'k-') 
-    if 'exactSm' in locals():
-        ax[0,0].plot(exactSm[:,0],exactSm[:,1],'k-') 
-    ax[0,0].set_xlabel("x") 
-    ax[0,0].set_ylabel("density") 
-
-    ax[0,1].plot(xc[:,0,0],p[:,0,0,j],'o-')
-    if 'exactS' in locals():
-        ax[0,1].plot(exactS[:,0],exactS[:,2],'k-') 
-    ax[0,1].set_xlabel("x") 
-    ax[0,1].set_ylabel("pressure") 
-
-    ax[1,0].plot(xc[:,0,0],u[:,0,0,j],'o-') 
-    if 'exactS' in locals():
-        ax[1,0].plot(exactS[:,0],exactS[:,3],'k-') 
-    ax[1,0].set_xlabel("x") 
-    ax[1,0].set_ylabel("velocity u") 
-
-    ax[1,1].plot(xc[:,0,0],phi[:,0,0,j],'o-') 
-    ax[1,1].set_xlabel("x") 
-    ax[1,1].set_ylabel("phi")
-    if case==4: 
-        ax[1,1].set_ylabel(r"$1/(1-\gamma)$")
+    xp = xc[:,0,0]     
+    zp = zc[0,0,:]      
+    X, Y = np.meshgrid(xp, zp)    #matriz de puntos
+    Srho=np.transpose(rho[:,0,:,j])
+    Spres=np.transpose(p[:,0,:,j])
+    Svel=np.transpose(np.sqrt(u[:,0,:,j]**2+w[:,0,:,j]**2))
+    Senr=np.transpose(E[:,0,:,j])
+    Sphi=np.transpose(phi[:,0,:,j])
+    Su=np.transpose(u[:,0,:,j])
+    Sth=np.transpose(theta[:,0,:,j])
+    
+    fig, ax = plt.subplots(figsize=(10, 5))   
+    levels = np.linspace(280, 320, 16)
+    #print(levels)
+    plot1=ax.contour(X, Y, Sth, levels=levels,colors="k",linewidths=0.5)  
+    plot1=ax.contourf(X, Y, Sth, 200, cmap='RdBu')   
+    ax.set_title('Potential temperature')
+    ax.set_xlabel("x") 
+    ax.set_ylabel("z") 
+    ax.set_aspect('equal', 'box')
+    plot1.set_clim( 280, 320 )
+    # Create colorbar
+    cbar = plt.colorbar(plot1)
+    cbar.ax.set_title('θ(K)')
+    fig.text(0.15, 0.72, "θ_max="+str(round(np.max(Sth),3)), fontsize=9.5)
+    fig.text(0.15, 0.68, "θ_min="+str(round(np.min(Sth),3)), fontsize=9.5)
     
     image_path = filename + ".png"
-    fig.savefig(image_path,dpi=200)
+    fig.savefig(image_path,dpi=400)
     images.append(imageio.imread(image_path)) 
     
     j=j+1
          
-
 gif_path = os.path.join(folder_out, "animation.gif")
 imageio.mimsave(gif_path, images, duration=8, loop=0)  # Adjust the duration as needed

@@ -122,9 +122,10 @@ write_initial_scalar(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc,
 
 
 compile_program()
+restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./exehow3d "+folder_case)
-restore_file(folder_lib+'/definitions.h')
+
 
 
 # ## RENDERING IN 3D

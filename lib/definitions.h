@@ -56,17 +56,17 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define _Q_ 6.0
 
 //Equations
-#define EQUATION_SYSTEM 2 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 
+#define EQUATION_SYSTEM 0 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 
 
 //Source terms for Euler
-#define ST 3// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy)
+#define ST 0// 0: Source OFF, 1: Source ON (augmented version, needs HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy)
 
 //Multicomponent and multiphase flow
 #define MULTICOMPONENT 0 //Activates multicomponent Euler equations (two components with different gamma).
 #define MULTI_TYPE 2     //=1 for gamma formulation, =2 for 1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
 
 //Solvers
-#define SOLVER 0 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
+#define SOLVER 1 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
 
 //Debug code
 #define DEBUG_MESH 0 //0: no debug; 1: screen info;
@@ -76,7 +76,7 @@ Disclaimer: This software is distributed for research and/or academic purposes, 
 #define _stol_ 2.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
 
 //OpenMP configuration
-#define NTHREADS 32
+#define NTHREADS 24
 
 //Output files
 #define WRITE_VTK 1

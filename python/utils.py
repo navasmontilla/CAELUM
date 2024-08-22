@@ -352,10 +352,12 @@ def singleRP(case,ord):
     modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)
     if case==4: 
         modify_header_file(folder_lib+'/definitions.h', 'MULTICOMPONENT', 1)
+        modify_header_file(folder_lib+'/definitions.h', 'MULTI_TYPE', 2)
         
     # COMPILING
 
     compile_program()
+    restore_file(folder_lib+'/definitions.h')
 
     #Simulation setup
     FinalTime = 0.011
@@ -364,7 +366,7 @@ def singleRP(case,ord):
     Order = ord
 
     #Mesh setup
-    xcells = 100
+    xcells = 200
     ycells = 1
     zcells = 1
     SizeX = 1.0
@@ -520,6 +522,8 @@ def singleRP(case,ord):
     ax[1,1].plot(xc[:,0,0],phi[:,0,0,j],'o-') 
     ax[1,1].set_xlabel("x") 
     ax[1,1].set_ylabel("phi")  
+    if case==4: 
+        ax[1,1].set_ylabel(r"$1/(1-\gamma)$")
 
     fig.savefig(filename+".png",dpi=500)
 
@@ -538,8 +542,6 @@ def singleRP(case,ord):
         L1_error = np.mean(np.abs(numerical_rho - exact_rho_at_grid))
 
     print(f"L1 Error: {L1_error}")
-    
-    restore_file(folder_lib+'/definitions.h')
     
     if L1_error < thrs[case-1]:
         vf=1
@@ -586,6 +588,7 @@ def caseBubble(ord):
     # COMPILING
 
     compile_program()
+    restore_file(folder_lib+'/definitions.h')
 
     #Simulation setup
     FinalTime = 800.0
@@ -728,8 +731,6 @@ def caseBubble(ord):
     L1_error = np.max([aux1,aux2])
     
     print(L1_error,aux1,aux2)
-    
-    restore_file(folder_lib+'/definitions.h')
     
     if (L1_error < 20) and (L1_error > 1):
         vf=1

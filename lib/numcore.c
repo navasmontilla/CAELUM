@@ -400,7 +400,7 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
                         wall->UL[k]=weno7L(phi7);
                   }
             }else{
-                  //order==7
+                  //order==9
             }
 
 
@@ -428,9 +428,9 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
                         getchar();
                         exit(1);
                   }
-                  #if EQUATION_SYSTEM == 2
+            #if EQUATION_SYSTEM == 2
 				compute_transmissive_euler(wall,wall->boundId);
-                  #elif EQUATION_SYSTEM == 1
+            #elif EQUATION_SYSTEM == 1
 				compute_burgers_flux(wall,&lambdaMax);
 			#else
 				compute_linear_flux(wall,&lambdaMax);
@@ -441,9 +441,9 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
                         getchar();
                         exit(1);
                   }
-                  #if EQUATION_SYSTEM == 2
+            #if EQUATION_SYSTEM == 2
 				compute_solid_euler_hlle(wall,&lambdaMax,wall->boundId);
-                  #endif
+            #endif
             }
             #if EQUATION_SYSTEM == 2
 		compute_transport(wall);

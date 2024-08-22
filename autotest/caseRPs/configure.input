@@ -5,7 +5,7 @@ CFL    0.4
 Order    5
  
 ////////MESH_SETUP/////////
-xcells    100
+xcells    200
 ycells    1
 zcells    1
 SizeX    1.0
