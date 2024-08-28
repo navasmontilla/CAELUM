@@ -1302,7 +1302,266 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
 
 }
 
-int read_solids(t_mesh *mesh,t_solid *solids, const char *folder_path){
+
+int read_solids(t_mesh *mesh, t_solid *solids, const char *folder_path) {
+    int i, j, k;
+    FILE *fp;
+    char fname[1024];
+    char buffer[256];
+    double aux1, aux2, aux3, aux4;
+    t_triangle *triangle;
+    t_stl *stl;
+
+    snprintf(fname, sizeof(fname), "%s/solid_list.txt", folder_path);
+    fp = fopen(fname, "r");
+
+    if (fp == NULL) {
+        printf("%s No solids are found in folder %s.\n", WAR, folder_path);
+        solids->nsolid = 0;
+        return 0;
+    } else {
+        if (fscanf(fp, "%*s %d", &solids->nsolid) != 1) {
+            printf("Error when reading number of solids.\n");
+            solids->nsolid = 0;
+            fclose(fp);
+            return 0;
+        } else {
+            printf("The number of solids domains is: %d\n", solids->nsolid);
+
+            for (i = 0; i < solids->nsolid; i++) {
+                if (fscanf(fp, "%s", buffer) != 1) {
+                    printf("%s Error when reading solid names.\n", WAR);
+                }
+                solids->filename[i] = strdup(buffer);
+                printf("Solid %d is located at %s\n", i, solids->filename[i]);
+            }
+        }
+        fclose(fp);
+
+        solids->stl = (t_stl *)malloc(solids->nsolid * sizeof(t_stl));
+        stl = solids->stl;
+
+        for (i = 0; i < solids->nsolid; i++) {
+            snprintf(stl[i].name, sizeof(stl[i].name), "%s", solids->filename[i]);
+            fp = fopen(stl[i].name, "r");
+            if (fp == NULL) {
+                printf("Error opening file %s.\n", solids->filename[i]);
+                continue;
+            }
+
+            // Count the number of triangles
+            stl[i].ntri = 0;
+            while (fgets(buffer, sizeof(buffer), fp)) {
+                if (strncmp(buffer, "facet normal", 12) == 0) {
+                    stl[i].ntri++;
+                }
+            }
+            
+            printf("The number of triangles of solid %d is  %d\n", i, stl[i].ntri);
+            
+            fseek(fp, 0, SEEK_SET); // Reset file pointer to start
+
+            stl[i].triangle = (t_triangle *)malloc(stl[i].ntri * sizeof(t_triangle));
+            triangle = stl[i].triangle;
+
+            // Initialize bounding box
+            for (k = 0; k < 3; k++) {
+                stl[i].Xmin[k] = 9999999999999.0;
+                stl[i].Xmax[k] = -9999999999999.0;
+            }
+
+            int current_triangle = 0;
+            while (fgets(buffer, sizeof(buffer), fp)) {
+                if (strncmp(buffer, "facet normal", 12) == 0) {
+                    // Read the normal vector
+                    sscanf(buffer, "facet normal %lf %lf %lf",
+                           &triangle[current_triangle].nr[0],
+                           &triangle[current_triangle].nr[1],
+                           &triangle[current_triangle].nr[2]);
+
+                    // Skip the "outer loop" line
+                    if (fgets(buffer, sizeof(buffer), fp) == NULL) {
+                        fprintf(stderr, "Error or premature end of file when reading 'outer loop'\n");
+                        break;
+                    }
+
+                    // Read the first vertex
+                    if (fgets(buffer, sizeof(buffer), fp) != NULL) {
+                        sscanf(buffer, " %*s %lf %lf %lf",
+                               &triangle[current_triangle].p1[0],
+                               &triangle[current_triangle].p1[1],
+                               &triangle[current_triangle].p1[2]);
+                    } else {
+                        fprintf(stderr, "Error or premature end of file when reading first vertex\n");
+                        break;
+                    }
+
+                    // Read the second vertex
+                    if (fgets(buffer, sizeof(buffer), fp) != NULL) {
+                        sscanf(buffer, " %*s %lf %lf %lf",
+                               &triangle[current_triangle].p2[0],
+                               &triangle[current_triangle].p2[1],
+                               &triangle[current_triangle].p2[2]);
+                    } else {
+                        fprintf(stderr, "Error or premature end of file when reading second vertex\n");
+                        break;
+                    }
+
+                    // Read the third vertex
+                    if (fgets(buffer, sizeof(buffer), fp) != NULL) {
+                        sscanf(buffer, " %*s %lf %lf %lf",
+                               &triangle[current_triangle].p3[0],
+                               &triangle[current_triangle].p3[1],
+                               &triangle[current_triangle].p3[2]);
+                    } else {
+                        fprintf(stderr, "Error or premature end of file when reading third vertex\n");
+                        break;
+                    }
+
+                    // Skip the "endloop" line
+                    if (fgets(buffer, sizeof(buffer), fp) == NULL) {
+                        fprintf(stderr, "Error or premature end of file when reading 'endloop'\n");
+                        break;
+                    }
+
+                    // Skip the "endfacet" line
+                    if (fgets(buffer, sizeof(buffer), fp) == NULL) {
+                        fprintf(stderr, "Error or premature end of file when reading 'endfacet'\n");
+                        break;
+                    }
+
+                    // Move to the next triangle
+                    current_triangle++;
+                }
+            }
+  
+
+            fclose(fp);
+            
+            for(j=0;j<solids->stl[i].ntri;j++){
+                printf("Normal %lf %lf %lf \n",triangle[j].nr[0], triangle[j].nr[1], triangle[j].nr[2]);
+                printf("vertex %lf %lf %lf \n",triangle[j].p1[0], triangle[j].p1[1], triangle[j].p1[2]);
+                printf("vertex %lf %lf %lf \n",triangle[j].p2[0], triangle[j].p2[1], triangle[j].p2[2]);
+                printf("vertex %lf %lf %lf \n",triangle[j].p3[0], triangle[j].p3[1], triangle[j].p3[2]);
+            }
+
+            // Process triangles
+            for (j = 0; j < stl[i].ntri; j++) {
+                triangle[j].absnr = sqrt(triangle[j].nr[0] * triangle[j].nr[0] + triangle[j].nr[1] * triangle[j].nr[1] + triangle[j].nr[2] * triangle[j].nr[2]);
+                triangle[j].outside = 0;
+
+                  for(k=0;k<3;k++){
+                        aux1=MIN(triangle[j].p1[k],triangle[j].p2[k]);
+                        aux2=MIN(aux1,triangle[j].p3[k]);
+                        stl[i].Xmin[k]=MIN(aux2,stl[i].Xmin[k]);
+
+                        aux3=MAX(triangle[j].p1[k],triangle[j].p2[k]);
+                        aux4=MAX(aux3,triangle[j].p3[k]);
+                        stl[i].Xmax[k]=MAX(aux4,stl[i].Xmax[k]);
+
+
+
+                        if(k==0){
+                              triangle[j].imin[k]= aux2/mesh->dx;// DEBERIAMOS CONSIDERAR UN dx/2 
+                              triangle[j].imax[k]= aux4/mesh->dx;
+                              if(triangle[j].imax[k]-triangle[j].imin[k] < MAX(mesh->sim->order-1,1)){
+                                    triangle[j].imin[k] = (aux2+aux4)/(2.0*mesh->dx) - (mesh->sim->order-1)/2;
+                                    triangle[j].imax[k] = triangle[j].imin[k] + mesh->sim->order;
+                                    //printf("triangle %d: dif %d   \n\n", j,triangle[j].imax[k]-triangle[j].imin[k]);
+                                    //printf("triangle %d: %d %d  \n\n", j,triangle[j].imin[k],triangle[j].imax[k]);
+                              }
+                              triangle[j].imin[k]=MAX(triangle[j].imin[k],0);                   // to do: poner flag si el triangulo esta fuera, para sacarlo del calculo, y quitar esos min/max. Poner una minima separacion entre imin/imax
+                              triangle[j].imin[k]=MIN(triangle[j].imin[k],mesh->xcells-1);
+                              triangle[j].imax[k]=MAX(triangle[j].imax[k],0);
+                              triangle[j].imax[k]=MIN(triangle[j].imax[k],mesh->xcells-1);
+                              if(aux2<0.0||aux4>mesh->Lx){
+                                    triangle[j].outside=1;
+                              }
+                              //printf("triangle %d: %lf %lf  \n", j,aux2,aux4);
+                              //printf("triangle %d: %d %d  \n\n", j,triangle[j].imin[k],triangle[j].imax[k]);
+                        }else if(k==1){
+                              triangle[j].imin[k]= aux2/mesh->dy;
+                              triangle[j].imax[k]= aux4/mesh->dy;
+                              if(triangle[j].imax[k]-triangle[j].imin[k] < MAX(mesh->sim->order-1,1)){
+                                    triangle[j].imin[k] = (aux2+aux4)/(2.0*mesh->dx) - (mesh->sim->order-1)/2;
+                                    triangle[j].imax[k] = triangle[j].imin[k] + mesh->sim->order;
+                              }
+                              triangle[j].imin[k]=MAX(triangle[j].imin[k],0);
+                              triangle[j].imin[k]=MIN(triangle[j].imin[k],mesh->ycells-1);
+                              triangle[j].imax[k]=MAX(triangle[j].imax[k],0);
+                              triangle[j].imax[k]=MIN(triangle[j].imax[k],mesh->ycells-1);
+                              if(aux2<0.0||aux4>mesh->Ly){
+                                    triangle[j].outside=1;
+                              }
+                              //printf("triangle %d: %lf %lf  \n", j,aux2,aux4);
+                              //printf("triangle %d: %d %d  \n", j,triangle[j].imin[k],triangle[j].imax[k]);
+                        }else{
+                              triangle[j].imin[k]= aux2/mesh->dz;
+                              triangle[j].imax[k]= aux4/mesh->dz;
+                              if(triangle[j].imax[k]-triangle[j].imin[k] < MAX(mesh->sim->order-1,1)){
+                                    triangle[j].imin[k] = (aux2+aux4)/(2.0*mesh->dx) - (mesh->sim->order-1)/2;
+                                    triangle[j].imax[k] = triangle[j].imin[k] + mesh->sim->order;
+                              }
+                              triangle[j].imin[k]=MAX(triangle[j].imin[k],0);
+                              triangle[j].imin[k]=MIN(triangle[j].imin[k],mesh->zcells-1);
+                              triangle[j].imax[k]=MAX(triangle[j].imax[k],0);
+                              triangle[j].imax[k]=MIN(triangle[j].imax[k],mesh->zcells-1);
+                              if(aux2<0.0||aux4>mesh->Lz){
+                                    triangle[j].outside=1;
+                              }
+                              //printf("triangle %d: %lf %lf  \n", j,aux2,aux4);
+                              //printf("triangle %d: %d %d  \n", j,triangle[j].imin[k],triangle[j].imax[k]);
+                        }
+                        //triangle[j].imin[k]=(int)
+
+                  }
+                  //printf("triangle %d: %d \n", j,triangle[j].outside);
+
+            }
+            //getchar();
+
+            for(k=0;k<3;k++){
+                  if(k==0){
+                        stl[i].imin[k]= stl[i].Xmin[k]/mesh->dx;
+                        stl[i].imax[k]= stl[i].Xmax[k]/mesh->dx;
+                        stl[i].imin[k]=MAX(stl[i].imin[k],0);
+                        stl[i].imin[k]=MIN(stl[i].imin[k],mesh->xcells-1);
+                        stl[i].imax[k]=MAX(stl[i].imax[k],0);
+                        stl[i].imax[k]=MIN(stl[i].imax[k],mesh->xcells-1);
+                        //printf("stl %d: %lf %lf  \n", i,aux2,aux4);
+                        //printf("stl %d: %d %d  \n", i,stl[i].imin[k],stl[i].imax[k]);
+                  }else if(k==1){
+                        stl[i].imin[k]= stl[i].Xmin[k]/mesh->dy;
+                        stl[i].imax[k]= stl[i].Xmax[k]/mesh->dy;
+                        stl[i].imin[k]=MAX(stl[i].imin[k],0);
+                        stl[i].imin[k]=MIN(stl[i].imin[k],mesh->ycells-1);
+                        stl[i].imax[k]=MAX(stl[i].imax[k],0);
+                        stl[i].imax[k]=MIN(stl[i].imax[k],mesh->ycells-1);
+                        //printf("stl %d: %lf %lf  \n", i,aux2,aux4);
+                        //printf("stl %d: %d %d  \n", i,stl[i].imin[k],stl[i].imax[k]);
+                  }else{
+                        stl[i].imin[k]= stl[i].Xmin[k]/mesh->dz;
+                        stl[i].imax[k]= stl[i].Xmax[k]/mesh->dz;
+                        stl[i].imin[k]=MAX(stl[i].imin[k],0);
+                        stl[i].imin[k]=MIN(stl[i].imin[k],mesh->zcells-1);
+                        stl[i].imax[k]=MAX(stl[i].imax[k],0);
+                        stl[i].imax[k]=MIN(stl[i].imax[k],mesh->zcells-1);
+                        //printf("stl %d: %lf %lf  \n", i,aux2,aux4);
+                        //printf("stl %d: %d %d  \n", i,stl[i].imin[k],stl[i].imax[k]);
+                  }
+            }
+            printf(" The bounding box of solid %d is: \n (x,y,z)_min=(%lf,%lf,%lf)\n (x,y,z)_max=(%lf,%lf,%lf) \n", i,solids->stl[i].Xmin[0],solids->stl[i].Xmin[1],solids->stl[i].Xmin[2],solids->stl[i].Xmax[0],solids->stl[i].Xmax[1],solids->stl[i].Xmax[2]);
+            printf(" and the respective indices are:  \n (i,j,k)_min=(%d,%d,%d)\n (i,j,k)_max=(%d,%d,%d) \n", solids->stl[i].imin[0],solids->stl[i].imin[1],solids->stl[i].imin[2],solids->stl[i].imax[0],solids->stl[i].imax[1],solids->stl[i].imax[2]);
+		printf("\n");
+	}
+
+      printf("%s Solid domains have been successfully read\n",OK);
+    }
+    return 1;
+}
+
+
+int read_solids_txt(t_mesh *mesh,t_solid *solids, const char *folder_path){
 
 	int i,j,k;
 	FILE *fp;

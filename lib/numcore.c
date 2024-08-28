@@ -36,6 +36,7 @@ Content:
 #include "reconst.h"
 #include "solvers.h"
 #include "closures.h"
+#include "ibmutils.h"
 
 
 void update_cell(t_mesh *mesh, t_sim *sim){

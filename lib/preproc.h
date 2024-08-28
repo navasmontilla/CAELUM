@@ -36,6 +36,7 @@ Content:
   int assign_cell_type(t_mesh *mesh,t_solid *solids);
   int update_stencils(t_mesh *mesh,t_sim *sim);
   int read_solids(t_mesh *mesh,t_solid *solids, const char *folder_path);
+  int read_solids_txt(t_mesh *mesh,t_solid *solids, const char *folder_path);
   void set_velocity_field(t_mesh *mesh, t_sim *sim);  //ESTO LO QUITAREMOS, JUNTO CON LA MACRO "LINEAR_TRANSPORT" y sus ifs asociados
   void set_velocity(t_mesh *mesh, t_sim *sim);
   void read_config(t_mesh *mesh, t_sim *sim, const char *folder_path);
