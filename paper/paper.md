@@ -49,7 +49,7 @@ potential and force evaluation, orbit integration, dynamical transformations,
 and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
 interfaces well with the implementations of physical units and astronomical
 coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
+`astropy.coordinates`). prueba
 
 `Gala` was designed to be used by both astronomical researchers and by
 students in courses on gravitational dynamics or astronomy. It has already been
