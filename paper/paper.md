@@ -38,35 +38,15 @@ In the last decade, very high order numerical methods have become very popular w
 
 Given the limitations of traditional low-order numerical methods in accurately simulating complex fluid flows —especially in scenarios involving multi-scale phenomena like turbulence and shocks— there is a critical need for advanced, high-order computational tools. The increasing complexity of engineering and scientific problems, coupled with the availability of modern HPC architectures, necessitates a shift towards methods that can deliver both high accuracy and computational efficiency. It is thus required to popularize such methods and make them available for the scientific community, in particular, for students and novel researchers who are often limited by the accessibility of advanced tools.
 
-`EHOW3D` is designed to be used both by researchers and by students in the field of CFD, gas dynamics and atmospheric flows. In fact, the simplicity and compactness of the code makes it most suitable those that want to give the first steps in the numerical simulation of flows using high order methods. The simulation code uses the WENO, TENO and optimal polynomial reconstructions in Cartesian meshes. For simplicity, we follow the strategy in [], which is based on the mid-point rule and uses independent 1D reconstructions in each of the Cartesian directions. This approach allows us to avoid performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as the computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not relevant when computing shocked problems, underresolved flows or flows with discontinuities and sharp gradients [].
+`EHOW3D` is designed to be used both by researchers and by students in the field of CFD, atmospheric flows and related disciplines. In fact, the simplicity and compactness of the code make it particularly suitable for those taking their first steps in the numerical simulation of flows using high-order methods. It is designed from an academic perspective, where clarity and accessibility are prioritized. Therefore, it includes user-friendly pre-processing and post-processing tools based on Python and Jupyter Notebook. The repository comes with a series of Python scripts for the configuration and visualization of various example flows, ranging from simple scalar advection in 1D to more complex atmospheric or compressible flow cases in 3D. These scripts rely on standard libraries such as `numpy`, `matplotlib` and `pyvista`, the latter being a powerful module for data visualization and rendering. Additionally, several Jupyter Notebooks are included, where the steps for configuring the simulation tool and visualizing the results are explained in detail.
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`). prueba
+A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale by means of the compressible Euler equations with source term. We can find in the literature various formulations of the Euler equations for the construction of operational and research NWP dynamical cores. The most common version of the Euler equations for the NWP community is given by the equation for the conservation of mass, momentum and potential temperature []. The latter equation is derived from the equation for the conservation of energy, assuming the flow is adiabatic. In contrast, `EHOW3D` uses the original Euler equations, composed by the equations for the conservation of mass, momentum and energy. This approach offers several benefits, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP [].
 
-`Gala` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike.
+Regarding numerics, the simulation code uses WENO, TENO, and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow the strategy outlined in [], which is based on the midpoint rule and employs independent 1D reconstructions in each Cartesian direction. This approach allows us to avoid performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients []. As a result, we offer a simple and versatile computational code that can be applied to a wide variety of problems, providing a resolution level similar or even higher than average state-of-the-art software.
 
 # Mathematics
 
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
-
-This software allows to compute the solution of the scalar linear advection equation
-$$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
-where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation. We can also compute the compressible Euler equations with gravitational source term, given by
+We can also compute the compressible Euler equations with gravitational source term, given by
 \begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
@@ -74,11 +54,9 @@ where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity
 \end{align}
 where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}+e)$.
 
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
+This software allows to compute the solution of the scalar linear advection equation
+$$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
+where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation.
 
 # Citations
 
