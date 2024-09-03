@@ -44,9 +44,9 @@ A key feature of this software is that it also allows the simulation of simplifi
 
 Regarding numerics, the simulation code uses WENO, TENO, and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow the strategy outlined in [], which is based on the midpoint rule and employs independent 1D reconstructions in each Cartesian direction. This approach allows us to avoid performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients []. As a result, we offer a simple and versatile computational code that can be applied to a wide variety of problems, providing a resolution level similar or even higher than average state-of-the-art software.
 
-# Mathematics
+# The model equations
 
-We can also compute the compressible Euler equations with gravitational source term, given by
+This simulation code considers the compressible Euler equations with gravitational source term, given by
 \begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
@@ -54,9 +54,11 @@ We can also compute the compressible Euler equations with gravitational source t
 \end{align}
 where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}+e)$.
 
-This software allows to compute the solution of the scalar linear advection equation
+Additionally, scalar transport can also be considered
 $$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
-where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation.
+where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation. 
+
+Further details on the model equations and numerical resolution methods can be found in [].
 
 # Citations
 
