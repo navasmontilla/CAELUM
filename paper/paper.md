@@ -60,6 +60,13 @@ where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity
 
 Further details on the model equations and numerical resolution methods can be found in [].
 
+# Previous work using the software
+
+`EHOW3D` was developed and first used in `@NAVASMONTILLA2023` where we presented a novel methodology to construct very high order well-balanced schemes for the computation of the Euler equations with gravitational source term, with application to numerical weather prediction (NWP). The proposed approach uses augmented Riemann solvers, which allow for the preservation of the exact equilibrium between fluxes and source terms at cell interfaces. In particular, the augmented HLL solver (HLLS) was considered. The objective of this work was twofold: first, to assess the use of augmented solvers in computing the Euler equations with gravity, and second, to evaluate the performance of the novel TENO reconstruction for NWP.
+
+Afterwards, a more traditional implementation of the Euler equations with gravity based on the use of fluctuation variables --i.e. avoiding particular well-balancing techniques such as augmented solvers-- was implemented in different forms to also allow for the conservation of total energy. The resulting schemes were evaluated in terms of their spectral resolution for the computation of turbulent flows in the atmosphere. The results were presented in `@NAVASMONTILLA2024`, with the objective of determining whether or not these models can be used to build an implicit Large Eddy Simulation framework, shedding light on their potential advantages or limitations in representing under-resolved atmospheric processes in the meso- and micro-scales. 
+
+
 # Citations
 
 Citations to entries in paper.bib should be in
