@@ -52,11 +52,11 @@ This simulation code considers the compressible Euler equations with gravitation
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
 \frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
 \end{align}
-where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}+e)$.
+where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the specific gravity force. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}+e)$. 
 
-Additionally, scalar transport can also be considered
+Additionally, scalar transport can also be considered as the following equation is implemented
 $$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
-where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  When considering $\mathbf{v}=1/2(u,u,u)^T$, we have the Burgers' equation. 
+where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  It is also possible to compute the Burgers equation, i.e.g $\mathbf{v}=1/2(u,u,u)^T$. 
 
 Further details on the model equations and numerical resolution methods can be found in [].
 
