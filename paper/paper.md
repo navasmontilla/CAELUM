@@ -58,7 +58,7 @@ Additionally, scalar transport can also be considered as the following equation 
 $$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
 where $u$ is the transported quantity and $\mathbf{v}$ is the advection velocity.  It is also possible to compute the Burgers equation, i.e.g $\mathbf{v}=1/2(u,u,u)^T$. 
 
-Further details on the model equations and numerical resolution methods can be found in [].
+Further details on the model equations and numerical resolution methods can be found in `[@NAVASMONTILLA2023; @NAVASMONTILLA2024]`.
 
 # Previous work using the software
 
