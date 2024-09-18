@@ -42,7 +42,10 @@ Given the limitations of traditional low-order numerical methods in accurately s
 
 A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. For this, `EHOW3D` uses the compressible Euler equations with gravity source term, composed by the equations for the conservation of mass, momentum and energy. This approach offers several benefits for the selected application, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP [@giraldo2008study].
 
-Regarding numerics, the simulation code uses WENO [@jiang1996efficient], TENO [@fu2019very], and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow the strategy outlined in @zhang2011, which is based on the midpoint rule and employs independent 1D reconstructions in each Cartesian direction. This approach allows us to avoid performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients [@zhang2011]. As a result, we provide a simple and versatile computational code that can be applied to a wide variety of problems and enables iLES.
+Regarding numerics, the simulation code uses WENO [@jiang1996efficient], TENO [@fu2019very], and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow the strategy outlined in @zhang2011, which is based on the midpoint rule and employs independent 1D reconstructions in each Cartesian direction. This approach allows us to avoid performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients [@zhang2011]. As a result, we provide a simple and versatile computational code that can be applied to a wide variety of problems and enables iLES. In \autoref{fig:example}, we show a density gradient (schlieren-like) representation of a 2D Riemann Problem from @lax1998solution, which is a typical benchmark for this type of simulation codes. 
+
+![Density gradient (schlieren-like) representation of a 2D Riemann Problem from @lax1998solution. \label{fig:example}](solutionRP2D.jpg){ width=60% }
+
 
 # The model equations
 
@@ -66,15 +69,6 @@ Further details on the model equations and numerical resolution methods can be f
 
 Afterwards, a more traditional implementation of the Euler equations with gravity based on the use of fluctuation variables --i.e. avoiding particular well-balancing techniques such as augmented solvers-- was implemented in different forms to also allow for the conservation of total energy. The resulting schemes were evaluated in terms of their spectral resolution for the computation of turbulent flows in the atmosphere. The results were presented in @NAVASMONTILLA2024, with the objective of determining whether or not these models can be used to build an implicit Large Eddy Simulation framework, shedding light on their potential advantages or limitations in representing under-resolved atmospheric processes in the meso- and micro-scales. 
 
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
 
 # Acknowledgements
 
