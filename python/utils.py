@@ -300,7 +300,7 @@ def read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j):
 
     return u, v, w, rho, p, phi, theta, E
     
-def read_data_scalar(fname, xcells, ycells, zcells, lf, j):
+def read_data_scalar(u,fname, xcells, ycells, zcells, lf, j):
     """
     Process data from a file and return processed arrays.
     
@@ -309,7 +309,7 @@ def read_data_scalar(fname, xcells, ycells, zcells, lf, j):
     Returns:
         tuple: Arrays (u, v, w, rho, p, phi, theta) processed from the data file.
     """
-    u = np.zeros((xcells, ycells, zcells, lf))
+    #u = np.zeros((xcells, ycells, zcells, lf))
 
     file1 = open(fname, 'r')
     print(fname + " file read")
@@ -830,8 +830,9 @@ def caseLinear(ord):
 
     j=0
     print("Printing figures in folder"+folder_out)
+    u = np.zeros((xcells, ycells, zcells, lf))
     for fname in files:
-        u = read_data_scalar(fname, xcells, ycells, zcells, lf, j)   
+        u = read_data_scalar(u,fname, xcells, ycells, zcells, lf, j)   
         j=j+1
 
     j=-1
@@ -941,8 +942,9 @@ def ordersLinear():
 
             j = 0
             print("Printing figures in folder " + folder_out)
+            u = np.zeros((xcells, ycells, zcells, lf))
             for fname in files:
-                u = read_data_scalar(fname, xcells, ycells, zcells, lf, j)   
+                u = read_data_scalar(u,fname, xcells, ycells, zcells, lf, j)   
                 j += 1
 
             L1_error = np.sum(np.abs(u[:,:,:,-1] - uex[:,:,:]))*dx

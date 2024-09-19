@@ -145,8 +145,9 @@ ax.set_ylabel("u")
 images = []  # List to hold all the images for the GIF
 
 j=0
+u = np.zeros((xcells, ycells, zcells, lf))
 for fname in files:
-    u = read_data_scalar(fname, xcells, ycells, zcells, lf, j)   
+    u = read_data_scalar(u,fname, xcells, ycells, zcells, lf, j)   
     ax.plot(xc[:,0,0],u[:,0,0,j],'o--')
     
     fig2, ax2  = plt.subplots(figsize=(6, 4))
