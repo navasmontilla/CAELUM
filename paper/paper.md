@@ -14,11 +14,11 @@ authors:
   - name: Isabel Echeverribar
     orcid: 0000-0000-0000-0000
     equal-contrib: true
-    affiliation: 1 # (Multiple affiliations must be quoted)
+    affiliation: 2 # (Multiple affiliations must be quoted)
 affiliations:
  - name: Fluid Dynamics Technologies, i3A-University of Zaragoza, Spain
    index: 1
- - name: Institution Name, Country
+ - name: Instituto Tecnológico de Aragón – ITAINNOVA, Zaragoza, Spain
    index: 2
 date: 4 August 2024
 bibliography: paper.bib

@@ -25,21 +25,19 @@
 7. [Authorship](#authorship)
 
 
-## Introduction
+## Statement of need
 
-This repository includes a very high-order CFD solver for academic purposes. The solver allows the use of 1-st, 3-rd, 5-th and 7-th order WENO, TENO and linear reconstruction in space. This code allows the simulation of:
+`EHOW3D` is designed to be used both by researchers and by students in the field of CFD, atmospheric flows and related disciplines. In fact, the simplicity and compactness of the code make it particularly suitable for those taking their first steps in the numerical simulation of flows using high-order methods. It is designed from an academic perspective, where clarity and accessibility are prioritized. Therefore, it includes user-friendly pre-processing and post-processing tools based on Python and Jupyter Notebook. The repository comes with a series of Python scripts for the configuration and visualization of various example flows, ranging from simple scalar advection in 1D to more complex atmospheric or compressible flow cases in 3D. These scripts rely on standard libraries such as `numpy`, `matplotlib` and `pyvista`, the latter being a powerful module for data visualization and rendering. Additionally, several Jupyter Notebooks are included, where the steps for configuring the simulation tool and visualizing the results are explained in detail.
 
-- Linear transport
-- Burgers' equation
-- Compressible Euler equations with gravitational source term.
+A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. For this, `EHOW3D` uses the compressible Euler equations with gravity source term, composed by the equations for the conservation of mass, momentum and energy. This approach offers several benefits for the selected application, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP.
 
-The high order WENO and TENO schemes implemented in this code allow the simulation of turbulent flows using an Implicit Large Eddy Simulation (ILES) framework. ILES methods accurately reproduce the statistical behavior of turbulent flows. The  truncation errors of the scheme play the role of the common sub-grid scale filters used in traditional LES methods. High-fidelity simulations can be achieved when using this approach. A Kelvin-Helmholtz instability computed by EHOW-3D is shown below.
+Regarding numerics, the simulation code uses WENO, TENO, and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow a strategy  based on the midpoint rule that employs independent 1D reconstructions in each Cartesian direction. This approach prevents from performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients. As a result, we provide a simple and versatile computational code that can be applied to a wide variety of problems and enables iLES (see figure below). 
 
 <figure style="text-align: center;">
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
 </figure>
 
-## Installation
+## Installation instructions
 
 Clone the repository in your local computer:
 
@@ -506,7 +504,7 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max)
 
 
 
-## Other numerical results
+## Other numerical results 
 
 Some additional results are presented below:
 
@@ -514,6 +512,10 @@ Some additional results are presented below:
 - [Benchmark #2: Taylor-Green vortex](doc/benchmark5.md)
 - [Benchmark #3: Kelvin-Helmholtz instability](doc/benchmark6.md)
 - [Benchmark #4: Colliding thermals](doc/benchmark7.md)
+
+## Community guidelines
+
+
 
 ## Authorship
 
