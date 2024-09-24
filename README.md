@@ -449,11 +449,8 @@ with wall numbers in red and node numbers in blue. These are defined in the corr
 The available boundary conditions are:
 
 * 1: Periodic
-
 * 2: User defined
-
 * 3: Transmissive (Euler). The numerical flux is set as the physical flux at the interface.
-
 * 4: Solid wall (Euler). Defined as a slip boundary condition which is based on the HLL flux.
 
 They are set by using the numbers above in the configuration file **configure.input**.
