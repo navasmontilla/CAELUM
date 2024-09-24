@@ -97,11 +97,15 @@ To get started in a user-friendly environment, some Jupyter Notebooks have been 
 
 -  [First steps with atmospheric flows: the colliding thermals test case](python/caseCollidingBub.ipynb)
 
+For a correct functionality, *Jupyter Notebook* must be launched from the software main directory.
+
 A more complete set of examples, scripted in Python, are listed below:
 
 ### Scalar problems
 
 - Setting up a 1D linear transport case: [caseLinear](python/caseLinear.py)
+
+```python3 python/caseLinear.py```
   
   <figure style="text-align: center;">
   <img src="doc/animationLin.gif" width="30%" alt="my alt text"/>
