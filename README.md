@@ -452,15 +452,11 @@ The available boundary conditions are:
 
 * 2: User defined
 
-* 3: Transmissive (Euler). The numerical flux is set as the physical flux at the interface, using:
-```c 
-void compute_transmissive_euler(t_wall *wall, int wp)
-```
+* 3: Transmissive (Euler). The numerical flux is set as the physical flux at the interface.
 
-* 4: Solid wall (Euler). Defined as a slip boundary condition which is based on the HLL flux, using:
-```c 
-void compute_solid_euler_hlle(t_wall *wall, double *lambda_max, int wp)
-```
+* 4: Solid wall (Euler). Defined as a slip boundary condition which is based on the HLL flux.
+
+They are set by using the numbers above in the configuration file **configure.input**.
 
 ### Spatial reconstructions
 
@@ -491,6 +487,7 @@ For **Euler equations**, the available solvers are:
 - HLL solver
 - HLLS solver
 - HLLC solver
+
 and can be configured as follows:
 ```c
 #define SOLVER 0 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
