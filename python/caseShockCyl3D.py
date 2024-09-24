@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Configuration of a simulation case (*caseBurgers*)
+# ## Configuration of a simulation case (*caseShockCyl*)
 # 
 # ### Importing required libraries
 # 
 # Some of these are well known libraries such as *numpy* and *matplotlib* (they can be installed using pip). We also need to import the library *utils* containing predefined functionalities for this software. 
-
 
 import os
 import math                    
@@ -14,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import re
 from glob import glob
-from utils import modify_header_file,write_config,write_initial,write_initial_scalar,write_equilibrium,backup_file,restore_file,compile_program,run_program,initialize_variables,read_data_euler,read_data_scalar
+from utils import modify_header_file,write_config,write_initial,write_equilibrium,backup_file,restore_file,compile_program,run_program,initialize_variables,read_data_euler
 import imageio
 
 
@@ -22,9 +21,10 @@ import imageio
 # 
 # First, the name of the folder for this test case must be specified:
 
+#This test case will run in the folder "caseShockCyl/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseBurgers/" 
+folder_case="caseShockCyl3D/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -52,36 +52,38 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
-modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 4)         #number of threads
-modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 1)  #System of equations solved
+modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 48)         #number of threads
+modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
+modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
+modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
+modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann solver used
 modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1    
 
 # ### Configure the global simulation parameters
 # 
 # We can set the global simulation parameters as desired:
 
-
 #Simulation setup
-FinalTime = 1.00
-DumpTime = 0.05
-CFL = 0.4
+FinalTime = 0.5
+DumpTime = 0.1  #for file printing
+CFL = 0.2
 Order = 7
 
 #Mesh setup
-xcells = 100
-ycells = 1
-zcells = 1
-SizeX = 1.0
+xcells = 300
+ycells = 200
+zcells = 100
+SizeX = 1.50
 SizeY = 1.0
-SizeZ = 1.0
+SizeZ = 0.50
 
 #Boundary conditions
-Face_1 = 1 #-y
-Face_2 = 1 #+x
-Face_3 = 1 #+y
-Face_4 = 1 #-x
-Face_5 = 1 #-z
-Face_6 = 1 #+z
+Face_1 = 4 #-y
+Face_2 = 3 #+x
+Face_3 = 3 #+y
+Face_4 = 4 #-x
+Face_5 = 4 #-z
+Face_6 = 3 #+z
 
 #Linear transport, only if applicable
 u_x = 1.0
@@ -93,76 +95,61 @@ u_z = 1.0
 # 
 # To define the initial condition we first need to create the arrays and initialize some variables:
 
-xc, yc, zc, u, uex, *_  = initialize_variables(xcells, ycells, zcells, SizeX, SizeY, SizeZ)
+xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xcells, ycells, zcells, SizeX, SizeY, SizeZ)
 
+
+# Among these, we have:
+# - the problem variables: ```u, v, w, rho, p, phi```
+# - the equilibrium variables (for atmospheric cases): ```ue, ve, we, rhoe, pe```
+# 
+# Then we can set the initial condition using those variables. To do this, we loop over the three cartesian indexes $(l,m,n)$ and assign the variables, e.g. $\rho(x_l,y_m,z_n)=...$ is set as ```rho[l,m,n]=...```. Cell centers are given by: ```xc[l,m,n]```, ```yc[l,m,n]``` and ```zc[l,m,n]```.
+
+#Initial condition and equilibrium state            
 for l in range(0,xcells): 
         for m in range(0,ycells): 
             for n in range(0,zcells):
-                u[l,m,n]=1.0+np.sin(xc[l,m,n]*2.0*math.pi)                      #imposed as pointwise values for simplicity. For cell averaged data see ordersLinear() in utils.py.
-                uex[l,m,n]=1.0+np.sin((xc[l,m,n]-u_x*FinalTime)*2.0*math.pi) 
-  
-# WRITING CONFIGURATION AND INITIAL DATA
+                
+                xaux=xc[l,m,n]-0.0
+                yaux=yc[l,m,n]-0.0
+                r= np.sqrt(xaux*xaux+yaux*yaux)
+                xaux=xc[l,m,n]-0.4
+                zaux=zc[l,m,n]-0.0
+                r2=np.sqrt(xaux*xaux+zaux*zaux)
+                
+                if r < 0.2:
+                    p  [l,m,n] = 10.0
+                    rho[l,m,n] = 1.0
+                    u  [l,m,n] = 0.0
+                    v  [l,m,n] = 0.0
+                    w  [l,m,n] = 0.0
+                    phi[l,m,n] = 0.0
+                elif r2 < 0.2:
+                    p  [l,m,n] = 1.0
+                    rho[l,m,n] = 0.1
+                    u  [l,m,n] = 0.0
+                    v  [l,m,n] = 0.0
+                    w  [l,m,n] = 0.0
+                    phi[l,m,n] = 1.0
+                else:
+                    p  [l,m,n] = 1.0
+                    rho[l,m,n] = 1.0
+                    u  [l,m,n] = 0.0
+                    v  [l,m,n] = 0.0
+                    w  [l,m,n] = 0.0
+                    phi[l,m,n] = 0.0
+
+
+# Now, the configuration and initial condition (and equilibrium) files are written: 
 
 write_config(folder_case, fname_config, FinalTime, DumpTime, CFL, Order, xcells, ycells, zcells, SizeX, SizeY, SizeZ, Face_1, Face_2, Face_3, Face_4, Face_5, Face_6, u_x, u_y, u_z)      
-write_initial_scalar(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u)
+write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, w, rho, p, phi)
 
 
 # ### Compilation and execution
 # 
 # The program is compiled and executed:
 
-
 compile_program()
+restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./exehow3d "+folder_case)
-restore_file(folder_lib+'/definitions.h')
-
-
-# ### Reading data and plotting
-
-
-files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
-lf = len(files)
-lf=len(files)
-print(files)
-
-print("Printing figures in folder"+folder_out)
-
-filename = folder_out+"linear_scalar_plot"
-fig, ax  = plt.subplots(figsize=(6, 4))
-ax.set_xlabel("x") 
-ax.set_ylabel("u") 
-
-images = []  # List to hold all the images for the GIF
-
-j=0
-u = np.zeros((xcells, ycells, zcells, lf))
-for fname in files:
-    u = read_data_scalar(u,fname, xcells, ycells, zcells, lf, j)   
-    ax.plot(xc[:,0,0],u[:,0,0,j],'o--')
-    
-    fig2, ax2  = plt.subplots(figsize=(6, 4))
-    ax2.plot(xc[:,0,0],u[:,0,0,j],'o-')
-    ax2.set_xlabel("x") 
-    ax2.set_ylabel("u") 
-    ax2.set_ylim([0,2])
-    image_path = filename + ".png"
-    fig2.savefig(image_path,dpi=200)
-    images.append(imageio.imread(image_path)) 
-    
-    j=j+1
-
-ax.plot(xc[:,0,0],u[:,0,0,-1],'o-')
-ax.plot(xc[:,0,0],uex[:,0,0],'-k')
-ax.set_xlabel("x") 
-ax.set_ylabel("u") 
-
-fig.savefig(filename+".png",dpi=300)
-
-gif_path = os.path.join(folder_out, "animation.gif")
-imageio.mimsave(gif_path, images, duration=4, loop=0)  # Adjust the duration as needed
-
-
-    
-
-        
