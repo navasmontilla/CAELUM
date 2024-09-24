@@ -22,7 +22,8 @@
    - [Time integrator](#time-integrator)
    - [Riemann solvers](#riemann-solvers)
 6. [Other numerical results](#other-numerical-results)
-7. [Authorship](#authorship)
+7. [Community guidelines](#community-guidelines)
+8. [Authorship](#authorship)
 
 
 ## Statement of need
