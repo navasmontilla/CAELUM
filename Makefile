@@ -24,7 +24,12 @@
 # Definir el compilador y las banderas básicas de compilación
 CC = gcc
 DEBUG = 0
-CFLAGS =  -Wall  -fopenmp
+OMP = 1
+CFLAGS = -Wall
+
+ifeq ($(OMP), 1)
+	CFLAGS += -fopenmp
+endif
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -g

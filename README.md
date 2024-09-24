@@ -315,17 +315,17 @@ $$\begin{align}
 
 where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy
 
-$$E=\rho(\frac{1}{2}\mathbf{v}+e)$$
+$$E=\rho(\frac{1}{2}\mathbf{v}^2+e)$$
 
 One should note the relations $p=(\gamma-1)\rho e\equiv (\gamma-1)(E-\frac{1}{2}\rho\mathbf{v})$.
 
 - When setting ```#define ST 0```, we assume $g=0$. 
 
-- When setting  ```#define ST 1```, we consider non-zero gravity and use the solver HLLS. 
+- When setting  ```#define ST 1```, we consider non-zero gravity and need to use the solver HLLS. 
 
-- When setting  ```#define ST 2```, we consider non-zero gravity and use the solver HLL in fluctuation version. 
+- When setting  ```#define ST 2```, we consider non-zero gravity and need to use the solver HLL in fluctuation version. 
 
-- When setting ```#define ST 3```  we consider non-zero gravity and use the solver HLL in fluctuation version. Besides,the equation for the conservation of energy is solved in fully conservative form, defining energy as $E_T=\rho(\frac{1}{2}\mathbf{v}+e+gz)$, yielding to
+- When setting ```#define ST 3```  we consider non-zero gravity and need to use the solver HLL in fluctuation version. Besides,the equation for the conservation of energy is solved in fully conservative form, defining energy as $E_T=\rho(\frac{1}{2}\mathbf{v}+e+gz)$, yielding to
 
 $$\begin{align}
 \frac{\partial E_T}{\partial t} + \nabla \cdot \left((E_T + p) \mathbf{v}\right) &= 0 
@@ -425,7 +425,7 @@ The time lapse for writing files is set as *DumpTime* in the file *configure.inp
 
 ### The computational mesh
 
-The computational mesh is constructed as follows:
+The computational mesh is Cartesian and is constructed as follows:
 
 <figure style="text-align: center;">
   <img src="doc/grid.png" width="60%" alt="my alt text"/>
@@ -480,27 +480,19 @@ The time stepping is done using a Strong Stability Preserving Runge-Kutta 3 (SSP
 
 ### Riemann solvers
 
-For the **linear scalar equation**, we use an upwind flux definition, implemented in:
-```c 
-void compute_linear_flux(t_wall *wall,double *lambda_max);
-```
-For the **Burgers equation**, we also use an upwind flux definition, implemented in:
-```c 
-void compute_burgers_flux(t_wall *wall,double *lambda_max);
-```
+For the **linear scalar equation**, we use an upwind flux definition.
+
+For the **Burgers equation**, we also use an upwind flux definition.
+
 For **Euler equations**, the available solvers are:
-- HLL solver: 
-```c 
-void compute_euler_HLLE(t_wall *wall,double *lambda_max) 
+- HLL solver
+- HLLS solver
+- HLLC solver
+and can be configured as follows:
+```c
+#define SOLVER 0 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
 ```
-- HLLS solver: 
-```c 
-void compute_euler_HLLS(t_wall *wall,double *lambda_max) 
-```
-- HLLC solver: 
-```c 
-void compute_euler_HLLC(t_wall *wall,double *lambda_max)
-```
+
 
 
 

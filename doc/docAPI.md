@@ -182,14 +182,29 @@ where ```phi[0],phi[1],phi[2]``` are the values of a conserved variable in each 
 
 ### Riemann Solvers
 
-The available Riemann solvers are:
+The available Riemann solvers are given below.
 
-```c
-void compute_euler_HLLE(t_wall *wall,double *lambda_max);
-void compute_euler_HLLC(t_wall *wall,double *lambda_max);
-void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim);
-void compute_burgers_flux(t_wall *wall,double *lambda_max);
+For the **linear scalar equation**, we use an upwind flux definition, implemented in:
+```c 
 void compute_linear_flux(t_wall *wall,double *lambda_max);
+```
+For the **Burgers equation**, we also use an upwind flux definition, implemented in:
+```c 
+void compute_burgers_flux(t_wall *wall,double *lambda_max);
+```
+For **Euler equations**, the available solvers are:
+- HLL solver: 
+```c 
+void compute_euler_HLLE(t_wall *wall,double *lambda_max) 
+```
+- HLLS solver: 
+```c 
+void compute_euler_HLLS(t_wall *wall,double *lambda_max) 
+```
+- HLLC solver: 
+```c 
+void compute_euler_HLLC(t_wall *wall,double *lambda_max)
+```
 ```
 
 The main logic of a solver function is to use the left and right reconstructed data (```wall->UL``` and ```wall->UR```) to compute the fluxes (```wall->fL_star``` and ```wall->fR_star```). These solvers are implemented using the x-split equations, that means that the vector variables must be rotated to the x-reference axis (```WL``` and ```WR```) before computing the numerical flux. Afterwards, the fluxes are rotated to the original direction (wall normal).
