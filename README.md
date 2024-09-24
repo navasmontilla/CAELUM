@@ -48,7 +48,7 @@ Compile the program using *Makefile* as follows:
 
 ```make```
 
-Compilation flags ```DEBUG=0``` (for debugging) and ```OMP=1``` (for multi-thread computing with OpenMP) are set by default. For instance, if you seek serial computing, you can compile as follows:
+Compilation flags ```DEBUG``` and ```OMP=1```, for debugging and for multi-thread computing with OpenMP, are defined in ```Makefile```. ```DEBUG=0```  and ```OMP=1```  are set by default. For instance, if you seek serial computing, you can compile as follows:
 
 ```make OMP=0```
 
