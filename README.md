@@ -103,9 +103,9 @@ A more complete set of examples, scripted in Python, are listed below:
 
 ### Scalar problems
 
-- Setting up a 1D linear transport case: [caseLinear](python/caseLinear.py)
+- Setting up a  [1D linear transport case:](python/caseLinear.py) ```python3 python/caseLinear.py```
 
-```python3 python/caseLinear.py```
+
   
   <figure style="text-align: center;">
   <img src="doc/animationLin.gif" width="30%" alt="my alt text"/>
