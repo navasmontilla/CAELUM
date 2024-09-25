@@ -193,8 +193,8 @@ For a detailed documentation of the main programming structures and functions of
 ### Code organization and libraries
 
 ```
-CÆLUM/
-├── caelum.c
+caelum/
+├── main.c
 ├── Makefile
 ├── lib/
 │   ├── closures.c
@@ -229,7 +229,7 @@ CÆLUM/
 ```
 
 #### main Directory
-- **caelum.c**: Main source file for the CÆLUM solver.
+- **main.c**: Main source file for the CÆLUM solver.
 - **Makefile**: Makefile for compiling the code.
 - **lib/**: Directory containing library files and utilities.
 - **python/**: Directory containing Python scripts for pre/post-processing and automation.
