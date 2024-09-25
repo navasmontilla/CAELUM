@@ -1,4 +1,4 @@
-# EHOW3D (Euler High Order WENO/TENO 3D)
+# CÆLUM: An academic high-order finite-volume solver for the compressible Euler equations and related problems
 
 
 ## Table of Contents
@@ -28,9 +28,9 @@
 
 ## Statement of need
 
-`EHOW3D` is designed to be used both by researchers and by students in the field of CFD, atmospheric flows and related disciplines. In fact, the simplicity and compactness of the code make it particularly suitable for those taking their first steps in the numerical simulation of flows using high-order methods. It is designed from an academic perspective, where clarity and accessibility are prioritized. Therefore, it includes user-friendly pre-processing and post-processing tools based on Python and Jupyter Notebook. The repository comes with a series of Python scripts for the configuration and visualization of various example flows, ranging from simple scalar advection in 1D to more complex atmospheric or compressible flow cases in 3D. These scripts rely on standard libraries such as `numpy`, `matplotlib` and `pyvista`, the latter being a powerful module for data visualization and rendering. Additionally, several Jupyter Notebooks are included, where the steps for configuring the simulation tool and visualizing the results are explained in detail.
+`CÆLUM` is designed to be used both by researchers and by students in the field of CFD, atmospheric flows and related disciplines. In fact, the simplicity and compactness of the code make it particularly suitable for those taking their first steps in the numerical simulation of flows using high-order methods. It is designed from an academic perspective, where clarity and accessibility are prioritized. Therefore, it includes user-friendly pre-processing and post-processing tools based on Python and Jupyter Notebook. The repository comes with a series of Python scripts for the configuration and visualization of various example flows, ranging from simple scalar advection in 1D to more complex atmospheric or compressible flow cases in 3D. These scripts rely on standard libraries such as `numpy`, `matplotlib` and `pyvista`, the latter being a powerful module for data visualization and rendering. Additionally, several Jupyter Notebooks are included, where the steps for configuring the simulation tool and visualizing the results are explained in detail.
 
-A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. For this, `EHOW3D` uses the compressible Euler equations with gravity source term, composed by the equations for the conservation of mass, momentum and energy. This approach offers several benefits for the selected application, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP.
+A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. For this, `CÆLUM` uses the compressible Euler equations with gravity source term, composed by the equations for the conservation of mass, momentum and energy. This approach offers several benefits for the selected application, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP.
 
 Regarding numerics, the simulation code uses WENO, TENO, and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow a strategy  based on the midpoint rule that employs independent 1D reconstructions in each Cartesian direction. This approach prevents from performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients. As a result, we provide a simple and versatile computational code that can be applied to a wide variety of problems and enables iLES (see figure below). 
 
@@ -193,8 +193,8 @@ For a detailed documentation of the main programming structures and functions of
 ### Code organization and libraries
 
 ```
-EHow3D/
-├── ehow3d.c
+CÆLUM/
+├── caelum.c
 ├── Makefile
 ├── lib/
 │   ├── closures.c
@@ -229,12 +229,12 @@ EHow3D/
 ```
 
 #### main Directory
-- **ehow3d.c**: Main source file for the EHow3D solver.
+- **caelum.c**: Main source file for the CÆLUM solver.
 - **Makefile**: Makefile for compiling the code.
 - **lib/**: Directory containing library files and utilities.
 - **python/**: Directory containing Python scripts for pre/post-processing and automation.
 - **case/**: Directory for case configuration and output files.
-- **README.md**: Documentation for the EHow3D solver.
+- **README.md**: Documentation for the CÆLUM solver.
 
 #### lib Directory
 - **definitions.h**: Definitions and constants used across the code.
