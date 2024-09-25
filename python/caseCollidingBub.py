@@ -71,9 +71,9 @@ CFL = 0.45
 Order = 7
 
 #Mesh setup
-xcells = 800
+xcells = 400
 ycells = 1
-zcells = 400
+zcells = 200
 SizeX = 20000.0
 SizeY = 1000.0
 SizeZ = 10000.0
@@ -162,9 +162,9 @@ write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, 
 # The program is compiled and executed:
 
 compile_program()
-print("Program is running...")
-run_program(folder_exe+"./exehow3d "+folder_case)
 restore_file(folder_lib+'/definitions.h')
+print("Program is running...")
+run_program(folder_exe+"./caelum "+folder_case)
 
 
 # ### Reading data and plotting

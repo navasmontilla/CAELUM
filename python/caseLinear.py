@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Configuration of a simulation case (*caseShockBub*)
+# ## Configuration of a simulation case (*caseLinear*)
 # 
 # ### Importing required libraries
 # 
 # Some of these are well known libraries such as *numpy* and *matplotlib* (they can be installed using pip). We also need to import the library *utils* containing predefined functionalities for this software. 
-
-# In[14]:
-
 
 import os
 import math                    
@@ -51,8 +48,6 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 # 
 # Here, we can modify those variables that need to be set before compilation and are found in the file *definitions.h*. Don't worry if you mess up things here, a backup of the original file is created before modification and will be restored at the end of this script, after compilation and execution.
 
-# In[17]:
-
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
@@ -63,9 +58,6 @@ modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or 
 # ### Configure the global simulation parameters
 # 
 # We can set the global simulation parameters as desired:
-
-# In[18]:
-
 
 #Simulation setup
 FinalTime = 1.00
@@ -99,9 +91,6 @@ u_z = 1.0
 # 
 # To define the initial condition we first need to create the arrays and initialize some variables:
 
-# In[19]:
-
-
 xc, yc, zc, u, uex, *_  = initialize_variables(xcells, ycells, zcells, SizeX, SizeY, SizeZ)
 
 for l in range(0,xcells): 
@@ -122,9 +111,10 @@ write_initial_scalar(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc,
 
 
 compile_program()
-print("Program is running...")
-run_program(folder_exe+"./exehow3d "+folder_case)
 restore_file(folder_lib+'/definitions.h')
+print("Program is running...")
+run_program(folder_exe+"./caelum "+folder_case)
+
 
 
 # ### Reading data and plotting

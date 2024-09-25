@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Configuration of a simulation case (*caseShockBub*)
+# ## Configuration of a simulation case (*caseRP2D*)
 # 
 # ### Importing required libraries
 # 
@@ -24,19 +24,13 @@ import imageio
 # 
 # First, the name of the folder for this test case must be specified:
 
-# In[15]:
-
-
-#This test case will run in the folder "caseShockBub/". 
+#This test case will run in the folder "caseRP2D/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
 folder_case="caseRP2D/" 
 
 
 # Then, all the paths are automatically assigned:
-
-# In[16]:
-
 
 #Do not modify the folders and paths below
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,8 +52,6 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 # 
 # Here, we can modify those variables that need to be set before compilation and are found in the file *definitions.h*. Don't worry if you mess up things here, a backup of the original file is created before modification and will be restored at the end of this script, after compilation and execution.
 
-# In[17]:
-
 
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
@@ -76,9 +68,6 @@ modify_header_file(folder_lib+'/definitions.h', 'WRITE_VTK', 0)
 # 
 # We can set the global simulation parameters as desired:
 
-# In[18]:
-
-
 #Simulation setup
 FinalTime = 0.4
 DumpTime = 0.02
@@ -86,8 +75,8 @@ CFL = 0.4
 Order = 7
 
 #Mesh setup
-xcells = 2000
-ycells = 2000
+xcells = 400
+ycells = 400
 zcells = 1
 SizeX = 1.0
 SizeY = 1.0
@@ -111,9 +100,6 @@ u_z = 1.0
 # 
 # To define the initial condition we first need to create the arrays and initialize some variables:
 
-# In[19]:
-
-
 xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xcells, ycells, zcells, SizeX, SizeY, SizeZ)
 
 
@@ -122,9 +108,6 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 # - the equilibrium variables (for atmospheric cases): ```ue, ve, we, rhoe, pe```
 # 
 # Then we can set the initial condition using those variables. To do this, we loop over the three cartesian indexes $(l,m,n)$ and assign the variables, e.g. $\rho(x_l,y_m,z_n)=...$ is set as ```rho[l,m,n]=...```. Cell centers are given by: ```xc[l,m,n]```, ```yc[l,m,n]``` and ```zc[l,m,n]```.
-
-# In[20]:
-
 
 #Initial condition and equilibrium state            
 for l in range(0,xcells): 
@@ -157,9 +140,6 @@ for l in range(0,xcells):
 
 # Now, the configuration and initial condition (and equilibrium) files are written: 
 
-# In[21]:
-
-
 write_config(folder_case, fname_config, FinalTime, DumpTime, CFL, Order, xcells, ycells, zcells, SizeX, SizeY, SizeZ, Face_1, Face_2, Face_3, Face_4, Face_5, Face_6, u_x, u_y, u_z)      
 write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, w, rho, p, phi)
 
@@ -168,13 +148,10 @@ write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, 
 # 
 # The program is compiled and executed:
 
-# In[22]:
-
-
 compile_program()
 restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
-run_program(folder_exe+"./exehow3d "+folder_case)
+run_program(folder_exe+"./caelum "+folder_case)
 
 
 
@@ -183,9 +160,6 @@ run_program(folder_exe+"./exehow3d "+folder_case)
 # To read data, we use the function ```read_data_euler()``` which gives as output the numerical solution for all time levels, e.g.  $\rho(x_l,y_m,z_n,t_j)$ is ```rho[l,m,n,j]```, where ```j``` is the time level.
 # 
 # This can be customized for each particular case. 
-
-# In[23]:
-
 
 files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
 lf = len(files)

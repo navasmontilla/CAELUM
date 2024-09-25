@@ -477,9 +477,9 @@ def singleRP(case,ord):
     # RUNNING
 
     print("Program is running...")
-    print(folder_exe+"./exehow3d ")
+    print(folder_exe+"./caelum ")
     print(folder_case)
-    run_program(folder_exe+"./exehow3d "+folder_case)
+    run_program(folder_exe+"./caelum "+folder_case)
 
     # READING OUTPUT DATA AND PLOTTING
 
@@ -671,7 +671,7 @@ def caseBubble(ord):
     # RUNNING
 
     print("Program is running...")
-    run_program(folder_exe+"./exehow3d "+folder_case)
+    run_program(folder_exe+"./caelum "+folder_case)
 
     # READING OUTPUT DATA AND PLOTTING
 
@@ -820,7 +820,7 @@ def caseLinear(ord):
     # RUNNING
 
     print("Program is running...")
-    run_program(folder_exe+"./exehow3d "+folder_case)
+    run_program(folder_exe+"./caelum "+folder_case)
 
     # READING OUTPUT DATA AND PLOTTING
 
@@ -934,7 +934,7 @@ def ordersLinear():
             write_initial_scalar(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u)
 
             print("Program is running...")
-            run_program(folder_exe + "./exehow3d " + folder_case)
+            run_program(folder_exe + "./caelum " + folder_case)
 
             files = glob(folder_out + "/*.out")
             lf = len(files)
@@ -1095,7 +1095,7 @@ def ordersEuler():
             write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, w, rho, p, phi)
 
             print("Program is running...")
-            run_program(folder_exe + "./exehow3d " + folder_case)
+            run_program(folder_exe + "./caelum " + folder_case)
 
             files = glob(folder_out + "/*.out")
             lf = len(files)

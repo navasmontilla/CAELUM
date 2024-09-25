@@ -21,7 +21,7 @@
 #  -Make file for set library dependencies and compilation configuration
 
 
-# Definir el compilador y las banderas básicas de compilación
+# Define the compiling core and compilation flags
 CC = gcc
 DEBUG = 0
 OMP = 1
@@ -37,19 +37,19 @@ else
 	CFLAGS += -O3
 endif
 
-# Definir los archivos objeto y el archivo binario
-OBJ = lib/preproc.o lib/ibmutils.o lib/mathutils.o lib/closures.o lib/reconst.o lib/numcore.o lib/solvers.o lib/postproc.o ehow3d.o
-BIN = exehow3d
+# Define objects and bin file
+OBJ = lib/preproc.o lib/ibmutils.o lib/mathutils.o lib/closures.o lib/reconst.o lib/numcore.o lib/solvers.o lib/postproc.o main.o
+BIN = caelum
 
-# Regla para construir el ejecutable
+# Rule to construct the exe file
 $(BIN): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) -lm
 
-# Regla para limpiar los archivos generados
+# Rule to clean
 clean:
 	$(RM) $(OBJ) $(BIN)
 
-# Reglas individuales para compilar cada archivo .c en su correspondiente archivo .o
+# Rule to generate .o files from .c files
 lib/preproc.o: lib/preproc.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -74,5 +74,5 @@ lib/solvers.o: lib/solvers.c
 lib/postproc.o: lib/postproc.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-ehow3d.o: ehow3d.c
+main.o: main.c
 	$(CC) $(CFLAGS) -c -o $@ $<
