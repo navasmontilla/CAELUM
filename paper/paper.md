@@ -12,13 +12,13 @@ authors:
     equal-contrib: true
     affiliation: 1 # (Multiple affiliations must be quoted)
   - name: Isabel Echeverribar
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0001-8221-523X
     equal-contrib: true
     affiliation: 2 # (Multiple affiliations must be quoted)
 affiliations:
  - name: Fluid Dynamics Technologies, i3A-University of Zaragoza, Spain.
    index: 1
- - name: Instituto Tecnológico de Aragón – ITAINNOVA, Zaragoza, Spain.
+ - name: Instituto Tecnológico de Aragón – ITA, Zaragoza, Spain.
    index: 2
 date: 4 August 2024
 bibliography: paper.bib
@@ -40,13 +40,17 @@ Given the limitations of traditional low-order numerical methods mentioned above
 
 `CÆLUM` is designed to be used both by researchers and by students in the field of CFD, atmospheric flows and related disciplines. In fact, the simplicity and compactness of the code make it particularly suitable for those taking their first steps in the numerical simulation of flows using high-order methods. It is designed from an academic perspective, where clarity and accessibility are prioritized. Therefore, it includes user-friendly pre-processing and post-processing tools based on Python and Jupyter Notebook. The repository comes with a series of Python scripts for the configuration and visualization of various example flows, ranging from simple scalar advection in 1D to more complex atmospheric or compressible flow cases in 3D. These scripts rely on standard libraries such as `numpy`, `matplotlib` and `pyvista`, the latter being a powerful module for data visualization and rendering. Additionally, several Jupyter Notebooks are included, where the steps for configuring the simulation tool and visualizing the results are explained in detail.
 
-A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. For this, `CÆLUM` uses the compressible Euler equations with gravity source term, composed by the equations for the conservation of mass, momentum and energy. This approach offers several benefits for the selected application, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP [@giraldo2008study].
+A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. For this, `CÆLUM` uses the compressible Euler equations with gravity source term, composed by the equations for the conservation of mass, momentum and energy [@ghosh2016well]. This approach offers several benefits for the selected application, such as the ability to conserve mass and energy with machine accuracy when using a suitable discretization. Additionally, many numerical advances developed by the CFD community, such as spatial reconstruction schemes and Riemann solvers, can be easily adapted for NWP [@giraldo2008study].
 
 Regarding numerics, the simulation code uses WENO [@jiang1996efficient], TENO [@fu2019very], and optimal polynomial reconstructions on Cartesian meshes. For simplicity, we follow the strategy outlined in @zhang2011, which is based on the midpoint rule and employs independent 1D reconstructions in each Cartesian direction. This approach prevents from performing multi-dimensional reconstructions and Gaussian integration at the cell faces, thereby drastically reducing the complexity of the algorithms as well as computational expenses. This is done at the cost of not achieving a genuinely high order of accuracy, which is not critical when computing shocked problems, underresolved flows, or flows with discontinuities and sharp gradients [@zhang2011; @san2015evaluation; @fu2019low]. As a result, we provide a simple and versatile computational code that can be applied to a wide variety of problems and enables iLES. 
 
 ![Density gradient (schlieren-like) representation of a 2D Riemann Problem from @lax1998solution. Solution computed by a 7-th order WENO scheme. \label{fig:example}](solutionRP2D.jpg){ width=50% }
 
 As an example, \autoref{fig:example} displays the solution provided by `CÆLUM` of a 2D Riemann Problem from @lax1998solution, which is a typical benchmark for this type of simulation codes.  The figure shows the density gradient representation, which allows to reveal the main features of the flow. Shock waves as well as slip --i.e. contact-- lines where Kelvin-Helmholtz vortices form are accurately captured. 
+
+Regarding the implementation of the solver, `CÆLUM` uses OpenMP, a directive-based threading library that allows parallel computing in multi-core CPUs. The modification of the base code by the inlcusion of pragmas is minimal, prserving the readability and clarity of the code.
+
+We can find other open-source simulation codes using high order non-oscillatory finite volume schemes for the more-general Navier-Stokes equations, aimed at similar aplications, which show a superior performance than most state-of-the-art comercial codes. Some examples are OpenSBLI [@lusher2021opensbli], HTR Solver [@di2020htr], JAX-Fluids [@bezgin2023jax], UCNS3D solver [@titarev2010weno], URANOS [@de2023uranos]. We can also find other finite volume solvers aimed exclusively at atmospheric applications, such as the OpenFoam-based GEA [@girfoglio2023validation], a WENO-based model for the moist atmosphere [@norman2023investigating]. Note that `CÆLUM` represents an alternative when seeking a more academic application, as it is designed to be pedagogical and versatile in terms of applications, though it has some limitations when considering realistic cases.
 
 
 # The model equations
