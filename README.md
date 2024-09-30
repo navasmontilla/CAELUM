@@ -42,7 +42,7 @@ Regarding numerics, the simulation code uses WENO, TENO, and optimal polynomial 
 
 Clone the repository in your local computer:
 
-```git clone https://github.com/navasmontilla/EHOW3D_public.git```
+```git clone https://github.com/navasmontilla/CAELUM.git```
 
 Compile the program using *Makefile* as follows:
 
@@ -530,7 +530,7 @@ Some additional results are presented below:
 
 ### Opening an Issue
 
-If you have encountered a bug or have a feature request, opening an issue is the first step.  Before opening a new issue, check the [Issues](https://github.com/navasmontilla/EHOW3D_public/issues) section to see if your issue has already been reported. This helps prevent duplicates. You can create an issue by going [here](https://github.com/navasmontilla/EHOW3D_public/issues/new/choose).
+If you have encountered a bug or have a feature request, opening an issue is the first step.  Before opening a new issue, check the [Issues](https://github.com/navasmontilla/CAELUM/issues) section to see if your issue has already been reported. This helps prevent duplicates. You can create an issue by going [here](https://github.com/navasmontilla/CAELUM/issues/new/choose).
 
 - For bugs: Include steps to reproduce the issue, the expected vs. actual behavior, error messages, and any relevant logs or screenshots.
 - For feature requests: Describe the feature to be implemented.
@@ -540,9 +540,9 @@ If you have encountered a bug or have a feature request, opening an issue is the
 
 Here is how to submit a pull request to suggest improvements or fix issues:
 
-- Fork the base repository [here](https://github.com/navasmontilla/EHOW3D_public/fork).
+- Fork the base repository [here](https://github.com/navasmontilla/CAELUM/fork).
 - Clone the forked repository, make changes, and push them back to the fork.
-- Create a pull request between the base and forked repositories [here](https://github.com/navasmontilla/EHOW3D_public/pulls).
+- Create a pull request between the base and forked repositories [here](https://github.com/navasmontilla/CAELUM/pulls).
 - Wait for the pull request to be either approved or dismissed.
 
 
