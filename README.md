@@ -532,7 +532,7 @@ Some additional results are presented below:
 
 If you have encountered a bug or have a feature request, opening an issue is the first step.  Before opening a new issue, check the [Issues](https://github.com/navasmontilla/CAELUM/issues) section to see if your issue has already been reported. This helps prevent duplicates. You can create an issue by going [here](https://github.com/navasmontilla/CAELUM/issues/new/choose).
 
-- For bugs: Include steps to reproduce the issue, the expected vs. actual behavior, error messages, and any relevant logs or screenshots.
+- For bugs: Include steps to reproduce the issue, the expected vs. actual behavior, error messages, etc.
 - For feature requests: Describe the feature to be implemented.
 
 
