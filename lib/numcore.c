@@ -4,21 +4,14 @@ Authors:
  - Adrián Navas Montilla
  - Isabel Echeverribar
 
-Copyright (C) 2018-2019 The authors.
-
-License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms:
-
-- Attribution — You must give appropriate credit and provide a link to the license.
-- NonCommercial — You may not use the material for commercial purposes.
-- NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided.
-
-Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
+Copyright (C) 2019-2024 The authors.
 
 File:
   - numcore.c
 
 Content:
-  -This code file contains all the functions related with the core of the numerical scheme
+  -This file contains all the functions for the core numerical methods and routines.
+  
 */
 
 
@@ -46,16 +39,16 @@ void update_cell(t_mesh *mesh, t_sim *sim){
 
 	cell=mesh->cell;
 	for(i=0;i<mesh->ncells;i++){
-            if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz );
 		}
-            //printf("%lf\n",cell->w2->fL_star[5]);
-            if (cell->U[0]<TOL14){
-            	printf("celda %d: rHO: %lf \n",i,cell->U[0]);
+		//printf("%lf\n",cell->w2->fL_star[5]);
+		if (cell->U[0]<TOL14){
+			printf("celda %d: rHO: %lf \n",i,cell->U[0]);
 		getchar();
-            }
-            }
+		}
+		}
 
 		cell++;
 	}
@@ -71,12 +64,12 @@ void update_cellK1(t_mesh *mesh, t_sim *sim){
 #pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
-            if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U_aux[k]=cell->U[k];
 			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 		}
-            }
+		}
 	}
 }
 
@@ -89,13 +82,13 @@ void update_cellK2(t_mesh *mesh, t_sim *sim){
 	//cell=mesh->cell;
 #pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
-            cell=&(mesh->cell[i]);
-            if(cell->type!=0&&cell->ghost!=1){
+		cell=&(mesh->cell[i]);
+		if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]=0.75*cell->U_aux[k]+0.25*cell->U[k]-0.25*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 
 		}
-            }
+		}
 	}
 }
 
@@ -108,8 +101,8 @@ void update_cellK3(t_mesh *mesh, t_sim *sim){
 	//cell=mesh->cell;
 #pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
-            cell=&(mesh->cell[i]);
-            if(cell->type!=0&&cell->ghost!=1){
+		cell=&(mesh->cell[i]);
+		if(cell->type!=0&&cell->ghost!=1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]=(1.0/3.0)*cell->U_aux[k]+(2.0/3.0)*cell->U[k]-(2.0/3.0)*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 
@@ -127,7 +120,7 @@ int equilibrium_reconstruction(t_mesh *mesh, t_sim *sim){
 	int n,i,j,k;
 	int st[9]; //local stencil array
 	t_wall *wall;
-      t_cell *cell;
+	t_cell *cell;
 
 
 #pragma omp parallel for default(none) private(wall,phi3,phi5,phi7,uL,uR,vL,vR,wL,wR,order,i,j,k,st) shared(sim,mesh)
@@ -265,10 +258,10 @@ int equilibrium_reconstruction(t_mesh *mesh, t_sim *sim){
 #pragma omp parallel for default(none) private(k,cell) shared(mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
-            if(cell->type!=0){
+		if(cell->type!=0){
 			cell->S_corr[3] = (cell->w6->pLe-cell->w5->pRe)/cell->dz + _g_*cell->Ue[0];
 			//cell->S_corr[3] = (cell->w6->ULe[4]-cell->w5->URe[4])*(_gamma_-1.0)/cell->dz + _g_*cell->Ue[0]; this is only valid for static equilibrium
-            }
+		}
 	}
 
 
@@ -485,20 +478,20 @@ void compute_source(t_mesh *mesh){
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
 		#if ST==1
-            if(cell->type!=0&&cell->st_sizeZ>1){     //This is the implementation of gravity force in -Z direction
+		if(cell->type!=0&&cell->st_sizeZ>1){     //This is the implementation of gravity force in -Z direction
 			cell->S[3]= -_g_*cell->U[0] + cell->S_corr[3];
 			cell->S[4]= -_g_*cell->U[3];
-            }
+		}
 		#elif ST==2
 		if(cell->type!=0){     //This is the implementation of gravity force in -Z direction
 			cell->S[3]= -_g_*(cell->U[0]-cell->Ue[0]);
 			cell->S[4]= -_g_*cell->U[3];
-            }
+		}
 		#else
 		if(cell->type!=0){     //This is the implementation of gravity force in -Z direction
 			cell->S[3]= -_g_*(cell->U[0]-cell->Ue[0]);
 			cell->S[4]= 0.0;
-            }
+		}
 		#endif
 	}
 }

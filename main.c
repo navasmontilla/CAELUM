@@ -4,23 +4,26 @@ Authors:
  - Adrián Navas Montilla
  - Isabel Echeverribar
 
-Copyright (C) 2018-2019 The authors.
+Copyright (C) 2019-2024 The authors.
 
-License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms:
+License type: The 3-Clause BSD License
 
-- Attribution — You must give appropriate credit and provide a link to the license.
-- NonCommercial — You may not use the material for commercial purposes.
-- NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided.
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
-Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+This software is provided by the copyright holders and contributors “as is” and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 
 File:
-  - ehow3d.c
+  - main.c
 
 Content:
   -This code file contains the main code of the solver.
-	It invokes functions which are distributed in libraries within lib folder
-
+   It uses functions which are distributed in libraries within lib/ folder
 
 */
 
@@ -56,15 +59,15 @@ int main(int argc, char * argv[]){
 	int nIt;
 #if WRITE_TKE
 	double timeac2,tTke;
-      FILE *file_tke;
+	FILE *file_tke;
 #endif
 
 
-    if (argc < 2) {
-        printf("%s A folder path must be passed as follows: %s <folder_path>\n", ERR, argv[0]);
-        return 1; // Exit 
-    }
-    const char *folder_path = argv[1];
+	if (argc < 2) {
+		printf("%s A folder path must be passed as follows: %s <folder_path>\n", ERR, argv[0]);
+		return 1; // Exit 
+	}
+	const char *folder_path = argv[1];
 
 #ifdef _OPENMP
 	omp_set_num_threads(NTHREADS);
@@ -115,7 +118,7 @@ int main(int argc, char * argv[]){
 	timeac=0.0;
 #if WRITE_TKE
 	timeac2=0.0;
-      tTke=0.05;
+	tTke=0.05;
 #endif
       
 
@@ -129,16 +132,16 @@ int main(int argc, char * argv[]){
 #else
 	solids->nsolid=0;
 #endif
-      assign_cell_type(mesh,solids);
-      update_stencils(mesh,sim);
-      assign_wall_type(mesh);    
+	assign_cell_type(mesh,solids);
+	update_stencils(mesh,sim);
+	assign_wall_type(mesh);    
 	update_initial(mesh,sim,folder_path);
 
 #if ALLOW_SOLIDS
-      assign_image_cells(mesh,solids);
-      update_ghost_cells(sim,mesh,solids);
-      update_wall_type(mesh,solids);
-      printf("%s Image points have been defined and ghost cell values have been computed \n",OK);
+	assign_image_cells(mesh,solids);
+	update_ghost_cells(sim,mesh,solids);
+	update_wall_type(mesh,solids);
+	printf("%s Image points have been defined and ghost cell values have been computed \n",OK);
 #endif
 
 #if EQUATION_SYSTEM == 0
@@ -154,8 +157,8 @@ int main(int argc, char * argv[]){
 	write_list(mesh,listfile);
 	snprintf(listfile, sizeof(listfile),"%s/out/list_eq.out", folder_path);
 	write_list_eq(mesh,listfile);
-      printf("\n");
-      printf(" T= 0.0e+0. Initial data printed. Starting time loop.\n");
+	printf("\n");
+	printf(" T= 0.0e+0. Initial data printed. Starting time loop.\n");
 
 
 #if WRITE_TKE == 1
@@ -174,11 +177,11 @@ int main(int argc, char * argv[]){
 	////////////////////////////////////////////////////
 
 	tf=sim->tf;
-      sim->t=0.0;
+	sim->t=0.0;
 	nIt=0;
 
 	#if ST!=0&&EQUATION_SYSTEM==2
-      equilibrium_reconstruction(mesh,sim);
+	equilibrium_reconstruction(mesh,sim);
 	#endif
 
 	while(sim->t<tf){
@@ -193,7 +196,7 @@ int main(int argc, char * argv[]){
 		////////////////// P R I N T I N G /////////////////
 		////////////////////////////////////////////////////
 
-            timeac=timeac+sim->dt;
+		timeac=timeac+sim->dt;
 		sim->t+=sim->dt;	//Time for the next time step
 
 		if(timeac>sim->tVolc){
@@ -214,10 +217,10 @@ int main(int argc, char * argv[]){
 		}
 
 		#if WRITE_TKE
-            timeac2=timeac2+sim->dt;
+		timeac2=timeac2+sim->dt;
 		if(timeac2>tTke){
-            tke_calculation(mesh,sim);
-            fprintf(file_tke,"%14.14e %14.14e\n",sim->t,mesh->tke);
+		tke_calculation(mesh,sim);
+		fprintf(file_tke,"%14.14e %14.14e\n",sim->t,mesh->tke);
 			timeac2=0.0;
 		}
 		#endif
@@ -225,19 +228,19 @@ int main(int argc, char * argv[]){
 
 	}
 
-      printf(" \n");
-      printf(" Final time is T= %14.14e \n \n",sim->t);
+	printf(" \n");
+	printf(" Final time is T= %14.14e \n \n",sim->t);
 
-      if(timeac>TOL14){
-	snprintf(vtkfile, sizeof(vtkfile), "%s/out/state%03d.vtk", folder_path, nIt + 1);
-      write_vtk(mesh,vtkfile);
-	snprintf(listfile, sizeof(listfile), "%s/out/state%03d.out", folder_path, nIt + 1);
-	write_list(mesh,listfile);
-      }
+	if(timeac>TOL14){
+		snprintf(vtkfile, sizeof(vtkfile), "%s/out/state%03d.vtk", folder_path, nIt + 1);
+		write_vtk(mesh,vtkfile);
+		snprintf(listfile, sizeof(listfile), "%s/out/state%03d.out", folder_path, nIt + 1);
+		write_list(mesh,listfile);
+	}
 
-      #if WRITE_TKE
-      fclose(file_tke);
-      #endif
+	#if WRITE_TKE
+	fclose(file_tke);
+	#endif
 
 
 

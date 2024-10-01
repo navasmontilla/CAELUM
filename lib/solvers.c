@@ -4,21 +4,14 @@ Authors:
  - Adrián Navas Montilla
  - Isabel Echeverribar
 
-Copyright (C) 2018-2019 The authors.
-
-License type: Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Spain (CC BY-NC-ND 3.0 ES https://creativecommons.org/licenses/by-nc-nd/3.0/es/deed.en) under the following terms:
-
-- Attribution — You must give appropriate credit and provide a link to the license.
-- NonCommercial — You may not use the material for commercial purposes.
-- NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material unless explicit permission of the authors is provided.
-
-Disclaimer: This software is distributed for research and/or academic purposes, WITHOUT ANY WARRANTY. In no event shall the authors be liable for any claim, damages or other liability, arising from, out of or in connection with the software or the use or other dealings in this software.
+Copyright (C) 2019-2024 The authors.
 
 File:
   - solver.c
 
 Content:
-  -This code file contains all the functions related with the Riemann solvers
+  -This file contains the implementation of the Riemann solvers
+  
 */
 
 
@@ -176,8 +169,8 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 	FL[0]=WL[1];
 
 #if ST==2||ST==3
-      pRe  =wall->pRe;
-      pLe  =wall->pLe;
+	pRe  =wall->pRe;
+	pLe  =wall->pLe;
 	FR[1]=WR[1]*uR+(pR-pRe);
 	FL[1]=WL[1]*uL+(pL-pLe);
 #else
@@ -188,7 +181,7 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 	FR[2]=WR[1]*vR;
 	FL[2]=WL[1]*vL;
 
-      FR[3]=WR[1]*wR;
+	FR[3]=WR[1]*wR;
 	FL[3]=WL[1]*wL;
 
 	FR[4]=uR*(WR[4]+pR);
@@ -218,12 +211,12 @@ void compute_euler_HLLE(t_wall *wall,double *lambda_max){
 	wall->fR_star[0]=F_star[0]; //Mass is not vectorial
 	wall->fR_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
 	wall->fR_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
-      wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
 	wall->fR_star[4]=F_star[4]; //Energy is not vectorial
 
-      for(m=0;m<5;m++){
-            wall->fL_star[m]=wall->fR_star[m];
-      }
+	for(m=0;m<5;m++){
+		wall->fL_star[m]=wall->fR_star[m];
+	}
 
 	//printf("%14.14e %14.14e %14.14e\n",FR[0],FL[0],F_star[0]);
 
@@ -249,14 +242,14 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 	WR[0]=wall->UR[0];
 	WL[0]=wall->UL[0];
 
-      // This is a simplification of the rotation matrix, only valid for cartesian mesh
+	// This is a simplification of the rotation matrix, only valid for cartesian mesh
 	WR[1]=wall->UR[1]*wall->nx+wall->UR[2]*wall->ny+wall->UR[3]*wall->nz;
 	WL[1]=wall->UL[1]*wall->nx+wall->UL[2]*wall->ny+wall->UL[3]*wall->nz;
 
 	WR[2]=-wall->UR[1]*wall->ny+wall->UR[2]*wall->nx+wall->UR[2]*wall->nz;
 	WL[2]=-wall->UL[1]*wall->ny+wall->UL[2]*wall->nx+wall->UL[2]*wall->nz;
       
-      WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
+	WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
 	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
       
 
@@ -375,7 +368,7 @@ void compute_euler_HLLC(t_wall *wall,double *lambda_max){
 	wall->fR_star[0]=F_star[0]; //Mass is not vectorial
 	wall->fR_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
 	wall->fR_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
-    wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
 	wall->fR_star[4]=F_star[4]; //Energy is not vectorial
 	
       for(m=0;m<5;m++){
@@ -413,7 +406,7 @@ void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
 	WR[2]=-wall->UR[1]*wall->ny+wall->UR[2]*wall->nx+wall->UR[2]*wall->nz;
 	WL[2]=-wall->UL[1]*wall->ny+wall->UL[2]*wall->nx+wall->UL[2]*wall->nz;
 
-      WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
+	WR[3]=wall->UR[3]*wall->nx+wall->UR[3]*wall->ny-wall->UR[1]*wall->nz;
 	WL[3]=wall->UL[3]*wall->nx+wall->UL[3]*wall->ny-wall->UL[1]*wall->nz;
 
 	WR[4]=wall->UR[4];
@@ -459,7 +452,7 @@ void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
 	/**Hat variables (Roe averages)**/
 	u_hat=(uR*raizrhoR+uL*raizrhoL)/sumRaizRho;
 	v_hat=(vR*raizrhoR+vL*raizrhoL)/sumRaizRho;
-      w_hat=(wR*raizrhoR+wL*raizrhoL)/sumRaizRho;
+	w_hat=(wR*raizrhoR+wL*raizrhoL)/sumRaizRho;
 	H_hat=(HR*raizrhoR+HL*raizrhoL)/sumRaizRho;
 #if MULTICOMPONENT
 	#if MULTI_TYPE==1
@@ -504,10 +497,10 @@ void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
 
 	/**Source term**/
 
-      pRe   =wall->pRe; //(gamma_hat-1.0)*wall->URe[4];
-      pLe   =wall->pLe; //(gamma_hat-1.0)*wall->ULe[4];
-      rhoRe = wall->URe[0];
-      rhoLe = wall->ULe[0];
+	pRe   =wall->pRe; //(gamma_hat-1.0)*wall->URe[4];
+	pLe   =wall->pLe; //(gamma_hat-1.0)*wall->ULe[4];
+	rhoRe = wall->URe[0];
+	rhoLe = wall->ULe[0];
 
 
 	S[0]=0.0;
@@ -554,14 +547,14 @@ void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
 		}else if(S2<=0){
 			F_star[m]=FR[m];
 		}else{
-                  F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m])+S2*(S[m]-S1*B[m]))/(diffS);
-            }
+			F_star[m]=(S2*FL[m]-S1*FR[m]+S1*S2*(WR[m]-WL[m])+S2*(S[m]-S1*B[m]))/(diffS);
+		}
 	}
 	/**Inverse rotation of the flux**/
 	wall->fR_star[0]=F_star[0]; //Mass is not vectorial
 	wall->fR_star[1]=F_star[1]*wall->nx - F_star[2]*wall->ny - F_star[3]*wall->nz;
 	wall->fR_star[2]=F_star[1]*wall->ny + F_star[2]*wall->nx + F_star[2]*wall->nz;
-      wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
+	wall->fR_star[3]=F_star[3]*wall->nx + F_star[3]*wall->ny + F_star[1]*wall->nz;
 	wall->fR_star[4]=F_star[4]; //Energy is not vectorial
 
 	/*if(ABS(S[1])>TOL8 ){
@@ -606,7 +599,7 @@ void compute_euler_HLLS(t_wall *wall,double *lambda_max, t_sim *sim){
 void compute_transmissive_euler(t_wall *wall, int wp){
 
 	int m;
-      double WR[6], WL[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
+	double WR[6], WL[6]; /**<Auxiliar array of variables rotated for the 1D problem**/
 	double uL, uR, vL, vR, wL, wR, pL, pR, gammaL, gammaR;
 	double FR[5], FL[5];
 	double F_star[5];
@@ -907,39 +900,39 @@ void compute_euler_Roe(t_wall *wall,double *lambda_max){
 void compute_burgers_flux(t_wall *wall,double *lambda_max){
 
 	double Savg;
-      double fL,fR;
-      double dU;
+	double fL,fR;
+	double dU;
 
-      fL=wall->UL[0]*wall->UL[0]/2.0;
-      fR=wall->UR[0]*wall->UR[0]/2.0;
+	fL=wall->UL[0]*wall->UL[0]/2.0;
+	fR=wall->UR[0]*wall->UR[0]/2.0;
 
-      Savg=(wall->UL[0]+wall->UR[0])*0.5;
-      dU=wall->UR[0]-wall->UL[0];
+	Savg=(wall->UL[0]+wall->UR[0])*0.5;
+	dU=wall->UR[0]-wall->UL[0];
 
 	wall->fR_star[0]=0.5*(fL+fR - ABS(Savg)*dU);
-      wall->fL_star[0]=wall->fR_star[0];
+	wall->fL_star[0]=wall->fR_star[0];
 
-      *lambda_max=MAX(*lambda_max,Savg);
+	*lambda_max=MAX(*lambda_max,Savg);
 
 }
 
 void compute_linear_flux(t_wall *wall,double *lambda_max){
 
 	double Savg;
-      double fL,fR;
-      double dU;
+	double fL,fR;
+	double dU;
 
-      Savg=wall->vel;
+	Savg=wall->vel;
 
-      fL=wall->UL[0]*Savg;
-      fR=wall->UR[0]*Savg;
+	fL=wall->UL[0]*Savg;
+	fR=wall->UR[0]*Savg;
 
-      dU=wall->UR[0]-wall->UL[0];
+	dU=wall->UR[0]-wall->UL[0];
 
 	wall->fR_star[0]=0.5*(fL+fR - ABS(Savg)*dU);
-      wall->fL_star[0]=wall->fR_star[0];
+	wall->fL_star[0]=wall->fR_star[0];
 
-      *lambda_max=MAX(*lambda_max,Savg);
+	*lambda_max=MAX(*lambda_max,Savg);
 
 }
 
