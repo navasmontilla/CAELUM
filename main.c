@@ -20,7 +20,7 @@ File:
   - main.c
 
 Content:
-  -This code file contains the main code of the solver.
+  -This file contains the main code of the solver.
    It uses functions which are distributed in libraries within lib/ folder
 
 */
