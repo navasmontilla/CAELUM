@@ -7,6 +7,6 @@ authors:
   - family-names: Echeverribar
     given-names: Isabel
     orcid: "https://orcid.org/0000-0000-0000-0000"
-title: "CAELUM"
+title: "CAELUM: An academic high-order finite-volume solver for the compressible Euler equations and related problems"
 version: 1.0.0
 url: "https://github.com/navasmontilla/CAELUM"
