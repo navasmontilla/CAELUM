@@ -454,19 +454,13 @@ To run this model, we must define:
 
 and the following system of equations is solved:
 
-$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) = 0 \hbox{Continuity}$$
+$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) = 0 \quad\hbox{Continuity}$$
 
-$$\frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) = \rho \mathbf{g} \hbox{Momentum}$$
+$$\frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) = \rho \mathbf{g} \quad\hbox{Momentum}$$
 
-$$\frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) = \rho \mathbf{v} \cdot \mathbf{g} \hbox{Energy}$$
+$$\frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) = \rho \mathbf{v} \cdot \mathbf{g} \quad\hbox{Energy}$$
 
 
-
-$$\begin{align}
-\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
-\frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
-\frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
-\end{align}$$
 
 where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,g)^T$ is the gravitational acceleration vector. The energy is defined as  the sum of kinetic and internal energy
 
