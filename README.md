@@ -454,6 +454,12 @@ To run this model, we must define:
 
 and the following system of equations is solved:
 
+$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) = 0 \hbox{Continuity} $$
+$$\frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) = \rho \mathbf{g} \hbox{Momentum} $$
+$$\frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) = \rho \mathbf{v} \cdot \mathbf{g} \hbox{Energy} $$
+
+
+
 $$\begin{align}
 \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{v}) &= 0 \tag{Continuity} \\
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
