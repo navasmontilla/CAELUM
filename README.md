@@ -315,7 +315,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 - *Description*: Defines the type of multicomponent formulation used.
 - *Possible Values*:
   - `1`: Gamma ($\gamma$) formulation.
-  - `2`: \( \frac{1}{\gamma - 1} \) formulation (recommended, as per R. Abgrall and S. Karni in JCP 169 (2001)).
+  - `2`: $ \frac{1}{\gamma - 1} $ formulation (recommended, as per R. Abgrall and S. Karni in JCP 169 (2001)).
 
 #### Solver Selection
 
