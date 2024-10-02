@@ -32,7 +32,7 @@ In the last decade, very high order numerical methods have become very popular w
 
 `CÆLUM` is a hydrodynamic solver for compressible flows, which solves the Euler equations of gas dynamics by means of very high order essentially non-oscillatory finite volume schemes in cartesian meshes. The core of the solver is written in C but pre-processing and post-processing can be easily done using Jupyter Notebook as provided in the examples. The Weighted Essentially Non-Oscillatory (WENO) [@jiang1996efficient] and Targeted Essentially Non-Oscillatory (TENO) [@fu2019very] spatial reconstructions, in combination with Runge-Kutta integrators  [@gottlieb2001strong], are used in `CÆLUM` to achieve a high resolution in smooth regions of the flow and to capture discontinuous solutions without spurious oscillations. These schemes also allow to adopt an Implicit Large Eddy Simulation (iLES) framework when computing turbulent flows [@grinstein2007implicit; @solan2021application; @san2015evaluation]. The numerical diffusion plays the role of the explicit dissipative sub-grid model, being this a favorable choice when seeking simplicity and computational efficiency. In summary, this hydrodynamic solver is applicable to turbulent compressible flows, as well as low Mach number flows such as simplified dry atmospheric flows and other wave propagation phenomena. 
 
- 
+
 
 # Statement of need
 
