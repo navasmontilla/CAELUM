@@ -282,27 +282,25 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
   - `1`: Burgers' equation.
   - `2`: Compressible Euler equations.
 
-#### Source Terms for Euler
+#### Other features for Euler equations
 
 ```c
 #define ST 3
 ```
 
-- *Description*: Controls the inclusion of source terms for the Euler equations.
+- *Description*: Controls the inclusion of source terms for the Euler equations.  See more info [here](#equations-solved).
 - *Possible Values*:
   - `0`: Source terms OFF.
   - `1`: Source terms ON (augmented version, needs the use of HLLS).
   - `2`: Source terms ON (perturbation version, needs the use of HLL).
   - `3`: Source terms ON (perturbation version and total energy is conserved, needs the use of HLL).
 
-#### Multicomponent Flow
-
 
 ```c
 #define MULTICOMPONENT 0
 ```
 
-- *Description*: Indicates whether single or multicomponent Euler equations are used.
+- *Description*: Indicates whether single or multicomponent Euler equations are used. See more info [here](#equations-solved).
 - *Possible Values*:
   - `0`: Single component Euler equations.
   - `1`: Multicomponent Euler equations (two components with different specific heat ratio $\gamma$).
@@ -312,12 +310,12 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define MULTI_TYPE 2
 ```
 
-- *Description*: Defines the type of multicomponent formulation used.
+- *Description*: Defines the type of multicomponent formulation used. See more info [here](#equations-solved).
 - *Possible Values*:
   - `1`: Gamma ($\gamma$) formulation.
   - `2`: $\frac{1}{\gamma - 1}$ formulation (recommended, as per R. Abgrall and S. Karni in JCP 169 (2001)).
 
-#### Solver Selection
+#### Solver Selection for Euler equations
 
 ```c
 #define SOLVER 0
@@ -379,14 +377,14 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
   - `0`: Do not print this variable.
   - `1`: Print this variable.
 
-  - *Variables*:
-    - `print_RHO`: Density.
-    - `print_VELOCITY`: Velocity vector.
-    - `print_ENERGY`: Energy.
-    - `print_PRESSURE`: Pressure.
-    - `print_OVERPRESSURE`: Pressure difference from the equilibrium pressure.
-    - `print_SOLUTES`: Passive solute concentration.
-    - `print_POTENTIALTEM`: Potential temperature.
+- *Variables*:
+  - `print_RHO`: Density.
+  - `print_VELOCITY`: Velocity vector.
+  - `print_ENERGY`: Energy.
+  - `print_PRESSURE`: Pressure.
+  - `print_OVERPRESSURE`: Pressure difference from the equilibrium pressure.
+  - `print_SOLUTES`: Passive solute concentration.
+  - `print_POTENTIALTEM`: Potential temperature.
 
 #### Initial Data Input
 
@@ -398,6 +396,24 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 - *Possible Values*:
   - `1`: Initial data is read from a file.
   - `2`: Initial data is set programmatically in the function `update_initial()`.
+  
+#### Physical constants
+
+```c
+#define PI 3.141592653589793
+#define _g_ 9.8
+#define _gamma_ 1.4
+#define _R_ 287.058
+#define _p0_ 1.0E5
+```
+
+- *Variables*:
+  - `PI`: Pi number.
+  - `_g_`: Gravity acceleration.
+  - `_gamma_`: Specific heats ratio.
+  - `_R_`: Ideal gas constant.
+  - `_p0_`: Reference atmospheric pressure.
+
 
 ### Equations solved
 
