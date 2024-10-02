@@ -10,11 +10,11 @@ authors:
   - name: Adrian Navas-Montilla
     orcid: 0000-0002-3465-6898
     equal-contrib: true
-    affiliation: 1 # (Multiple affiliations must be quoted)
+    affiliation: 1 #(Multiple affiliations must be quoted)
   - name: Isabel Echeverribar
     orcid: 0000-0001-8221-523X
     equal-contrib: true
-    affiliation: 2 # (Multiple affiliations must be quoted)
+    affiliation: 2 #(Multiple affiliations must be quoted)
 affiliations:
  - name: Fluid Dynamics Technologies, i3A-University of Zaragoza, Spain.
    index: 1
