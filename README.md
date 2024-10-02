@@ -256,7 +256,7 @@ caelum/
 
 ### Configuration of the code for compilation
 
-The file ```lib/definitions.h``` contains some definitions and constants that will be used for compilation. The most relevant for the user are:
+The file ```lib/definitions.h``` contains some definitions and constants that will be used for compilation. The most relevant for the user are listed below. Here, we provide a summary with links to other sections where some of these features are explained more in detail.
 
 #### Reconstruction Method
 
@@ -264,7 +264,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define TYPE_REC 0
 ```
 
-- *Description*: Defines the type of high order reconstruction method used.
+- *Description*: Defines the type of high order reconstruction method used. See more info [here](#spatial-reconstructions).
 - *Possible Values*:
   - `0`: WENO (Weighted Essentially Non-Oscillatory).
   - `1`: TENO (Targeted Essentially Non-Oscillatory).
@@ -276,7 +276,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define EQUATION_SYSTEM 2
 ```
 
-- *Description*: Specifies the type of equation system to solve.
+- *Description*: Specifies the type of equation system to solve. See more info [here](#equations-solved).
 - *Possible Values*:
   - `0`: Linear advection equation.
   - `1`: Burgers' equation.
@@ -323,7 +323,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define SOLVER 0
 ```
 
-- *Description*: Specifies the solver used for the numerical method.
+- *Description*: Specifies the solver used for the numerical method. See more info [here](#riemann-solvers).
 - *Possible Values*:
   - `0`: HLL (Harten-Lax-van Leer) solver.
   - `1`: HLLC (Harten-Lax-van Leer Contact) solver.
@@ -346,7 +346,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define WRITE_VTK 1
 ```
 
-- *Description*: Controls whether a VTK file is generated for visualization.
+- *Description*: Controls whether a VTK file is generated for visualization.  See more info [here](#output-data).
 - *Possible Values*:
   - `0`: VTK file is not generated.
   - `1`: VTK file is generated.
@@ -356,7 +356,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define WRITE_LIST 1
 ```
 
-- *Description*: Controls whether a list (`*.out`) file is generated.
+- *Description*: Controls whether a list (`*.out`) file is generated. See more info [here](#output-data).
 - *Possible Values*:
   - `0`: List file is not generated.
   - `1`: List file is generated.
@@ -394,7 +394,7 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define READ_INITIAL 1
 ```
 
-- *Description*: Controls how the initial data is loaded.
+- *Description*: Controls how the initial data is loaded. See more info [here](#input-data).
 - *Possible Values*:
   - `1`: Initial data is read from a file.
   - `2`: Initial data is set programmatically in the function `update_initial()`.
