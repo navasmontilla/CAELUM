@@ -258,31 +258,114 @@ caelum/
 
 The file ```lib/definitions.h``` contains some definitions and constants that will be used for compilation. The most relevant for the user are:
 
+#### Reconstruction Method
+
 ```c
-//reconstruction method
-#define TYPE_REC 0 //This is 0 for WENO, 1 for TENO and 2 for optimal polynomial reconstruction
+#define TYPE_REC 0
+```
 
-//Equations
-#define EQUATION_SYSTEM 2 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 
+- *Description*: Defines the type of high order reconstruction method used.
+- *Possible Values*:
+  - `0`: WENO (Weighted Essentially Non-Oscillatory).
+  - `1`: TENO (Targeted Essentially Non-Oscillatory).
+  - `2`: Optimal Polynomial Reconstruction.
 
-//Source terms for Euler
-#define ST 3// 0: Source OFF, 1: Source ON (augmented version using HLLS), 2: Source ON (perturbation version), 3: Source ON (perturbation version, total energy is conserved)
+#### Equation System
 
-//Multicomponent flow
-#define MULTICOMPONENT 0 // 0: Single component Euler equations, 1: Multicomponent Euler equations (two components with different gamma).
-#define MULTI_TYPE 2     //1: gamma formulation, :2  1/(gamma-1) formulation. ATENTION: Option =2 recommended (see R. Abgrall, S. Karni, Computations of Compressible Multifluids, JCP 169 (2001))
+```c
+#define EQUATION_SYSTEM 2
+```
 
-//Solvers
-#define SOLVER 0 //0: HLL solver, 1: HLLC solver, 2: HLLS solver
+- *Description*: Specifies the type of equation system to solve.
+- *Possible Values*:
+  - `0`: Linear advection equation.
+  - `1`: Burgers' equation.
+  - `2`: Compressible Euler equations.
 
-//OpenMP configuration
-#define NTHREADS 4 //This is the number of threads
+#### Source Terms for Euler
 
-//Output files
-#define WRITE_VTK 1  //1: vtk file is printed
-#define WRITE_LIST 1 //1: list *.out file is printed
+```c
+#define ST 3
+```
 
-//Printing variables (vtk). Select what variables will be printed in vtk files:
+- *Description*: Controls the inclusion of source terms for the Euler equations.
+- *Possible Values*:
+  - `0`: Source terms OFF.
+  - `1`: Source terms ON (augmented version, needs the use of HLLS).
+  - `2`: Source terms ON (perturbation version, needs the use of HLL).
+  - `3`: Source terms ON (perturbation version and total energy is conserved, needs the use of HLL).
+
+#### Multicomponent Flow
+
+
+```c
+#define MULTICOMPONENT 0
+```
+
+- *Description*: Indicates whether single or multicomponent Euler equations are used.
+- *Possible Values*:
+  - `0`: Single component Euler equations.
+  - `1`: Multicomponent Euler equations (two components with different specific heat ratio $\gamma$).
+
+
+```c
+#define MULTI_TYPE 2
+```
+
+- *Description*: Defines the type of multicomponent formulation used.
+- *Possible Values*:
+  - `1`: Gamma ($\gamma$) formulation.
+  - `2`: \( \frac{1}{\gamma - 1} \) formulation (recommended, as per R. Abgrall and S. Karni in JCP 169 (2001)).
+
+#### Solver Selection
+
+```c
+#define SOLVER 0
+```
+
+- *Description*: Specifies the solver used for the numerical method.
+- *Possible Values*:
+  - `0`: HLL (Harten-Lax-van Leer) solver.
+  - `1`: HLLC (Harten-Lax-van Leer Contact) solver.
+  - `2`: HLLS (Harten-Lax-van Leer Source) solver.
+
+#### OpenMP Configuration
+
+```c
+#define NTHREADS 4
+```
+
+- *Description*: Defines the number of OpenMP threads used for parallel execution.
+- *Possible Values*: Any integer value representing the number of threads. For example:
+  - `4`: Use 4 threads for parallel computation.
+
+#### Output Files Configuration
+
+
+```c
+#define WRITE_VTK 1
+```
+
+- *Description*: Controls whether a VTK file is generated for visualization.
+- *Possible Values*:
+  - `0`: VTK file is not generated.
+  - `1`: VTK file is generated.
+
+
+```c
+#define WRITE_LIST 1
+```
+
+- *Description*: Controls whether a list (`*.out`) file is generated.
+- *Possible Values*:
+  - `0`: List file is not generated.
+  - `1`: List file is generated.
+
+#### Variable Printing (VTK)
+
+- *Description*: Defines which variables are printed to VTK files for visualization.
+
+```c
 #define print_RHO 0
 #define print_VELOCITY 1
 #define print_ENERGY 0
@@ -290,10 +373,31 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 #define print_OVERPRESSURE 1
 #define print_SOLUTES 0
 #define print_POTENTIALTEM 1
-
-//Reading initial data
-#define READ_INITIAL 1 //1: Initial data is read from file, 2: Iinitial data is set in update_initial()
 ```
+
+- *Possible Values for Each Variable*:
+  - `0`: Do not print this variable.
+  - `1`: Print this variable.
+
+  - *Variables*:
+    - `print_RHO`: Density.
+    - `print_VELOCITY`: Velocity vector.
+    - `print_ENERGY`: Energy.
+    - `print_PRESSURE`: Pressure.
+    - `print_OVERPRESSURE`: Pressure difference from the equilibrium pressure.
+    - `print_SOLUTES`: Passive solute concentration.
+    - `print_POTENTIALTEM`: Potential temperature.
+
+#### Initial Data Input
+
+```c
+#define READ_INITIAL 1
+```
+
+- *Description*: Controls how the initial data is loaded.
+- *Possible Values*:
+  - `1`: Initial data is read from a file.
+  - `2`: Initial data is set programmatically in the function `update_initial()`.
 
 ### Equations solved
 
