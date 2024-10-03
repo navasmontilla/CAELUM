@@ -40,11 +40,11 @@ Regarding numerics, the simulation code uses WENO, TENO, and optimal polynomial 
 
 ## Installation instructions
 
-Clone the repository in your local computer:
+Go to the desired location where you want to download CAELUM, e.g. ```me@myPc: SomeFolder/$``` and clone the repository in your local computer:
 
 ```git clone https://github.com/navasmontilla/CAELUM.git```
 
-Compile the program using *Makefile* as follows:
+Go to CAELUM main folder ```me@myPc: SomeFolder/CAELUM/$ ``` and compile the program using *Makefile* as follows:
 
 ```make```
 
@@ -73,7 +73,7 @@ pip3 install pyvista matplotlib numpy scipy imageio jupyter
 
 ## Automated test
 
-To check the functionality of the software, an automated test composed of 6 benchmarks can be run as follows:
+To check the functionality of the software, an automated test composed of 6 benchmarks can be run as follows from the main directory (```me@myPc: SomeFolder/CAELUM/$ ```):
 
 ```python3 python/autotest.py nt rec ord```
 
@@ -102,9 +102,9 @@ To get started in a user-friendly environment, some Jupyter Notebooks have been 
 
 -  [First steps with atmospheric flows: the colliding thermals test case](python/caseCollidingBub.ipynb)
 
-For a correct functionality, *Jupyter Notebook* must be launched from the software main directory.
+For a correct functionality, *Jupyter Notebook* must be launched from the software main directory, e.g. ```me@myPc: SomeFolder/CAELUM/$ jupyter notebook```
 
-A more complete set of examples, scripted in Python, are listed below:
+A more complete set of examples, scripted in Python, are listed below. The Python scripts to generate the cases below **must be launched from the software main directory**.
 
 ### Scalar problems
 
@@ -167,6 +167,12 @@ A more complete set of examples, scripted in Python, are listed below:
 ### Atmospheric flow (Euler equations with gravity source term)
   
 - Setting up a 2D atmospheric simulation case (colliding thermals test case) [6]: [caseCollidingBub](python/caseCollidingBub.py) ```python3 python/caseCollidingBub.py```
+    
+    <figure style="text-align: center;">
+    <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
+    </figure>
+    
+- Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub.py```
     
     <figure style="text-align: center;">
     <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
