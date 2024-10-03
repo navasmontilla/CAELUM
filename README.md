@@ -61,14 +61,14 @@ This software relies on other dependencies, listed below:
 	- *scipy*
  	- *imageio*
 	- *pyvista*
-	- *jupyter*
+	- *jupyter notebook*
 	
 To install Python3 and the above packages:
 
 ```
 sudo apt update
 sudo apt install -y python3 python3-pip
-pip3 install pyvista matplotlib numpy scipy imageio jupyter
+pip3 install pyvista matplotlib numpy scipy imageio notebook
 ```
 
 ## Automated test
