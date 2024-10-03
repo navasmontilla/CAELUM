@@ -32,7 +32,7 @@
 
 It is designed from an academic perspective, where clarity and accessibility are prioritized. Therefore, it includes user-friendly pre-processing and post-processing tools based on Python and Jupyter Notebook. The repository comes with a series of Python scripts for the configuration and visualization of various example flows, ranging from simple scalar advection in 1D to more complex atmospheric or compressible flow cases in 3D. These scripts rely on standard libraries such as `numpy`, `matplotlib` and `pyvista`, the latter being a powerful module for data visualization and rendering. Additionally, several Jupyter Notebooks are included, where the steps for configuring the simulation tool and visualizing the results are explained in detail.
 
-Regarding the implementation of the solver, `CÆLUM` uses OpenMP, a directive-based threading library that allows parallel computing in multi-core CPUs. The modification of the base code by the inlcusion of pragmas is minimal, prserving the readability and clarity of the code.
+Regarding the implementation of the solver, `CÆLUM` uses OpenMP, a directive-based threading library that allows parallel computing in multi-core CPUs. The modification of the base code by the inlcusion of pragmas is minimal, preserving the readability and clarity of the code.
 
 <figure style="text-align: center;">
   <img src="doc/panel.png" width="100%" alt="my alt text"/>
