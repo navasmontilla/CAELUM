@@ -44,7 +44,7 @@ Go to the desired location where you want to download CAELUM, e.g. ```me@myPc: S
 
 ```git clone https://github.com/navasmontilla/CAELUM.git```
 
-Go to CAELUM main folder ```me@myPc: SomeFolder/CAELUM/$ ``` and compile the program using *Makefile* as follows:
+Go to CAELUM main folder ```me@myPc: SomeFolder/CAELUM/$``` and compile the program using *Makefile* as follows:
 
 ```make```
 
@@ -68,6 +68,16 @@ To install Python3 and the above packages:
 ```
 sudo apt update
 sudo apt install -y python3 python3-pip
+pip3 install pyvista matplotlib numpy scipy imageio notebook
+```
+
+Other possibility: you can also do it using a virtual environment in the main folder (```me@myPc: SomeFolder/CAELUM/$```):
+
+```
+sudo apt update
+sudo apt install -y python3 python3-pip
+python3 -m venv myenv
+source myenv/bin/activate
 pip3 install pyvista matplotlib numpy scipy imageio notebook
 ```
 
