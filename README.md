@@ -73,7 +73,7 @@ pip3 install pyvista matplotlib numpy scipy imageio jupyter
 
 ## Automated test
 
-To check the functionality of the software, an automated test composed of 6 benchmarks can be run as follows from the main directory (```me@myPc: SomeFolder/CAELUM/$ ```):
+To check the functionality of the software, an automated test composed of 6 benchmarks can be run as follows from the main directory (```me@myPc: SomeFolder/CAELUM/$```):
 
 ```python3 python/autotest.py nt rec ord```
 
@@ -104,7 +104,7 @@ To get started in a user-friendly environment, some Jupyter Notebooks have been 
 
 For a correct functionality, *Jupyter Notebook* must be launched from the software main directory, e.g. ```me@myPc: SomeFolder/CAELUM/$ jupyter notebook```
 
-A more complete set of examples, scripted in Python, are listed below. The Python scripts to generate the cases below **must be launched from the software main directory**.
+A more complete set of examples, scripted in Python, are listed below. The Python scripts to generate the cases below must be launched from the software main directory (```me@myPc: SomeFolder/CAELUM/$```).
 
 ### Scalar problems
 
