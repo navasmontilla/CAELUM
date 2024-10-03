@@ -175,7 +175,7 @@ A more complete set of examples, scripted in Python, are listed below. The Pytho
 - Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub.py```
     
     <figure style="text-align: center;">
-    <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
+    <img src="doc/animationCol3D.gif" width="50%" alt="my alt text"/>
     </figure>
     
 References and sources for the cases above:
