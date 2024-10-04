@@ -61,7 +61,7 @@ We herein consider the compressible Euler equations with gravitational source te
 \frac{\partial (\rho \mathbf{v})}{\partial t} + \nabla \cdot \left(\rho \mathbf{v} \otimes \mathbf{v} + p \mathbf{I}\right) &= \rho \mathbf{g} \tag{Momentum} \\
 \frac{\partial E}{\partial t} + \nabla \cdot \left((E + p) \mathbf{v}\right) &= \rho \mathbf{v} \cdot \mathbf{g} \tag{Energy}
 \end{align}
-where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure and $\mathbf{g}=(0,0,-g)^T$ is the specific gravity force. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}\cdot \mathbf{v}+e)$. 
+where $\rho$ is density, $\mathbf{v}$ is the velocity vector, $p$ is pressure, $\mathbf{g}=(0,0,-g)^T$ is the specific gravity force and $\mathbf{I}$ is the identity matrix. The energy is defined as  the sum of kinetic and internal energy $E=\rho(\frac{1}{2}\mathbf{v}\cdot \mathbf{v}+e)$. 
 
 Additionally, scalar transport can also be considered as the following equation is implemented
 $$\frac{\partial u}{\partial t} + \nabla \cdot ( \mathbf{v} u) = 0$$
