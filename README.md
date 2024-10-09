@@ -1,4 +1,4 @@
-# CÆLUM: An academic high-order finite-volume solver for the compressible Euler equations and related problems
+# CÆLUM: An academic high-order finite-volume solver for the compressible Euler equations and related models
 
 
 ## Table of Contents
