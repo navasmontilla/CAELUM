@@ -2,7 +2,7 @@
 
 
 - [Scalar problems](#scalar-problems)
-- [Compressible flow (homogeneous Euler equations)](#compressible-flow-(homogeneous-euler-equations))
+- [Compressible flow (homogeneous Euler equations)](#compressible-flow)
 - [Atmospheric flow (Euler equations with gravity source term)](#atmospheric-flow-euler-equations-with-gravity-source-term)
 
 ### Scalar problems
@@ -25,7 +25,7 @@
   <img src="../doc/animationLin3D.gif" width="50%" alt="my alt text"/>
   </figure>
 
-### Compressible flow (homogeneus Euler equations)
+### Compressible flow
 
 - Setting up a 1D Riemann Problem for the  Euler equations (sod shock problem) [1]: [caseRP](../python/caseRP.py) ```python3 python/caseRP.py```
 
