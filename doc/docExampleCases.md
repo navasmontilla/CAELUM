@@ -5,6 +5,8 @@
 - [Compressible flow (homogeneous Euler equations)](#compressible-flow)
 - [Atmospheric flow (Euler equations with gravity source term)](#atmospheric-flow-euler-equations-with-gravity-source-term)
 
+The Python scripts to generate the cases below must be launched from the software main directory (```me@myPc: SomeFolder/CAELUM/$```).
+
 ### Scalar problems
 
 - Setting up a 1D linear transport case: [caseLinear](../python/caseLinear.py) ```python3 python/caseLinear.py```
