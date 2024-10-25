@@ -4,7 +4,7 @@
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Installation](#installation)
+2. [Installation](#installation-instructions)
 3. [Automated test](#automated-test)
 4. [Example usage](#example-usage)
 5. [Functionality documentation](#functionality-documentation)
@@ -13,7 +13,7 @@
 8. [Authorship](#authorship)
 
 
-## Statement of need
+## Introduction
 
 `CÆLUM` is a hydrodynamic solver for compressible flows, which solves the Euler equations of gas dynamics by means of very high order essentially non-oscillatory finite volume schemes in cartesian meshes. A key feature of this software is that it also allows the simulation of simplified dry atmospheric flows in the meso- and micro-scale. The core of the solver is written in C but pre-processing and post-processing can be easily done using Jupyter Notebook as provided in the examples. The Weighted Essentially Non-Oscillatory (WENO)  and Targeted Essentially Non-Oscillatory (TENO) spatial reconstructions, in combination with Runge-Kutta integrators, are used in `CÆLUM` to achieve a high resolution in smooth regions of the flow and to capture discontinuous solutions without spurious oscillations. These schemes also allow to adopt an Implicit Large Eddy Simulation (iLES) framework when computing turbulent flows. The numerical diffusion plays the role of the explicit dissipative sub-grid model, being this a favorable choice when seeking simplicity and computational efficiency. In summary, this hydrodynamic solver is applicable to turbulent compressible flows, as well as low Mach number flows such as simplified dry atmospheric flows and other wave propagation phenomena. 
 
