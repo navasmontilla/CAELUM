@@ -2,7 +2,7 @@
 
 
 - [Scalar problems](#scalar-problems)
-- [Compressible flow (homogeneous Euler equations)](#compressible-flow-homogeneous-euler-equations)
+- [Compressible flow (homogeneous Euler equations)](#compressible-flow-(homogeneous-euler-equations))
 - [Atmospheric flow (Euler equations with gravity source term)](#atmospheric-flow-euler-equations-with-gravity-source-term)
 
 ### Scalar problems
