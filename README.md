@@ -101,7 +101,7 @@ To get started in a user-friendly environment, some Jupyter Notebooks have been 
 
 For a correct functionality, *Jupyter Notebook* must be launched from the software main directory, e.g. ```me@myPc: SomeFolder/CAELUM/$ jupyter notebook```
 
-A more complete set of examples, scripted in Python, are can be found  [**here**](doc/docExampleCases.md). The Python scripts to generate the cases below must be launched from the software main directory (```me@myPc: SomeFolder/CAELUM/$```).
+A more complete set of examples, scripted in Python,   [**can be found here**](doc/docExampleCases.md). 
 
 
 ## Functionality documentation
