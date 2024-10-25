@@ -10,71 +10,71 @@
 - Setting up a 1D linear transport case: [caseLinear](../python/caseLinear.py) ```python3 python/caseLinear.py```
   
   <figure style="text-align: center;">
-  <img src="doc/animationLin.gif" width="30%" alt="my alt text"/>
+  <img src="../doc/animationLin.gif" width="30%" alt="my alt text"/>
   </figure>
 
-- Setting up a 1D Burgers problem: [caseBurgers](python/caseBurgers.py) ```python3 python/caseBurgers.py```
+- Setting up a 1D Burgers problem: [caseBurgers](../python/caseBurgers.py) ```python3 python/caseBurgers.py```
   
   <figure style="text-align: center;">
-  <img src="doc/animationBurg.gif" width="30%" alt="my alt text"/>
+  <img src="../doc/animationBurg.gif" width="30%" alt="my alt text"/>
   </figure>
 
-- Setting up a 3D linear transport case: [caseLinear3D](python/caseLinear3D.py) ```python3 python/caseLinear3D.py```
+- Setting up a 3D linear transport case: [caseLinear3D](../python/caseLinear3D.py) ```python3 python/caseLinear3D.py```
   
   <figure style="text-align: center;">
-  <img src="doc/animationLin3D.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationLin3D.gif" width="50%" alt="my alt text"/>
   </figure>
 
 ### Compressible flow (homogeneus Euler equations)
 
-- Setting up a 1D Riemann Problem for the  Euler equations (sod shock problem) [1]: [caseRP](python/caseRP.py) ```python3 python/caseRP.py```
+- Setting up a 1D Riemann Problem for the  Euler equations (sod shock problem) [1]: [caseRP](../python/caseRP.py) ```python3 python/caseRP.py```
 
   <figure style="text-align: center;">
-  <img src="doc/animationRP.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationRP.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Setting up a 2D Riemann Problem for the Euler equations [2]: [caseRP2D](python/caseRP2D.py) ```python3 python/caseRP2D.py```
+- Setting up a 2D Riemann Problem for the Euler equations [2]: [caseRP2D](../python/caseRP2D.py) ```python3 python/caseRP2D.py```
 
   <figure style="text-align: center;">
-  <img src="doc/animationRP2D.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationRP2D.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Setting up a 3D Riemann Problem for the Euler equations [3]: [caseRP3D](python/caseRP3D.py) ```python3 python/caseRP3D.py```
+- Setting up a 3D Riemann Problem for the Euler equations [3]: [caseRP3D](../python/caseRP3D.py) ```python3 python/caseRP3D.py```
 
   <figure style="text-align: center;">
-  <img src="doc/animationRP3D.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationRP3D.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Advanced case: the shock-bubble test case [4]: [caseShockBub](python/caseShockBub.py) ```python3 python/caseShockBub.py```
+- Advanced case: the shock-bubble test case [4]: [caseShockBub](../python/caseShockBub.py) ```python3 python/caseShockBub.py```
 
   <figure style="text-align: center;">
-  <img src="doc/animationSB.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationSB.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Advanced case: shock-cylinder interaction [5]: [caseShockCyl](python/caseShockCyl3D.py) [caseShockCyl_plots](python/caseShockCyl3D_plots.py) ```python3 python/caseShockCyl.py; python3 python/caseShockCyl_plots.py;```
+- Advanced case: shock-cylinder interaction [5]: [caseShockCyl](../python/caseShockCyl3D.py) [caseShockCyl_plots](../python/caseShockCyl3D_plots.py) ```python3 python/caseShockCyl.py; python3 python/caseShockCyl_plots.py;```
   
   <figure style="text-align: center;">
-  <img src="doc/animationSCyl.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationSCyl.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Advanced case: shock-induced turbulent mixing (Richtmeyer Meshkov instability): [caseRM3D](python/caseRM3D.py) [caseRM3D_plots](python/caseRM3D_plots.py) ```python3 python/caseRM3D.py; python3 python/caseRM3D_plots.py;```
+- Advanced case: shock-induced turbulent mixing (Richtmeyer Meshkov instability): [caseRM3D](../python/caseRM3D.py) [caseRM3D_plots](../python/caseRM3D_plots.py) ```python3 python/caseRM3D.py; python3 python/caseRM3D_plots.py;```
   
   <figure style="text-align: center;">
-  <img src="doc/animationRM.gif" width="50%" alt="my alt text"/>
+  <img src="../doc/animationRM.gif" width="50%" alt="my alt text"/>
   </figure>
   
 ### Atmospheric flow (Euler equations with gravity source term)
   
-- Setting up a 2D atmospheric simulation case (colliding thermals test case) [6]: [caseCollidingBub](python/caseCollidingBub.py) ```python3 python/caseCollidingBub.py```
+- Setting up a 2D atmospheric simulation case (colliding thermals test case) [6]: [caseCollidingBub](../python/caseCollidingBub.py) ```python3 python/caseCollidingBub.py```
     
     <figure style="text-align: center;">
-    <img src="doc/animationCol.gif" width="50%" alt="my alt text"/>
+    <img src="../doc/animationCol.gif" width="50%" alt="my alt text"/>
     </figure>
     
-- Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub.py```
+- Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](../python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](../python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub.py```
     
     <figure style="text-align: center;">
-    <img src="doc/animationCol3D.gif" width="50%" alt="my alt text"/>
+    <img src="../doc/animationCol3D.gif" width="50%" alt="my alt text"/>
     </figure>
     
 References and sources for the cases above:
