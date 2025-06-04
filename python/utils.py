@@ -482,8 +482,7 @@ def singleRP(case,ord):
     run_program(folder_exe+"./caelum "+folder_case)
 
     # READING OUTPUT DATA AND PLOTTING
-
-    files = glob(folder_out+"/*.out")
+    files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
     lf=len(files)
     print(files)
 
@@ -675,7 +674,8 @@ def caseBubble(ord):
 
     # READING OUTPUT DATA AND PLOTTING
 
-    files = glob(folder_out+"/*.out")
+    os.remove(folder_out + "list_eq.out")
+    files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
     lf=len(files)
     print(files)
 
@@ -936,7 +936,7 @@ def ordersLinear():
             print("Program is running...")
             run_program(folder_exe + "./caelum " + folder_case)
 
-            files = glob(folder_out + "/*.out")
+            files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
             lf = len(files)
             print(files)
 
@@ -1003,15 +1003,27 @@ def ordersLinear():
     ax2.set_ylabel("$L_1$") 
     ax2.legend()
     
+    x0 = 40
+    y0 = 1e-9
+    x_range = np.array([40, 60])
+    theoretical_orders = [1, 3, 5, 7]
+    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+    ax1.plot(x_range, [y0,y0], '-', lw=0.5, color="k")    
+    ax1.plot([60,60], [y0,y0 * (60 / x0) ** (-7)], '-', lw=0.5, color="k") 
+    for p, color in zip(theoretical_orders, colors):
+        y_range = y0 * (x_range / x0) ** (-p)
+        ax1.plot(x_range, y_range, '-', lw=0.75, color=color)
+    
+    
     filename = folder_out+"convergences"
     fig.savefig(filename+".png",dpi=500)
     
-    print(mean_order) 
+    print("\nThe mean orders are: ", mean_order) 
     comp = np.abs(mean_order - np.array(orders))
-    L1_error = np.mean(comp)
-    print(L1_error)
+    mean_ord_error = np.mean(comp)
+    print("The mean difference in orders is: ", mean_ord_error, "\n")
     
-    if L1_error < 1.0:
+    if mean_ord_error < 1.0:
         vf=1
     else:
         vf=0
