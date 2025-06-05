@@ -357,6 +357,52 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 }
 
 
+int read_solid_cells(t_mesh *mesh, const char *folder_path){
+	int m,k,l,n,ct,tp;
+	FILE *fp;
+	char fname[1024];
+    
+    t_cell *cell;
+	cell=mesh->cell;
+	ct=0;
+      
+    snprintf(fname, sizeof(fname), "%s/solid_cells.input", folder_path);
+	fp = fopen(fname,"r");
+      
+	if (fp != NULL){
+		// Skip the first line
+		if (fscanf(fp, "%*[^\n]\n") != 0) {
+		  printf("Warning: Failed to skip the first line.\n");
+		}
+        if (fscanf(fp, "%*[^\n]\n") != 0) {
+		  printf("Warning: Failed to skip the first line.\n");
+		}
+
+		for(l=0;l<mesh->xcells;l++){
+			for(m=0;m<mesh->ycells;m++){
+				for(n=0;n<mesh->zcells;n++){
+				k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+				if (fscanf(fp, "%*f %*f %*f %d", &tp) != 1) {
+				printf("%s Error: Failed to read solid cells data \n",WAR);
+				getchar();
+				}
+				cell[k].type=tp;
+				}
+			}
+		}
+
+		fclose(fp);
+
+		printf("%s solid_cells.input file has been read \n",OK);
+	}else{
+		printf("%s File solid_cells.input not found. \n",WAR);
+		ct=1;
+	}
+    
+    return ct;
+}
+
+
 int read_initial(t_mesh *mesh, t_sim *sim, const char *folder_path){
 	int m,k,l,n,ct;
 	FILE *fp;
@@ -408,6 +454,7 @@ int read_initial(t_mesh *mesh, t_sim *sim, const char *folder_path){
 				#else
 					gamma=_gamma_;
 				#endif
+                if(cell[k].type==1){
 				cell[k].Ue[0]=rho;
 				cell[k].Ue[1]=u*cell[k].U[0];
 				cell[k].Ue[2]=v*cell[k].U[0];
@@ -415,7 +462,16 @@ int read_initial(t_mesh *mesh, t_sim *sim, const char *folder_path){
 				cell[k].Ue[4]=energy_from_pressure(gamma,p,u,v,w,rho,cell[k].zc);
 				cell[k].Ue[5]=phi*rho;
 				cell[k].prese=p;
-				}
+				}else{
+                cell[k].U[0]=-1.0;
+				cell[k].U[1]=0.0;
+				cell[k].U[2]=0.0;
+				cell[k].U[3]=0.0;
+				cell[k].U[4]=0.0;
+				cell[k].U[5]=0.0;
+                cell[k].prese=0.0;
+                }
+                }
 			}
 		}
 
@@ -454,12 +510,21 @@ int read_initial(t_mesh *mesh, t_sim *sim, const char *folder_path){
 				#else
 					gamma=_gamma_;
 				#endif
+                if(cell[k].type==1){
 				cell[k].U[0]=rho;
 				cell[k].U[1]=u*cell[k].U[0];
 				cell[k].U[2]=v*cell[k].U[0];
 				cell[k].U[3]=w*cell[k].U[0];
 				cell[k].U[4]=energy_from_pressure(gamma,p,u,v,w,rho,cell[k].zc);
 				cell[k].U[5]=phi*rho;
+                }else{
+                cell[k].U[0]=-1.0;
+				cell[k].U[1]=0.0;
+				cell[k].U[2]=0.0;
+				cell[k].U[3]=0.0;
+				cell[k].U[4]=0.0;
+				cell[k].U[5]=0.0;
+                }
 				}
 			}
 		}
@@ -697,7 +762,7 @@ int assign_wall_type(t_mesh *mesh){
             wall->wtype=1;          //by default: 1= normal RP wall
             wall->boundId=999;    //999 when the wall is not at any boundary. Otherwise: 1, 2, 3, 4, 5, 6.
 
-            #if ALLOW_SOLIDS==1
+            #if ALLOW_SOLIDS!=0
 
 
             if(wall->nx>TOL4){
@@ -832,11 +897,14 @@ int assign_wall_type(t_mesh *mesh){
 	return 1;
 }
 
-int assign_cell_type(t_mesh *mesh,t_solid *solids){ // Define ghost and solid cells
+int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // Define ghost and solid cells
 	t_cell *cell;	
 	int k;
+#if ALLOW_SOLIDS!=0
+    int m,l,n,na;
+#endif
 #if ALLOW_SOLIDS==1
-	int m,l,n,i,j,q,i1,i2,i3,na,df,df0,ct;
+	int i,j,q,i1,i2,i3,df,df0,ct;
       double aux1,aux2;
       double proj,dist,s1,s2,s3;
       double dif[3],xc[3],v1[3],v2[3],v3[3],vp1[3],vp2[3],vp3[3],dc1[3],dc2[3],dc3[3];
@@ -851,7 +919,11 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids){ // Define ghost and solid ce
             cell[k].ghost=0;
       }
 
-#if ALLOW_SOLIDS==1
+#if ALLOW_SOLIDS==2 // Solid cells are directly read from a file
+	read_solid_cells(mesh,folder_path);
+#endif
+
+#if ALLOW_SOLIDS==1 // Solid cells are computed from STL object files
       /*
       //solid cells are assigned using simple formulas. In the future, "find-point-inside" algorithms will be used.
       */
@@ -1098,8 +1170,14 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids){ // Define ghost and solid ce
             }
 
             //printf("%s Solid cells have been identified \n\n",OK);
-
-
+      }
+      
+	if(solids->nsolid>0){
+      printf("%s Ghost and solid cells have been identified \n",OK);}
+	
+#endif
+      
+#if ALLOW_SOLIDS!=0
       // distance from all cells to the closest solid cell, in the cartesian directions, is computed
       for(k=0;k<mesh->ncells;k++){
             if(cell[k].type!=0){
@@ -1127,20 +1205,10 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids){ // Define ghost and solid ce
                         cell[k].distsolz=MIN(cell[k].distsolz,abs(cell[k].n-n)) ;
                   }
             }
-            //if(cell[k].distsoly<100){
-            //      printf("celda %d, dist: %d \n",k,cell[k].distsoly);
-            //}
-
             }
       }
-
-
-      }
-
-	if(solids->nsolid>0){
-      printf("%s Ghost and solid cells have been identified \n",OK);}
-	
 #endif
+
 	return 1;
 }
 
@@ -1180,18 +1248,21 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
                               }else if(xcells-(l+1)<semiSt){
                                     cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*(xcells-(l+1))+1);
                               }
-                              cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*cell[k].distsolx-1);
-
                         }
+                        #if ALLOW_SOLIDS!=0
+                        cell[k].st_sizeX=MIN(cell[k].st_sizeX,2*cell[k].distsolx-1);
+                        #endif
                         if(mesh->periodicY==0){
                               //y stencils
                               if(m<semiSt){
                                     cell[k].st_sizeY=MIN(cell[k].st_sizeY,2*m+1);
                               }else if(ycells-(m+1)<semiSt){
                                     cell[k].st_sizeY=MIN(cell[k].st_sizeY,2*(ycells-(m+1))+1);
-                              }
-                              cell[k].st_sizeY=MIN(cell[k].st_sizeY,2*cell[k].distsoly-1);
+                              }   
                         }
+                        #if ALLOW_SOLIDS!=0
+                        cell[k].st_sizeY=MIN(cell[k].st_sizeY,2*cell[k].distsoly-1);
+                        #endif
                         if(mesh->periodicZ==0){
                               //y stencils
                               if(n<semiSt){
@@ -1199,8 +1270,10 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
                               }else if(zcells-(n+1)<semiSt){
                                     cell[k].st_sizeZ=MIN(cell[k].st_sizeZ,2*(zcells-(n+1))+1);
                               }
-                              cell[k].st_sizeZ=MIN(cell[k].st_sizeZ,2*cell[k].distsolz-1);
                         }
+                        #if ALLOW_SOLIDS!=0
+                        cell[k].st_sizeZ=MIN(cell[k].st_sizeZ,2*cell[k].distsolz-1);
+                        #endif
 				
 				if(mesh->xcells<sim->order){cell[k].st_sizeX=1;}
 				if(mesh->ycells<sim->order){cell[k].st_sizeY=1;}
@@ -1866,10 +1939,10 @@ void read_config(t_mesh *mesh, t_sim *sim, const char *folder_path){
 
 void print_info(t_mesh *mesh, t_sim *sim, const char *folder_path){
 
-      printf("\n\e[94mAuthors:\n - Adrián Navas Montilla\n - Isabel Echeverribar \n\n");
-      printf("Copyright (C) 2019-2024 The authors.   \n\n");
-      printf("License type: The 3-Clause BSD License \nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: \n 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. \n 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. \n 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\n");
-      printf("This software is provided by the copyright holders and contributors “as is” and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.\e[0m\n");
+      printf("\n\e[94m Authors:\n  - Adrián Navas Montilla\n  - Isabel Echeverribar \n");
+      printf(" Copyright (C) 2019-2024 The authors.   \n\n");
+      //printf("License type: The 3-Clause BSD License \nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: \n 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. \n 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. \n 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\n");
+      //printf("This software is provided by the copyright holders and contributors “as is” and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.\e[0m\n");
 
       printf(" \n");
       printf(" \e[4mSIMULATION SETUP:\e[0m\n");
