@@ -87,7 +87,9 @@ The benchmarks include:
 - 4 Riemann Problems (RP) for the Euler equations
 - The colliding thermals test case for the Euler equations with gravity
 
-Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. The results can be visualized in [autotest/autotest.md](autotest/autotest.md). **Note**: Test cases RP2, RP3, and RP4 are expected to fail when using the optimal reconstruction method (`rec=2`), as this method does not satisfy the esssentially non-oscillatory (ENO) property.
+Within this test, the program is compiled and executed for every benchmark, giving a *Passed*/*Not Passed* output on the terminal after the execution. The results can be visualized in [autotest/autotest.md](autotest/autotest.md). 
+
+**Note**: Test cases RP2, RP3, and RP4 are expected to fail when using the optimal reconstruction method (`rec=2`), as this method does not satisfy the esssentially non-oscillatory (ENO) property.
 
 ## Example usage
 
