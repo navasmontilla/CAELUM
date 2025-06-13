@@ -73,6 +73,13 @@ The Python scripts to generate the cases below must be launched from the softwar
     <img src="../doc/animationCol.gif" width="50%" alt="my alt text"/>
     </figure>
     
+    
+- Setting up a 2D atmospheric simulation case (downward thermal with uneven ground) [6]: [caseDownwardBubbleSolid](../python/caseDownwardBubbleSolid.py) ```python3 python/caseCollidingBub.py```
+    
+    <figure style="text-align: center;">
+    <img src="../doc/animationColSol.gif" width="50%" alt="my alt text"/>
+    </figure>
+    
 - Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](../python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](../python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub.py```
     
     <figure style="text-align: center;">
