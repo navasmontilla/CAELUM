@@ -4,7 +4,7 @@ Authors:
  - Adrián Navas Montilla
  - Isabel Echeverribar
 
-Copyright (C) 2019-2024 The authors.
+Copyright (C) 2019-2025 The authors.
 
 License type: The 3-Clause BSD License
 
@@ -21,7 +21,7 @@ File:
 
 Content:
   -This file contains the main code of the solver.
-   It uses functions which are distributed in libraries within lib/ folder
+   It uses functions which are distributed in libraries inside the folder lib/ 
 
 */
 
@@ -117,17 +117,17 @@ int main(int argc, char * argv[]){
 	////////////////////////////////////////////////////
 	
 	create_mesh(mesh,sim);				//This creates the mesh and defines connectivity
-#if ALLOW_SOLIDS
+#if ALLOW_SOLIDS==1
 	read_solids(mesh,solids,folder_path);	//This read solid bodies
 #else
 	solids->nsolid=0;
 #endif
-	assign_cell_type(mesh,solids);		//This assigns the type of cell (normal,solid,ghost,...)
+	assign_cell_type(mesh,solids,folder_path);//This assigns the type of cell (normal,solid,ghost,...)
 	update_stencils(mesh,sim);			//This defines and updates the stencils for HO reconstructions
 	assign_wall_type(mesh);    			//This defines the wall types (boundary wall, inner wall, ...)
 	update_initial(mesh,sim,folder_path);	//This defines the initial condition, which may be read from file
 
-#if ALLOW_SOLIDS
+#if ALLOW_SOLIDS==1
 	assign_image_cells(mesh,solids);
 	update_ghost_cells(sim,mesh,solids);
 	update_wall_type(mesh,solids);
