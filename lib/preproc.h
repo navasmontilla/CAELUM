@@ -22,8 +22,9 @@ Content:
   int create_mesh(t_mesh *mesh,t_sim *sim);
   int update_initial(t_mesh *mesh, t_sim *sim, const char *folder_path);
   int read_initial(t_mesh *mesh, t_sim *sim, const char *folder_path);
+  int read_solid_cells(t_mesh *mesh, const char *folder_path);
   int assign_wall_type(t_mesh *mesh);
-  int assign_cell_type(t_mesh *mesh,t_solid *solids);
+  int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path);
   int update_stencils(t_mesh *mesh,t_sim *sim);
   int read_solids(t_mesh *mesh,t_solid *solids, const char *folder_path);
   int read_solids_txt(t_mesh *mesh,t_solid *solids, const char *folder_path);

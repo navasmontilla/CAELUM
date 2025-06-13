@@ -620,12 +620,12 @@ void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps){
 			update_dt(mesh,sim);
 			if(rk_steps==1){
 				update_cell(mesh,sim);
-				#if ALLOW_SOLIDS
+				#if ALLOW_SOLIDS==1
 					update_ghost_cells(sim,mesh,solids);
 				#endif
 			}else{
 				update_cellK1(mesh,sim);
-				#if ALLOW_SOLIDS
+				#if ALLOW_SOLIDS==1
 					update_ghost_cells(sim,mesh,solids);
 				#endif                               
 			}
@@ -636,7 +636,7 @@ void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps){
 				compute_source(mesh);
 			#endif
 			update_cellK2(mesh,sim);
-			#if ALLOW_SOLIDS
+			#if ALLOW_SOLIDS==1
 				update_ghost_cells(sim,mesh,solids);
 			#endif   				
 		}else{ //k=3
@@ -645,7 +645,7 @@ void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps){
 				compute_source(mesh);
 			#endif
 			update_cellK3(mesh,sim);
-			#if ALLOW_SOLIDS
+			#if ALLOW_SOLIDS==1
 				update_ghost_cells(sim,mesh,solids);
 			#endif     
 		}
