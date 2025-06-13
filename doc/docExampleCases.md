@@ -47,6 +47,12 @@ The Python scripts to generate the cases below must be launched from the softwar
   <img src="../doc/animationRP3D.gif" width="50%" alt="my alt text"/>
   </figure>
   
+- Setting up a 3D problem for the Euler equations with solid objects: [caseRadialSolid](../python/caseRadialSolid.py) ```python3 python/caseRadialSolid.py```
+
+  <figure style="text-align: center;">
+  <img src="../doc/animationRadialSolid.gif" width="50%" alt="my alt text"/>
+  </figure>
+  
 - Advanced case: the shock-bubble test case [4]: [caseShockBub](../python/caseShockBub.py) ```python3 python/caseShockBub.py```
 
   <figure style="text-align: center;">
@@ -74,13 +80,13 @@ The Python scripts to generate the cases below must be launched from the softwar
     </figure>
     
     
-- Setting up a 2D atmospheric simulation case (downward thermal with uneven ground) [6]: [caseDownwardBubbleSolid](../python/caseDownwardBubbleSolid.py) ```python3 python/caseCollidingBub.py```
+- Setting up a 2D atmospheric simulation case (downward thermal with uneven ground): [caseDownwardBubbleSolid](../python/caseDownwardBubbleSolid.py) ```python3 python/caseDownwardBubbleSolid.py```
     
     <figure style="text-align: center;">
     <img src="../doc/animationColSol.gif" width="50%" alt="my alt text"/>
     </figure>
     
-- Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](../python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](../python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub.py```
+- Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](../python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](../python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub3D.py```
     
     <figure style="text-align: center;">
     <img src="../doc/animationCol3D.gif" width="50%" alt="my alt text"/>
