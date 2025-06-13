@@ -64,7 +64,7 @@ Content:
 #define DEBUG_MESH 0 //0: no debug; 1: screen info;
 
 //IBM utils
-#define ALLOW_SOLIDS 0 //0: no solid cells
+#define ALLOW_SOLIDS 0 //0: no solid cells, 1: STL immersed boundaries, 2: Read list of solid cells
 #define _stol_ 2.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
 
 //OpenMP configuration
