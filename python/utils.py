@@ -260,6 +260,14 @@ def write_initial_scalar(folder_case, fname_ini, xcells, ycells, zcells, xc, yc,
                 for n in range(zcells):
                     f.write(f"{xc[l,m,n]} {yc[l,m,n]} {zc[l,m,n]} {u[l,m,n]} \n")
 
+def write_solid_cells(folder_case, fname_solids, xcells, ycells, zcells, xc, yc, zc, u):
+    with open(folder_case + fname_solids, "w") as f:
+        f.write("VARIABLES = X, Y, Z, u \n")
+        f.write(f"CELLS = {xcells}, {ycells}, {zcells},\n")
+        for l in range(xcells):
+            for m in range(ycells):
+                for n in range(zcells):
+                    f.write(f"{xc[l,m,n]} {yc[l,m,n]} {zc[l,m,n]} {u[l,m,n]} \n")                    
 
 def read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j):
     """
@@ -1003,16 +1011,19 @@ def ordersLinear():
     ax2.set_ylabel("$L_1$") 
     ax2.legend()
     
-    x0 = 40
+    x0 = 20
     y0 = 1e-9
-    x_range = np.array([40, 60])
+    x_range = np.array([40, 200])
+    y0_vals = np.array([4.e-1, 4.e-2, 1.e-3, 1.e-4])
     theoretical_orders = [1, 3, 5, 7]
     colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
-    ax1.plot(x_range, [y0,y0], '-', lw=0.5, color="k")    
-    ax1.plot([60,60], [y0,y0 * (60 / x0) ** (-7)], '-', lw=0.5, color="k") 
+    #ax1.plot(x_range, [y0,y0], '-', lw=0.5, color="k")    
+    #ax1.plot([60,60], [y0,y0 * (60 / x0) ** (-7)], '-', lw=0.5, color="k")
+    jj=0
     for p, color in zip(theoretical_orders, colors):
-        y_range = y0 * (x_range / x0) ** (-p)
-        ax1.plot(x_range, y_range, '-', lw=0.75, color=color)
+        y_range = y0_vals[jj] * (x_range / x0) ** (-p)
+        ax1.plot(x_range, y_range, '--', lw=0.75, color=color)
+        jj+=1
     
     
     filename = folder_out+"convergences"
