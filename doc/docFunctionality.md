@@ -135,6 +135,17 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 - *Possible Values*:
   - `1`: Gamma ($\gamma$) formulation.
   - `2`: $\frac{1}{\gamma - 1}$ formulation (recommended, as per R. Abgrall and S. Karni in JCP 169 (2001)).
+  
+  
+```c
+#define ALLOW_SOLIDS 0
+```
+
+- *Description*: Defines whether or not solid objects are allowed).
+- *Possible Values*:
+  - `0`: No solid cells allowed.
+  - `1`: Solid objects are allowed via *stl* files and using IBM (under development).
+  - `2`: Solid cells can be defined through a list as an input file.
 
 #### Solver Selection for Euler equations
 
@@ -370,6 +381,17 @@ int update_initial(t_mesh *mesh);
 ```
 
 - **equilibrium.out**: Input file for equilibrium state (only when considering atmospheric cases). Similar structure than above.
+
+
+- **solid_cells.input**: Input file for the definition of solid cells (`0` if solid) if `#define ALLOW_SOLIDS 2`
+``` 
+VARIABLES = X, Y, Z, sld 
+CELLS = 40, 40, 40,
+0.0075 0.0075 0.0075 0 
+0.0075 0.0075 0.0225 1
+0.0075 0.0075 0.0375 0
+...
+```
 
 ### Output data
 
