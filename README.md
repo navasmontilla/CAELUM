@@ -39,7 +39,7 @@ Compilation flags ```DEBUG``` and ```OMP```, for debugging and for multi-thread 
 
 ```make OMP=0```
 
-*Note*: When using the Python pre-processing scripts, the instructions above do not compile and install the software permanently, since the software is recompiled before every run.
+**Note**: When using the Python pre-processing scripts, the instructions above do not compile and install the software permanently, since the software is recompiled before every run.
 
 This software relies on other dependencies, listed below:
 
