@@ -29,7 +29,7 @@ Regarding the implementation of the solver, `CÆLUM` uses OpenMP, a directive-ba
 
 Go to the desired location where you want to download CAELUM, e.g. ```me@myPc: SomeFolder/$``` and clone the repository in your local computer:
 
-```git clone https://github.com/navasmontilla/CAELUM.git```
+```git clone https://github.com/navasmontilla/CAELUM.git``` 
 
 Go to CAELUM main folder ```me@myPc: SomeFolder/CAELUM/$``` and compile the program using *Makefile* as follows:
 
@@ -38,6 +38,8 @@ Go to CAELUM main folder ```me@myPc: SomeFolder/CAELUM/$``` and compile the prog
 Compilation flags ```DEBUG``` and ```OMP```, for debugging and for multi-thread computing with OpenMP, are defined in ```Makefile```. ```DEBUG=0```  and ```OMP=1```  are set by default. For instance, if you seek serial computing, you can compile as follows:
 
 ```make OMP=0```
+
+*Note*: When using the Python pre-processing scripts, the instructions above do not compile and install the software permanently, since the software is recompiled before every run.
 
 This software relies on other dependencies, listed below:
 
