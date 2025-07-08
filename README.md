@@ -143,6 +143,11 @@ Here is how to submit a pull request to suggest improvements or fix issues:
 - Create a pull request between the base and forked repositories [here](https://github.com/navasmontilla/CAELUM/pulls).
 - Wait for the pull request to be either approved or dismissed.
 
+### Consulting and support
+
+If you need more information or would like to discuss additional topics with the authors, feel free to [contact us](mailto:anavas@unizar.es). For questions or support related to the software's functionality, please open an issue following the guidelines above.
+
+
 
 ## Authorship
 
