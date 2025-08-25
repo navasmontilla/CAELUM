@@ -50,7 +50,7 @@ This software relies on other dependencies, listed below:
 	- *scipy*
  	- *imageio*
 	- *pyvista*
-	- *jupyter notebook*
+	- *jupyter notebook*    
 	
 To install Python3 and the above packages:
 
@@ -59,6 +59,9 @@ sudo apt update
 sudo apt install -y python3 python3-pip
 pip3 install pyvista matplotlib numpy scipy imageio notebook
 ```
+
+Also, for the jupyter notebooks the following package must be installed: `sudo apt install libgl1 xvfb` 
+
 
 Other possibility: you can also do it using a virtual environment in the main folder (```me@myPc: SomeFolder/CAELUM/$```):
 
