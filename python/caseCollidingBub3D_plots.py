@@ -5,10 +5,10 @@ import pyvista as pv
 import imageio
 
 
-folder_case="caseCollidingBub3D2/"
+folder_case="caseCollidingBub3D/"
 script_dir = os.path.dirname(os.path.abspath(__file__))
 folder_out="out/"
-folder_out = os.path.join(script_dir, "../"+folder_case+"/"+folder_out)
+folder_out = os.path.join(script_dir, "../run/"+folder_case+"/"+folder_out)
 
 # Start the virtual framebuffer (Xvfb) to enable off-screen rendering
 pv.start_xvfb()

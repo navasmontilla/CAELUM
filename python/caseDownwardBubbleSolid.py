@@ -37,8 +37,8 @@ fname_config="configure.input"
 fname_eq="equilibrium.out"
 fname_ini="initial.out"
 fname_solids="solid_cells.input"
-folder_out = os.path.join(script_dir, "../"+folder_case+"/"+folder_out)
-folder_case = os.path.join(script_dir, "../"+folder_case)
+folder_out = os.path.join(script_dir, "../run/"+folder_case+"/"+folder_out)
+folder_case = os.path.join(script_dir, "../run/"+folder_case)
 folder_lib = os.path.join(script_dir, "../"+folder_lib)
 folder_exe = os.path.join(script_dir, "../")
 
@@ -61,6 +61,10 @@ modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann 
 modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1
 modify_header_file(folder_lib+'/definitions.h', 'WRITE_LIST', 1)  
 modify_header_file(folder_lib+'/definitions.h', 'ALLOW_SOLIDS', 2)     
+
+#Compilation
+compile_program()
+restore_file(folder_lib+'/definitions.h')
 
 # ### Configure the global simulation parameters
 # 
@@ -163,12 +167,10 @@ write_equilibrium(folder_case, fname_eq, xcells, ycells, zcells, xc, yc, zc, ue,
 write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, w, rho, p, phi)
 write_solid_cells(folder_case, fname_solids, xcells, ycells, zcells, xc, yc, zc, sld)
 
-# ### Compilation and execution
+# ### Execution
 # 
-# The program is compiled and executed:
+# The program is  executed:
 
-compile_program()
-restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./caelum "+folder_case)
 

@@ -35,8 +35,8 @@ folder_lib="lib"
 folder_exact="autotest/caseRPs/exact/"
 fname_config="configure.input"
 fname_ini="initial.out"
-folder_out = os.path.join(script_dir, "../"+folder_case+"/"+folder_out)
-folder_case = os.path.join(script_dir, "../"+folder_case)
+folder_out = os.path.join(script_dir, "../run/"+folder_case+"/"+folder_out)
+folder_case = os.path.join(script_dir, "../run/"+folder_case)
 folder_lib = os.path.join(script_dir, "../"+folder_lib)
 folder_exact = os.path.join(script_dir, "../"+folder_exact)
 folder_exe = os.path.join(script_dir, "../")
@@ -50,6 +50,11 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 # 
 # Here, we can modify those variables that need to be set before compilation and are found in the file *definitions.h*. Don't worry if you mess up things here, a backup of the original file is created before modification and will be restored at the end of this script, after compilation and execution.
 
+######### RIEMANN PROBLEM CASE (configured below) #########
+case = 4
+###########################################################
+
+
 #Do not change the line below, it creates a backup of the definitions.h file
 backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
@@ -58,7 +63,14 @@ modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
 modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann solver used
-modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1    
+modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1 
+if case==4: #RP4
+    modify_header_file(folder_lib+'/definitions.h', 'MULTICOMPONENT', 1)
+    modify_header_file(folder_lib+'/definitions.h', 'MULTI_TYPE', 2)   
+
+#Compilation
+compile_program()
+restore_file(folder_lib+'/definitions.h')
 
 # ### Configure the global simulation parameters
 # 
@@ -103,8 +115,6 @@ xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xc
 # - the equilibrium variables (for atmospheric cases): ```ue, ve, we, rhoe, pe```
 # 
 # Then we can set the initial condition using those variables. To do this, we loop over the three cartesian indexes $(l,m,n)$ and assign the variables, e.g. $\rho(x_l,y_m,z_n)=...$ is set as ```rho[l,m,n]=...```. Cell centers are given by: ```xc[l,m,n]```, ```yc[l,m,n]``` and ```zc[l,m,n]```.
-
-case = 4
 
 if case==1: #RP1 Steady
     FinalTime = 0.011
@@ -154,8 +164,6 @@ if case==3: #RP3
     exactS  = np.loadtxt(folder_exact+"RP3.txt")  
     
 if case==4: #RP4
-    modify_header_file(folder_lib+'/definitions.h', 'MULTICOMPONENT', 1)
-    modify_header_file(folder_lib+'/definitions.h', 'MULTI_TYPE', 2)
     FinalTime = 0.16
     DumpTime = 0.01
     for l in range(0,xcells): 
@@ -195,12 +203,10 @@ write_config(folder_case, fname_config, FinalTime, DumpTime, CFL, Order, xcells,
 write_initial(folder_case, fname_ini, xcells, ycells, zcells, xc, yc, zc, u, v, w, rho, p, phi)
 
 
-# ### Compilation and execution
+# ### Execution
 # 
-# The program is compiled and executed:
+# The program is  executed:
 
-compile_program()
-restore_file(folder_lib+'/definitions.h')
 print("Program is running...")
 run_program(folder_exe+"./caelum "+folder_case)
 
