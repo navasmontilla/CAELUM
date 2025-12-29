@@ -32,6 +32,8 @@ Content:
 #define _p0_ 1.0E5
 
 //Useful definitions
+#define TOL1 1.0E-1
+#define TOL2 1.0E-2
 #define TOL4 1.0E-4
 #define TOL8 1.0E-8
 #define TOL14 1.0E-14
@@ -46,6 +48,9 @@ Content:
 #define epsilon  1.0E-6
 #define epsilon2 1.0E-40
 #define _Q_ 6.0
+#define POSITIVITY 1 //This is 1 if activated, 0 deactivated, positivity fix
+#define TOL_RHO 1.0e-8
+#define TOL_P 1.0e-8
 
 //Equations
 #define EQUATION_SYSTEM 0 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 

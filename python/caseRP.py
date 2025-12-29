@@ -51,7 +51,7 @@ for f in glob(folder_out + "/*.out") + glob(folder_out + "/*.vtk") + glob(folder
 # Here, we can modify those variables that need to be set before compilation and are found in the file *definitions.h*. Don't worry if you mess up things here, a backup of the original file is created before modification and will be restored at the end of this script, after compilation and execution.
 
 ######### RIEMANN PROBLEM CASE (configured below) #########
-case = 4
+case = 6
 ###########################################################
 
 
@@ -79,7 +79,7 @@ restore_file(folder_lib+'/definitions.h')
 #Simulation setup
 DumpTime = 0.5
 CFL = 0.4
-Order = 5
+Order = 7
 
 #Mesh setup
 xcells = 400
@@ -196,6 +196,21 @@ if case==5: #RP5
             phi[l,:,:]=0.0
     exactS  = np.loadtxt(folder_exact+"RP2.txt")  
 
+
+if case==6: #RP6
+    FinalTime = 0.15
+    DumpTime = 0.01
+    for l in range(0,xcells): 
+        if (xc[l,:,:]<0.5):
+            rho[l,:,:]=1.0
+            p  [l,:,:]=0.4
+            u  [l,:,:]=-2.0
+            phi[l,:,:]=1.0
+        else:
+            rho[l,:,:]=1.0
+            p  [l,:,:]=0.4
+            u  [l,:,:]=2.0
+            phi[l,:,:]=0.0
 
 # Now, the configuration and initial condition (and equilibrium) files are written: 
 

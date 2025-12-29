@@ -36,6 +36,9 @@ Content:
   void tke_calculation(t_mesh *mesh, t_sim *sim);
   
   void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps);
+  
+  void positivity_fix(double nvar, t_cell *cell, double *UL, double *UR, double zL, double zR);
+  void positivity_fix_loop(t_mesh *mesh, t_sim *sim);
 
 
 #endif

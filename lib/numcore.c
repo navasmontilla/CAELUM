@@ -281,8 +281,8 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
 
 	mesh->lambda_max=0.0;
 	lambdaMax=mesh->lambda_max;
-//	wall=mesh->wall;
-#pragma omp parallel for default(none) private(wall,phi3,phi5,phi7,order,i,j,k,st) shared(sim,mesh) reduction(max:lambdaMax)
+
+#pragma omp parallel for default(none) private(wall,phi3,phi5,phi7,order,i,j,k,st) shared(sim,mesh)
 	for(n=0;n<mesh->nwalls;n++){
 		wall=&(mesh->wall[n]);
 
@@ -396,7 +396,20 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
             }else{
                   //order==9
             }
+            
+            }
+      }
+      
+      //Positivity fix, reducing to 1st order when pressure or density are below threshold
+      #if POSITIVITY
+      positivity_fix_loop(mesh,sim);
+      #endif
 
+#pragma omp parallel for default(none) private(wall) shared(sim,mesh) reduction(max:lambdaMax)
+	for(n=0;n<mesh->nwalls;n++){
+		wall=&(mesh->wall[n]);
+
+            if(wall->wtype!=0){
 
             if(wall->wtype==1){
 
@@ -653,3 +666,72 @@ void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps){
 
 }
 
+void positivity_fix(double nvar, t_cell *cell, double *UL, double *UR, double zL, double zR) {
+    
+    double uL,uR,vL,vR,wL,wR;
+    double rhoL,rhoR,pL,pR;
+    double gammaL,gammaR;
+    
+    #if MULTICOMPONENT
+		#if MULTI_TYPE==1
+			gammaL=UL[5]/UL[0];
+                  gammaR=UR[5]/UR[0];
+		#else
+			gammaL=1.0+1.0/(UL[5]/UL[0]);
+                  gammaR=1.0+1.0/(UR[5]/UR[0]);
+		#endif
+    #else
+		gammaL=_gamma_;
+            gammaR=_gamma_;
+    #endif
+    
+    // Cell-Left state
+    rhoL = UL[0];                 // density
+    uL   = UL[1]/rhoL;            // velocity x
+    vL   = UL[2]/rhoL;            // velocity y
+    wL   = UL[3]/rhoL;            // velocity z
+    pL   = pressure_from_energy(gammaL, UL[4], uL, vL, wL, rhoL, zL);
+
+    // Cell-Right state
+    rhoR = UR[0];
+    uR   = UR[1]/rhoR;
+    vR   = UR[2]/rhoR;
+    wR   = UR[3]/rhoR;
+    pR   = pressure_from_energy(gammaR, UR[4], uR, vR, wR, rhoR, zR);
+
+    // If either state is unphysical, replace with cell averages
+    if(rhoL < TOL_RHO || pL < TOL_P|| rhoR < TOL_RHO|| pR < TOL_P){
+        for(int k=0;k<nvar;k++){
+            UL[k] = cell->U[k]; // fallback to left cell average
+            UR[k] = cell->U[k]; // fallback to right cell average
+        }
+    }
+}
+
+
+
+void positivity_fix_loop(t_mesh *mesh, t_sim *sim){
+
+	int i;
+	t_cell *cell;
+      t_wall *wallL, *wallR;
+
+#pragma omp parallel for default(none) private(wallL,wallR,cell) shared(sim,mesh)
+	for(i=0;i<mesh->ncells;i++){
+		cell=&(mesh->cell[i]);
+		if(cell->type!=0&&cell->ghost!=1){
+			//X-axis
+                  wallL=cell->w4;
+                  wallR=cell->w2;
+                  positivity_fix(sim->nvar, cell, wallR->UL, wallL->UR, wallR->z, wallL->z);
+                  //Y-axis
+                  wallL=cell->w1;
+                  wallR=cell->w3;
+                  positivity_fix(sim->nvar, cell, wallR->UL, wallL->UR, wallR->z, wallL->z);
+                  //Z-axis
+                  wallL=cell->w5;
+                  wallR=cell->w6;
+                  positivity_fix(sim->nvar, cell, wallR->UL, wallL->UR, wallR->z, wallL->z);
+		}
+	}
+}
