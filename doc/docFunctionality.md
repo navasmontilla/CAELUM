@@ -144,8 +144,9 @@ The file ```lib/definitions.h``` contains some definitions and constants that wi
 - *Description*: Defines whether or not solid objects are allowed).
 - *Possible Values*:
   - `0`: No solid cells allowed.
-  - `1`: Solid objects are allowed via *stl* files and using IBM (under development).
+  - `1`: Solid objects are defined via *stl* files (not recommended; only for very simple geometries).
   - `2`: Solid cells can be defined through a list as an input file.
+  - `3`: Solid objects are defined using Level-Set approach, using the signed distance function (SDF) as input.
 
 #### Solver Selection for Euler equations
 
