@@ -22,6 +22,7 @@ Content:
   int write_list(t_mesh *mesh,char *filename);
   int write_list_eq(t_mesh *mesh,char *filename);
   int write_geo_vtk(t_mesh *mesh, char *filename);
+  int write_extrema(t_mesh *mesh, char *filename);
   void screen_info(t_mesh *mesh, t_sim *sim);
 
 #endif

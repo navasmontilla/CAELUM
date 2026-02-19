@@ -48,8 +48,8 @@ struct t_cell_{
 	double *U_aux; //aux array of conserved variables for RK stepping
 	double *Ue; //array of conserved variables for the equilibrium state
 	double *S; //array of source terms
-	double *S_corr; //source term correction for well-balancing
-	double pres,prese,u_int; 
+	double S_corr; //source term correction for well-balancing
+	double pres,prese,u_int,pmax; 
 	double dx,dy,dz; //cell sizes
 	double xc,yc,zc; //cell centers
 	
@@ -57,8 +57,8 @@ struct t_cell_{
 	int w1_id,w2_id,w3_id,w4_id,w5_id,w6_id; //ID's of the walls of the cell
 	t_wall *w1, *w2, *w3, *w4, *w5, *w6; //pointer to cell walls
 
-	int type; //Cell type: 0=solid, 1=nomal
-	int ghost; //Ghost cell: 0=no, 1=yes
+	int type; //Cell type: 0=solid, 1=fluid, 2=ghost
+      double sdf,nr[3]; //signed distance to solids
 	double xim,yim,zim;
 	int ni[8]; //id: for each ghost cell, neighbors of image points.
 	double li[8],distabs;
@@ -68,6 +68,7 @@ struct t_cell_{
 	t_triangle *tri;
 	int st_sizeX, st_sizeY, st_sizeZ;	//stencil size
 	int stX[9], stY[9], stZ[9];		//id's of the cells in the X and Y stencil.
+      int troubled;
 
 };
 
@@ -85,6 +86,7 @@ struct t_wall_{
 	double z; //height in z direction
       int wtype, boundId; //wtype: 1 for inner walls, 3 for transmissive boundary walls and 4 for solid walls
       double vel; //advection velocity projected onto the wall normal
+      int boundary; //=1 if wall belongs to a boundary
 };
 
 

@@ -28,7 +28,7 @@ import pyvista as pv
 #This test case will run in the folder "caseRP3D/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseBuildings/" 
+folder_case="caseDoubleMach/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -61,12 +61,10 @@ modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 48)         #number 
 modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 0)
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
 modify_header_file(folder_lib+'/definitions.h', 'ST', 0)               #Source term type
-modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 1)           #Riemann solver used
+modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann solver used
 modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1
-modify_header_file(folder_lib+'/definitions.h', 'WRITE_LIST', 0)  
+modify_header_file(folder_lib+'/definitions.h', 'WRITE_LIST', 1)  
 modify_header_file(folder_lib+'/definitions.h', 'print_POTENTIALTEM', 0)  
-modify_header_file(folder_lib+'/definitions.h', 'print_VELOCITY', 0)  
-modify_header_file(folder_lib+'/definitions.h', 'print_ENERGY', 0)  
 modify_header_file(folder_lib+'/definitions.h', 'ALLOW_SOLIDS', 2)  
 
 #Compilation
@@ -79,24 +77,24 @@ restore_file(folder_lib+'/definitions.h')
 
 #Simulation setup
 FinalTime = 0.2
-DumpTime = 0.1 #antes 0.02
-CFL = 0.2 #0.4 in 2D
+DumpTime = 0.1
+CFL = 0.4 #0.4 in 2D
 Order = 7
 
 #Mesh setup
 xcells = 300
-ycells = 300
-zcells = 300
-SizeX = 100.0
-SizeY = 100.0
-SizeZ = 100.0
+ycells = 200
+zcells = 1
+SizeX = 3.0
+SizeY = 2.0
+SizeZ = 1.0
 
 #Boundary conditions
-Face_1 = 3 #-y
+Face_1 = 4 #-y
 Face_2 = 3 #+x
 Face_3 = 3 #+y
 Face_4 = 3 #-x
-Face_5 = 4 #-z
+Face_5 = 3 #-z
 Face_6 = 3 #+z
 
 #Linear transport, only if applicable
@@ -123,63 +121,24 @@ sld = np.zeros((xcells, ycells, zcells),dtype=int) #initialize solid cells
 for l in range(0,xcells): 
     for m in range(0,ycells):
         for n in range(0,zcells):
-            xp=50.0;
-            yp=50.0
-            zp=50.0;
-            rc=np.sqrt((xc[l,m,n]-xp)*(xc[l,m,n]-xp)+(yc[l,m,n]-yp)*(yc[l,m,n]-yp)+(zc[l,m,n]-zp)*(zc[l,m,n]-zp));
             
-            if rc < 10.0:
-                p  [l,m,n] = 15.e5
-                rho[l,m,n] = 5.2
-                u  [l,m,n] = 0.0
+            if xc[l,m,n] < 0.50:
+                p  [l,m,n] = 116.5
+                rho[l,m,n] = 8
+                u  [l,m,n] = 8.25
                 v  [l,m,n] = 0.0
                 phi[l,m,n] = 1.0
             else:
-                p  [l,m,n] = 1.e5
-                rho[l,m,n] = 1.2
+                p  [l,m,n] = 1.0
+                rho[l,m,n] = 1.4
                 u  [l,m,n] = 0.0
                 v  [l,m,n] = 0.0
                 phi[l,m,n] = 0.0
                 
-            # ------------------------------
-            #   Edificios prismáticos
-            # ------------------------------
 
-            # Edificio A (bloque bajo)
-            # x=[10,25], y=[10,25], altura z=[0,15]
-            if (10.0 <= xc[l,m,n] < 25.0 and
-                10.0 <= yc[l,m,n] < 25.0 and
-                 0.0 <= zc[l,m,n] < 15.0):
+            if (yc[l,m,n] < (xc[l,m,n]-0.5)/np.sqrt(3.0)):
                 sld[l,m,n] = 0
                 continue
-
-            # Edificio B (torre mediana)
-            # x=[40,55], y=[20,35], altura z=[0,35]
-            if (40.0 <= xc[l,m,n] < 55.0 and
-                20.0 <= yc[l,m,n] < 35.0 and
-                 0.0 <= zc[l,m,n] < 35.0):
-                sld[l,m,n] = 0
-                continue
-
-            # Edificio C (rascacielos)
-            # x=[70,85], y=[70,85], altura z=[0,60]
-            if (70.0 <= xc[l,m,n] < 85.0 and
-                70.0 <= yc[l,m,n] < 85.0 and
-                 0.0 <= zc[l,m,n] < 60.0):
-                sld[l,m,n] = 0
-                continue
-                
-            # ------------------------------
-            #   Edificio D (base circular)
-            # ------------------------------
-
-            dx = xc[l,m,n] - 20.0
-            dy = yc[l,m,n] - 70.0
-            if (0.0 <= zc[l,m,n] < 50.0 and
-                dx*dx + dy*dy <= (8.0)**2):  
-                sld[l,m,n] = 0
-                continue
-
 
             # Celda normal (aire exterior)
             sld[l,m,n] = 1
@@ -200,88 +159,115 @@ run_program(folder_exe+"./caelum "+folder_case)
 
 
 
-# # ## RENDERING IN 3D
+### Reading data and plotting
+# 
+# To read data, we use the function ```read_data_euler()``` which gives as output the numerical solution for all time levels, e.g.  $\rho(x_l,y_m,z_n,t_j)$ is ```rho[l,m,n,j]```, where ```j``` is the time level.
+# 
+# This can be customized for each particular case. 
 
-# # Start the virtual framebuffer (Xvfb) to enable off-screen rendering
-# pv.start_xvfb()
+files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
+lf = len(files)
+lf=len(files)
+print(files)
 
-# # Find output files
-# vtk_files = glob(folder_out + "/*.vtk")
+gamma=1.4
+j=0
+print("Printing figures in folder"+folder_out)
 
-# # Filter files that contain digits in their filenames
-# vtk_files_with_digits = [f for f in vtk_files if re.search(r'\d+', os.path.basename(f))]
+images = []  # List to hold all the images for the GIF
 
-# # Sort the filtered files by the first sequence of digits found in the filenames
-# files = sorted(vtk_files_with_digits, key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
-# lf=len(files)
-# print(files)
-
-# j=0
-# images = [] 
-# print("Printing figures in folder"+folder_out)
-
-# for fname in files:
+for fname in files:
     
-    # vtk_file = fname
-    # data = pv.read(vtk_file)
-    # grid = data.compute_cell_sizes().cell_data_to_point_data()
+    u, v, w, rho, p, phi, theta, E = read_data_euler(fname, xcells, ycells, zcells, lf, gamma, j)
+                  
+    filename = fname+"_doublemach"
     
-    # # Create a 1x2 subplot (side by side views)
-    # plotter = pv.Plotter(shape=(1, 2), window_size=[2200, 1400], off_screen=True)
+    xp = xc[:,0,0]     
+    yp = yc[0,:,0]      
+    X, Y = np.meshgrid(xp, yp)    #matriz de puntos
+    Srho=np.transpose(rho[:,:,0,j])
+    Spres=np.transpose(p[:,:,0,j])
+    Svel=np.transpose(np.sqrt(u[:,:,0,j]**2+w[:,:,0,j]**2))
+    Senr=np.transpose(E[:,:,0,j])
+    Sphi=np.transpose(phi[:,:,0,j])
+    Su=np.transpose(u[:,:,0,j])
     
-    # # Left view - 3D contour plot
-    # plotter.subplot(0, 0)  # Select the left subplot
-    # contour_values = [1.1, 1.5, 2.0]
-    # contours = grid.contour(isosurfaces=contour_values, scalars="rho") 
-    # if contours.n_points > 0:
-        # plotter.add_mesh(contours, cmap="coolwarm", scalars="rho", opacity=0.4)
+    lev=[0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
+    fig, ax = plt.subplots(figsize=(7, 4))   
+    #levels = np.linspace(0, 4, 10)
+    #print(levels)
+    plot1=ax.contour(X, Y, Srho, levels=lev, colors="k",linewidths=0.5)  
+    plot1=ax.contourf(X, Y, Srho, levels=lev, cmap='RdBu')   
+    ax.set_title('Density')
+    ax.set_xlabel("x") 
+    ax.set_ylabel("y") 
+    ax.set_xlim([0,3]) 
+    ax.set_ylim([0,2]) 
+    ax.set_aspect('equal', 'box')
+    #plot1.set_clim( 2, 23 )
+    # Create colorbar
+    cbar = plt.colorbar(plot1)
+    cbar.ax.set_title('ρ')
     
-    # contour_values = -0.9
-    # contours = grid.contour(isosurfaces=[contour_values], scalars="rho") 
-    # if contours.n_points > 0:
-        # plotter.add_mesh(contours, color="gray", scalars="rho", opacity=0.9)
+    image_path = filename + ".png"
+    fig.savefig(image_path,dpi=250)
+    images.append(imageio.imread(image_path)) 
     
-    # # Set the camera for the left view
-    # plotter.camera_position = [
-        # (320, 320, 210),  # Camera position (x, y, z)
-        # (50, 50, 50),  # Focal point (center of the object)
-        # (0, 0, 1),  # View up vector (defines the up direction)
-    # ]
-    # plotter.add_bounding_box(color='black')
-    # plotter.show_axes()
+    plt.close(fig)
+    
+    # =====================================================
+    # Rotated detail around (0.5, 0) - 30 degrees
+    # =====================================================
 
-    # # Right view - Sliced plane
-    # plotter.subplot(0, 1)  # Select the right subplot
-    # sliced_grid = grid.slice(normal=(0, 0, 1), origin=(50, 50, 20))
-    # plotter.add_mesh(sliced_grid, cmap="coolwarm", scalars="pres", opacity=1.0)
-    # sliced_grid = grid.slice(normal=(0, 1, 0), origin=(50, 50, 50))
-    # plotter.add_mesh(sliced_grid, cmap="coolwarm", scalars="rho", opacity=0.30)
-    # contour_values = -0.9
-    # contours = grid.contour(isosurfaces=[contour_values], scalars="rho") 
-    # if contours.n_points > 0:
-        # plotter.add_mesh(contours, color="gray", scalars="rho", opacity=0.5)
-    
-    # # Set the camera for the right view (same as left for consistency)
-    # plotter.camera_position = [
-        # (320, 320, 210),  # Camera position (x, y, z)
-        # (50, 50, 50),  # Focal point (center of the object)
-        # (0, 0, 1),  # View up vector (defines the up direction)
-    # ]
-    # plotter.add_bounding_box(color='black')
-    # plotter.show_axes()
+    x0 = 0.5
+    y0 = 0.0
+    theta = np.deg2rad(30)
 
-    # # Save screenshot and image
-    # image_path = fname + ".png"
-    # plotter.show(screenshot=image_path)
-    # img = plotter.screenshot(return_img=True)
-    # images.append(img)
+    Lx = 7   # length along rotated direction
+    Ly = 3   # width perpendicular
+
+    # Translate
+    Xt = X - x0
+    Yt = Y - y0
+
+    # Rotate coordinates
+    Xr =  Xt*np.cos(theta) + Yt*np.sin(theta)
+    Yr = -Xt*np.sin(theta) + Yt*np.cos(theta)
+
+    # Mask rotated rectangle
+    mask = (np.abs(Xr) <= Lx/2) & (np.abs(Yr) <= Ly/2)
+
+    Srho_detail = np.where(mask, Srho, np.nan)
+
+    # ---- Create detail figure ----
+    fig2, ax2 = plt.subplots(figsize=(6, 4))
+
+    lev=[0,1,2,3,4,5,5.5,6,6.5,7,7.5,8.5,9,9.5,10,10.5,11,12,13,14,15,16,17,18,19,20,21,22]
+    plot2 = ax2.contourf(Xr, Yr, Srho_detail, 128, cmap='RdBu')
+    ax2.contour(Xr, Yr, Srho_detail, levels=lev, colors="k", linewidths=0.3)
+
+    ax2.set_xlabel("x")
+    ax2.set_ylabel("y")
+    ax2.set_aspect('equal', 'box')
+
+    # Zoom view limits (important!)
+    ax2.set_xlim([2.0, 2.8])
+    ax2.set_ylim([0, 0.5])
+
+    cbar2 = plt.colorbar(plot2)
+    cbar2.ax.set_title('ρ')
+
+    plt.tight_layout()
+
+    # ---- Save detail image with new name ----
+    detail_name = fname + "_doublemach_detail"
+    detail_path = detail_name + ".png"
+
+    fig2.savefig(detail_path, dpi=250)
+    plt.close(fig2)
     
-    # j += 1
+    j=j+1
          
-         
 
-# gif_path = os.path.join(folder_out, "animation.gif")
-# imageio.mimsave(gif_path, images, fps=2, loop=0)  # Adjust the duration as needed
-
-
-
+gif_path = os.path.join(folder_out, "animation.gif")
+imageio.mimsave(gif_path, images, duration=0.01, loop=0)  # Adjust the duration as needed

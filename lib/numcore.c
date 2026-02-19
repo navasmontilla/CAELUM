@@ -39,7 +39,7 @@ void update_cell(t_mesh *mesh, t_sim *sim){
 
 	cell=mesh->cell;
 	for(i=0;i<mesh->ncells;i++){
-		if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz );
 		}
@@ -64,7 +64,7 @@ void update_cellK1(t_mesh *mesh, t_sim *sim){
 #pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
-		if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U_aux[k]=cell->U[k];
 			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
@@ -83,7 +83,7 @@ void update_cellK2(t_mesh *mesh, t_sim *sim){
 #pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
-		if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]=0.75*cell->U_aux[k]+0.25*cell->U[k]-0.25*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 
@@ -102,7 +102,7 @@ void update_cellK3(t_mesh *mesh, t_sim *sim){
 #pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
-		if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
 			cell->U[k]=(1.0/3.0)*cell->U_aux[k]+(2.0/3.0)*cell->U[k]-(2.0/3.0)*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
 
@@ -259,8 +259,8 @@ int equilibrium_reconstruction(t_mesh *mesh, t_sim *sim){
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
 		if(cell->type!=0){
-			cell->S_corr[3] = (cell->w6->pLe-cell->w5->pRe)/cell->dz + _g_*cell->Ue[0];
-			//cell->S_corr[3] = (cell->w6->ULe[4]-cell->w5->URe[4])*(_gamma_-1.0)/cell->dz + _g_*cell->Ue[0]; this is only valid for static equilibrium
+			cell->S_corr = (cell->w6->pLe-cell->w5->pRe)/cell->dz + _g_*cell->Ue[0];
+			//cell->S_corr= (cell->w6->ULe[4]-cell->w5->URe[4])*(_gamma_-1.0)/cell->dz + _g_*cell->Ue[0]; this is only valid for static equilibrium
 		}
 	}
 
@@ -340,8 +340,7 @@ int compute_fluxes(t_mesh *mesh, t_sim *sim){
             }else{
                   //order==9
             }
-
-
+        
 
             //LEFT RECONSTRUCTION
             if(wall->nx<TOL4 && wall->nz<TOL4){
@@ -483,8 +482,10 @@ void compute_transport(t_wall *wall){
 
 
 void compute_source(t_mesh *mesh){
-
-	int i;
+      
+      #if ST!=0&&EQUATION_SYSTEM==2
+      
+      int i;
 	t_cell *cell;
 
 #pragma omp parallel for default(none) private(cell) shared(mesh)
@@ -492,7 +493,7 @@ void compute_source(t_mesh *mesh){
 		cell=&(mesh->cell[i]);
 		#if ST==1
 		if(cell->type!=0&&cell->st_sizeZ>1){     //This is the implementation of gravity force in -Z direction
-			cell->S[3]= -_g_*cell->U[0] + cell->S_corr[3];
+			cell->S[3]= -_g_*cell->U[0] + cell->S_corr;
 			cell->S[4]= -_g_*cell->U[3];
 		}
 		#elif ST==2
@@ -507,6 +508,8 @@ void compute_source(t_mesh *mesh){
 		}
 		#endif
 	}
+      
+      #endif
 }
 
 int update_cell_boundaries(t_mesh *mesh){
@@ -619,48 +622,68 @@ void tke_calculation(t_mesh *mesh, t_sim *sim){
 }
 
 
+void pmax_calculation(t_mesh *mesh, t_sim *sim){
 
-void update_solution(t_mesh *mesh, t_sim *sim, t_solid *solids, int rk_steps){
+#if EQUATION_SYSTEM==2
+	int i;
+      double gamma,u,v,w;
+      t_cell *cell;
+#pragma omp parallel for default(none) shared(mesh) private(cell,gamma,u,v,w)
+	for(i=0;i<mesh->ncells;i++){
+            cell=&(mesh->cell[i]);
+            if(cell->type!=0){
+                  
+                  #if MULTICOMPONENT
+                  #if MULTI_TYPE==1
+                        gamma=cell->U[5]/cell->U[0];
+                  #else
+                        gamma=1.0+1.0/(cell->U[5]/cell->U[0]);
+                  #endif
+                  #else
+                        gamma=_gamma_;
+                  #endif
+                  u=cell->U[1]/cell->U[0];
+                  v=cell->U[2]/cell->U[0];
+                  w=cell->U[3]/cell->U[0];
+                  cell->pres=pressure_from_energy(gamma, cell->U[4], u, v, w, cell->U[0], cell->zc);
+                  cell->pmax=fmax(cell->pmax,cell->pres);
+            }
+	}
+      
+#endif
+}
 
-	int k;
+
+
+void update_solution(t_mesh *mesh, t_sim *sim){
+
+	int k,rk_steps;
+      
+      rk_steps = sim->rk_steps;
 
 	for(k=1;k<=rk_steps;k++){
 		if(k==1){
-			compute_fluxes(mesh,sim);
-			#if ST!=0&&EQUATION_SYSTEM==2
-				compute_source(mesh);
-			#endif
+			compute_fluxes(mesh,sim); 
+			compute_source(mesh);
 			update_dt(mesh,sim);
 			if(rk_steps==1){
 				update_cell(mesh,sim);
-				#if ALLOW_SOLIDS==1
-					update_ghost_cells(sim,mesh,solids);
-				#endif
+				update_ghost_cells(sim,mesh);
 			}else{
 				update_cellK1(mesh,sim);
-				#if ALLOW_SOLIDS==1
-					update_ghost_cells(sim,mesh,solids);
-				#endif                               
-			}
+				update_ghost_cells(sim,mesh);                            
+			} 
 
 		}else if(k==2){
 			compute_fluxes(mesh,sim);
-			#if ST!=0&&EQUATION_SYSTEM==2
-				compute_source(mesh);
-			#endif
+			compute_source(mesh);
 			update_cellK2(mesh,sim);
-			#if ALLOW_SOLIDS==1
-				update_ghost_cells(sim,mesh,solids);
-			#endif   				
+			update_ghost_cells(sim,mesh);  
 		}else{ //k=3
 			compute_fluxes(mesh,sim);
-			#if ST!=0&&EQUATION_SYSTEM==2
-				compute_source(mesh);
-			#endif
+			compute_source(mesh);
 			update_cellK3(mesh,sim);
-			#if ALLOW_SOLIDS==1
-				update_ghost_cells(sim,mesh,solids);
-			#endif     
+			update_ghost_cells(sim,mesh);     
 		}
 	}
 
@@ -704,6 +727,7 @@ void positivity_fix(double nvar, t_cell *cell, double *UL, double *UR, double zL
         for(int k=0;k<nvar;k++){
             UL[k] = cell->U[k]; // fallback to left cell average
             UR[k] = cell->U[k]; // fallback to right cell average
+            cell->troubled = 1;
         }
     }
 }
@@ -719,7 +743,7 @@ void positivity_fix_loop(t_mesh *mesh, t_sim *sim){
 #pragma omp parallel for default(none) private(wallL,wallR,cell) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
-		if(cell->type!=0&&cell->ghost!=1){
+		if(cell->type==1){
 			//X-axis
                   wallL=cell->w4;
                   wallR=cell->w2;

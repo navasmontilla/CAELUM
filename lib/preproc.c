@@ -325,7 +325,6 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 		mesh->cell[k].U_aux=(double*)malloc(sim->nvar*sizeof(double));
 		mesh->cell[k].Ue   =(double*)malloc(sim->nvar*sizeof(double));
 		mesh->cell[k].S=    (double*)malloc(sim->nvar*sizeof(double));
-            mesh->cell[k].S_corr=    (double*)malloc(sim->nvar*sizeof(double));
 	}
 
 	for(k=0;k<mesh->nwalls;k++){
@@ -337,8 +336,13 @@ int create_mesh(t_mesh *mesh, t_sim *sim){
 	for(n=0;n<mesh->ncells;n++){
 		for(k=0;k<sim->nvar;k++){
 			cell[n].S[k]=0.0 ;
-                  cell[n].S_corr[k]=0.0 ;
 		}
+            cell[n].S_corr=0.0 ;
+            cell[n].pmax=0.0 ;
+            cell[n].troubled=0;
+            cell[n].nr[0]=0;
+            cell[n].nr[1]=0;
+            cell[n].nr[2]=0;
 	}
 
 	for(n=0;n<mesh->ncells;n++){
@@ -362,7 +366,7 @@ int read_solid_cells(t_mesh *mesh, const char *folder_path){
 	FILE *fp;
 	char fname[1024];
     
-    t_cell *cell;
+      t_cell *cell;
 	cell=mesh->cell;
 	ct=0;
       
@@ -387,6 +391,66 @@ int read_solid_cells(t_mesh *mesh, const char *folder_path){
 				getchar();
 				}
 				cell[k].type=tp;
+				}
+			}
+		}
+
+		fclose(fp);
+
+		printf("%s solid_cells.input file has been read \n",OK);
+	}else{
+		printf("%s File solid_cells.input not found. \n",WAR);
+		ct=1;
+	}
+    
+    return ct;
+}
+
+
+int read_solid_cells_sdf(t_mesh *mesh, const char *folder_path){
+	int m,k,l,n,ct;
+      double sdf,width;
+	FILE *fp;
+	char fname[1024];
+    
+      t_cell *cell;
+	cell=mesh->cell;
+	ct=0;
+      
+      width=MAX(mesh->dx,mesh->dy);
+      width=MAX(width,mesh->dz);
+      width=_stol_*width;
+      
+    snprintf(fname, sizeof(fname), "%s/solid_cells.input", folder_path);
+	fp = fopen(fname,"r");
+      
+	if (fp != NULL){
+		// Skip the first line
+		if (fscanf(fp, "%*[^\n]\n") != 0) {
+		  printf("Warning: Failed to skip the first line.\n");
+		}
+        if (fscanf(fp, "%*[^\n]\n") != 0) {
+		  printf("Warning: Failed to skip the first line.\n");
+		}
+
+		for(l=0;l<mesh->xcells;l++){
+			for(m=0;m<mesh->ycells;m++){
+				for(n=0;n<mesh->zcells;n++){
+                              k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                              if (fscanf(fp, "%*f %*f %*f %lf", &sdf) != 1) {
+                              printf("%s Error: Failed to read solid cells data \n",WAR);
+                              getchar();
+                              }
+                              cell[k].sdf=sdf;
+                              if(sdf>0){
+                                    cell[k].type=1;  
+                              }else if(ABS(sdf)<width){
+                                    cell[k].type=2;
+                                    //printf("%14.14e %14.14e\n",ABS(sdf),width);
+                                    //printf("%d\n",cell[k].type);
+                              }else{
+                                    cell[k].type=0;
+                              }
 				}
 			}
 		}
@@ -761,7 +825,8 @@ int assign_wall_type(t_mesh *mesh){
             wall=&(mesh->wall[n]);
             wall->wtype=1;          //by default: 1= normal RP wall
             wall->boundId=999;    //999 when the wall is not at any boundary. Otherwise: 1, 2, 3, 4, 5, 6.
-
+            wall->boundary=0;
+            
             #if ALLOW_SOLIDS!=0
 
 
@@ -817,7 +882,7 @@ int assign_wall_type(t_mesh *mesh){
                   }else{
                         wall->wtype=0;
                   }
-
+                  wall->boundary=1;
             }
       }
 
@@ -832,6 +897,7 @@ int assign_wall_type(t_mesh *mesh){
                   }else{
                         wall->wtype=0;
                   }
+                  wall->boundary=1;
             }
       }
 
@@ -847,6 +913,7 @@ int assign_wall_type(t_mesh *mesh){
                   }else{
                         wall->wtype=0;
                   }
+                  wall->boundary=1;
             }
       }
 
@@ -862,6 +929,7 @@ int assign_wall_type(t_mesh *mesh){
                   }else{
                         wall->wtype=0;
                   }
+                  wall->boundary=1;
             }
       }
 
@@ -876,6 +944,7 @@ int assign_wall_type(t_mesh *mesh){
                   }else{
                         wall->wtype=0;
                   }
+                  wall->boundary=1;
             }
       }
 
@@ -890,6 +959,7 @@ int assign_wall_type(t_mesh *mesh){
                   }else{
                         wall->wtype=0;
                   }
+                  wall->boundary=1;
             }
       }
 
@@ -912,15 +982,76 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
       int solx,soly,solz;
       t_triangle *triangle;
 #endif
+#if ALLOW_SOLIDS==3
+      int kp,km;
+      double nx,ny,nz;
+      double modn;
+#endif
 
       cell=mesh->cell;
       for(k=0;k<mesh->ncells;k++){
-            cell[k].type=1;          //by default 1.    1= computed cell, 0= solid cell (not computed cell)
-            cell[k].ghost=0;
+            cell[k].type=1;          //by default 1.    1= fluid cell, 0= solid cell, 2= ghost cell
       }
 
 #if ALLOW_SOLIDS==2 // Solid cells are directly read from a file
 	read_solid_cells(mesh,folder_path);
+#endif
+
+#if ALLOW_SOLIDS==3 // Solid cells are computed from SDF level-set input data
+      read_solid_cells_sdf(mesh,folder_path);
+      //bucle celdas, check type=2, calcular normal y pto imagen o poner a solida si esta en bordes
+      for(n=0;n<mesh->zcells;n++){
+            for(m=0;m<mesh->ycells;m++){
+                  for(l=0;l<mesh->xcells;l++){
+                        k = l + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                        if(cell[k].type==2){
+                              //if (l>0 && l<(mesh->xcells-1) && m>0 && m<(mesh->ycells-1) && n>0 && n<(mesh->zcells-1)) {
+                                    
+                                    if (l>0 && l<(mesh->xcells-1)){
+                                          kp = l+1 + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                                          km = l-1 + m*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                                          nx = 0.5 * (cell[kp].sdf - cell[km].sdf)/mesh->dx;
+                                    }else{
+                                          nx=0.0;
+                                    }
+                                    
+                                    if (m>0 && m<(mesh->ycells-1)){
+                                    kp = l + (m+1)*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                                    km = l + (m-1)*mesh->xcells + n*mesh->xcells*mesh->ycells;
+                                    ny = 0.5 * (cell[kp].sdf - cell[km].sdf)/mesh->dy;
+                                    }else{
+                                          ny=0.0;
+                                    }
+                                    
+                                    if (n>0 && n<(mesh->zcells-1)){
+                                    kp = l + m*mesh->xcells + (n+1)*mesh->xcells*mesh->ycells;
+                                    km = l + m*mesh->xcells + (n-1)*mesh->xcells*mesh->ycells;
+                                    nz = 0.5 * (cell[kp].sdf - cell[km].sdf)/mesh->dz;
+                                    }else{
+                                          nz=0.0;
+                                    }
+                                    
+                                    modn=sqrt(nx*nx+ny*ny+nz*nz)+TOL8;
+                                    
+                                    cell[k].nr[0]=nx/modn;
+                                    cell[k].nr[1]=ny/modn;
+                                    cell[k].nr[2]=nz/modn;
+                                    
+                                    cell[k].xim = cell[k].xc - 2.0*cell[k].sdf*cell[k].nr[0];
+                                    cell[k].yim = cell[k].yc - 2.0*cell[k].sdf*cell[k].nr[1];
+                                    cell[k].zim = cell[k].zc - 2.0*cell[k].sdf*cell[k].nr[2];
+                                    
+                                    
+                                    
+                             // }else{
+                             //       cell[k].type = 0;
+                             // }
+                              
+                        }  
+                  }
+            }
+      }
+      
 #endif
 
 #if ALLOW_SOLIDS==1 // Solid cells are computed from STL object files
@@ -958,8 +1089,8 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                                 dif[2]=cell[n].zc-triangle[m].p1[2]; //vector from cell center to node P1 (z-component)
                                                 proj=dif[0]*triangle[m].nr[0]+dif[1]*triangle[m].nr[1]+dif[2]*triangle[m].nr[2]; //vector from cell center to triangle P1, projected onto normal direction
                                                 dist=proj/triangle[m].absnr;
-                                                if (proj>0 && cell[n].ghost>0 && fabs(dist)<cell[n].distabs){ // if a cell has been tagged as "ghost" and is now found outside of other triangle, it is reverted as "fluid cell"
-                                                      cell[n].ghost=0;
+                                                if (proj>0 && cell[n].type==2 && fabs(dist)<cell[n].distabs){ // if a cell has been tagged as "ghost" and is now found outside of other triangle, it is reverted as "fluid cell"
+                                                      cell[n].type=1;
                                                 }
                                                 if (proj<=0&&cell[n].out<1) { //when proj<0 and the cell is not already outside of other triangle, the cell center is inside the solid (below the surface)
                                                       if (fabs(dist)<dp) {
@@ -985,7 +1116,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                                             if (s1>0 && s2>0 &&  s3>0) { // when all are positive (same vector product direction), the point xc is inside the triangle
                                                                   //cell[n].type=0;
                                                                   if(fabs(dist)<cell[n].distabs){  // the condition before may happen for many triangles, so we keep the closest to the interface
-                                                                        cell[n].ghost=1;
+                                                                        cell[n].type=2;
                                                                         cell[n].solid_id=l;
                                                                         cell[n].triangle_id=m;
                                                                         cell[n].tri=&(triangle[m]);
@@ -1025,7 +1156,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                     for(k=solids->stl[l].imin[2];k<=solids->stl[l].imax[2];k++){
 
                                           n= mesh->xcells*j + i + k*mesh->xcells*mesh->ycells;
-                                          if(cell[n].ghost!=1){
+                                          if(cell[n].type!=2){
 
                                                 solx=0;
                                                 soly=0;
@@ -1036,7 +1167,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                                 ct=0; // we define a counter and only if ct is greater or equal to 2, solids are defined, to prevent from individual ghost cells generating solid lines
                                                 for (i1=0;i1<mesh->xcells;i1++){ //loop over lines to determine the closest interface to a point, in x-direction
                                                       na=mesh->xcells*j + i1 + k*mesh->xcells*mesh->ycells;
-                                                      if(cell[na].ghost==1){
+                                                      if(cell[na].type==2){
                                                             ct+=1; //counter to check the number of ghost cells in a line
                                                             df=abs(i1-i); //distance from i1 to i
                                                             if(df<=df0){
@@ -1066,7 +1197,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                                 ct=0;
                                                 for (i2=0;i2<mesh->ycells;i2++){
                                                       na=mesh->xcells*i2 + i + k*mesh->xcells*mesh->ycells;
-                                                      if(cell[na].ghost==1){
+                                                      if(cell[na].type==2){
                                                             ct+=1;
                                                             df=abs(i2-j);
                                                             if(df<=df0){
@@ -1091,7 +1222,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                                 ct=0;
                                                 for (i3=0;i3<mesh->zcells;i3++){
                                                       na=mesh->xcells*j + i + i3*mesh->xcells*mesh->ycells;
-                                                      if(cell[na].ghost==1){
+                                                      if(cell[na].type==2){
                                                             ct+=1;
                                                             df=abs(i3-k);
                                                             if(df<=df0){
@@ -1132,7 +1263,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                     for(k=solids->stl[l].imin[2];k<=solids->stl[l].imax[2];k++){
 
                                           n= mesh->xcells*j + i + k*mesh->xcells*mesh->ycells;
-                                          if(cell[n].ghost!=1){
+                                          if(cell[n].type!=2){
 
                                           ct=0;
                                           if(cell[n].type==0){
@@ -1278,6 +1409,8 @@ int update_stencils(t_mesh *mesh,t_sim *sim){
 				if(mesh->xcells<sim->order){cell[k].st_sizeX=1;}
 				if(mesh->ycells<sim->order){cell[k].st_sizeY=1;}
 				if(mesh->zcells<sim->order){cell[k].st_sizeZ=1;}
+                        
+                        if(cell[k].type==0){cell[k].st_sizeX=1;cell[k].st_sizeY=1;cell[k].st_sizeZ=1;}
 					
                   }
             }

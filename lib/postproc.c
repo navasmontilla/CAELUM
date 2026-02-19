@@ -286,7 +286,6 @@ int write_list_eq(t_mesh *mesh, char *filename){
 
 int write_geo_vtk(t_mesh *mesh, char *filename){
 
-
 	int i,j;
 	FILE *fp;
 	fp=fopen(filename,"w");
@@ -343,16 +342,84 @@ int write_geo_vtk(t_mesh *mesh, char *filename){
 	for(j=0;j<mesh->ncells;j++){
 	   	fprintf(fp,"%d \n",mesh->cell[j].type);
 	}
-      fprintf(fp,"SCALARS ghostCell INTEGER \n");
+      #if ALLOW_SOLIDS==3
+      fprintf(fp,"VECTORS normal double\n");
+      for (j = 0; j < mesh->ncells; j++) {
+          fprintf(fp, "%lf %lf %lf\n",
+                  mesh->cell[j].nr[0],
+                  mesh->cell[j].nr[1],
+                  mesh->cell[j].nr[2]);
+      }
+      fprintf(fp,"SCALARS SignedDistance DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-	   	fprintf(fp,"%d \n",mesh->cell[j].ghost);
+	   	fprintf(fp,"%f \n",mesh->cell[j].sdf);
 	}
+      #endif
+      
 
 
 	fclose(fp);
-	printf("%s An VTK has been dumped: %s\n",OK,filename);
+	printf("%s A VTK has been written: %s\n",OK,filename);
 
+
+	return 1;
+}
+
+
+int write_extrema(t_mesh *mesh, char *filename){
+
+#if EQUATION_SYSTEM == 2 
+	int i,j;
+	FILE *fp;
+	fp=fopen(filename,"w");
+
+	// Write file header
+	fprintf(fp,"# vtk DataFile Version 2.0\n");
+	fprintf(fp,"Output file from Euler\n");
+	fprintf(fp,"ASCII\n");
+	fprintf(fp,"DATASET UNSTRUCTURED_GRID\n");
+
+	// Write node coordinates
+	fprintf(fp,"POINTS %d double \n",mesh->nnodes);
+	for (i=0;i<mesh->nnodes;i++){
+	   fprintf(fp,"%lf %lf %lf\n", mesh->node[i].x, mesh->node[i].y, mesh->node[i].z);
+	}
+
+	//Write cell-node connectivity
+	fprintf(fp,"CELLS %d %d \n",mesh->ncells,mesh->ncells*(8+1));
+	for(i=0;i<mesh->ncells;i++){
+		fprintf(fp,"8 %d %d %d %d %d %d %d %d\n",mesh->cell[i].n1,mesh->cell[i].n2,mesh->cell[i].n3,mesh->cell[i].n4,mesh->cell[i].n5,mesh->cell[i].n6,mesh->cell[i].n7,mesh->cell[i].n8);
+	}
+	////////////////////////////////////////////////////
+	////////////// C O N E C T I V I T Y ///////////////
+	////////////////////////////////////////////////////
+
+	// Cell types
+	fprintf(fp,"CELL_TYPES %d \n",mesh->ncells);
+      	for(i=0;i<mesh->ncells;i++){
+	   fprintf(fp,"%d \n",12);
+	}
+
+	//Cell data
+	fprintf(fp,"CELL_DATA %d \n",mesh->ncells);
+
+	fprintf(fp,"SCALARS pmax DOUBLE \n");
+	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
+      for(j=0;j<mesh->ncells;j++){
+		fprintf(fp,"%14.14e \n",mesh->cell[j].pmax);
+      }
+      
+      fprintf(fp,"SCALARS troubled INTEGER \n");
+	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
+	for(j=0;j<mesh->ncells;j++){
+	   	fprintf(fp,"%d \n",mesh->cell[j].troubled);
+	}
+
+	fclose(fp);
+	printf("%s A VTK has been written: %s\n",OK,filename);
+
+#endif
 
 	return 1;
 }

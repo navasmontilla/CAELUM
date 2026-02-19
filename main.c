@@ -118,21 +118,18 @@ int main(int argc, char * argv[]){
 	
 	create_mesh(mesh,sim);				//This creates the mesh and defines connectivity
 #if ALLOW_SOLIDS==1
-	read_solids(mesh,solids,folder_path);	//This read solid bodies
+	read_solids(mesh,solids,folder_path);	//This read solid bodies (stl)
 #else
 	solids->nsolid=0;
 #endif
 	assign_cell_type(mesh,solids,folder_path);//This assigns the type of cell (normal,solid,ghost,...)
-	update_stencils(mesh,sim);			//This defines and updates the stencils for HO reconstructions
 	assign_wall_type(mesh);    			//This defines the wall types (boundary wall, inner wall, ...)
 	update_initial(mesh,sim,folder_path);	//This defines the initial condition, which may be read from file
-
-#if ALLOW_SOLIDS==1
-	assign_image_cells(mesh,solids);
-	update_ghost_cells(sim,mesh,solids);
-	update_wall_type(mesh,solids);
+	assign_image_cells(mesh);
+	update_ghost_cells(sim,mesh);
+	update_wall_type(mesh);
+      update_stencils(mesh,sim);			//This defines and updates the stencils for HO reconstructions
 	printf("%s Image points have been defined and ghost cell values have been computed \n",OK);
-#endif
 
 #if EQUATION_SYSTEM == 0
 	set_velocity(mesh,sim);
@@ -173,7 +170,7 @@ int main(int argc, char * argv[]){
 
 	while(sim->t<tf){
 		
-		update_solution(mesh,sim,solids,sim->rk_steps); //This updates all variables one time step
+		update_solution(mesh,sim); //This updates all variables one time step
 
 		if(mesh->cell_bc_flag!=1){
 			update_cell_boundaries(mesh);
@@ -204,6 +201,10 @@ int main(int argc, char * argv[]){
 			timeac2=0.0;
 		}
 		#endif
+            
+            #if WRITE_PMAX
+            pmax_calculation(mesh, sim);
+            #endif
 	}
 
 	printf(" \n");
@@ -215,6 +216,11 @@ int main(int argc, char * argv[]){
 		snprintf(listfile, sizeof(listfile), "%s/out/state%03d.out", folder_path, nIt + 1);
 		write_list(mesh,listfile);
 	}
+      
+      #if WRITE_PMAX
+      snprintf(vtkfile, sizeof(vtkfile),"%s/out/extrema.vtk", folder_path);
+	write_extrema(mesh,vtkfile);
+      #endif
 
 	#if WRITE_TKE
 	fclose(file_tke);

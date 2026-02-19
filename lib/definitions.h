@@ -50,7 +50,7 @@ Content:
 #define _Q_ 6.0
 #define POSITIVITY 1 //This is 1 if activated, 0 deactivated, positivity fix
 #define TOL_RHO 1.0e-8
-#define TOL_P 1.0e-8
+#define TOL_P 1.0e-8 //2.0e-1 1.0e-8
 
 //Equations
 #define EQUATION_SYSTEM 0 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 
@@ -69,8 +69,8 @@ Content:
 #define DEBUG_MESH 0 //0: no debug; 1: screen info;
 
 //IBM utils
-#define ALLOW_SOLIDS 0 //0: no solid cells, 1: STL immersed boundaries, 2: Read list of solid cells
-#define _stol_ 2.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
+#define ALLOW_SOLIDS 0 //0: no solid cells, 1: STL immersed boundaries, 2: Read list of solid cells, 3: SDF level-set solids
+#define _stol_ 3.0 //tolerance for the generation of ghost cell layers. 1.0: 1 layer, 2.0: 2 layers....
 
 //OpenMP configuration
 #define NTHREADS 24
@@ -79,6 +79,7 @@ Content:
 #define WRITE_VTK 1
 #define WRITE_LIST 1
 #define WRITE_TKE 0 //write file TKE evolution in time
+#define WRITE_PMAX 1
 
 //Printing variables (vtk)
 #define print_RHO 1

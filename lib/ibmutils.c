@@ -27,20 +27,19 @@ Content:
 
 
 
-int assign_image_cells(t_mesh *mesh,t_solid *solids){
-	t_cell *cell;
-	int n,q;
-	int imin,imax,jmin,jmax,kmin,kmax;
-      double di[8],li[8];
-      double aux1,aux2,aux3,sum;
-
-	if(solids->nsolid<1){
-            printf("%s In function assign_image_cells() no solids are considered\n",WAR);
-      }else{
-
+int assign_image_cells(t_mesh *mesh){    
+ 
+      #if (ALLOW_SOLIDS==1)||(ALLOW_SOLIDS==3)
+            
+            t_cell *cell;
+            int n,q;
+            int imin,imax,jmin,jmax,kmin,kmax;
+            double di[8],li[8];
+            double aux1,aux2,aux3,sum;
+      
 		cell=mesh->cell;
 		for(n=0;n<mesh->ncells;n++){
-			  if (cell[n].ghost==1) {
+			  if (cell[n].type==2) {
 
 				if (cell[n].xim>0.0 && cell[n].xim<mesh->Lx && cell[n].yim>0.0 && cell[n].yim<mesh->Ly && cell[n].zim>0.0 && cell[n].zim<mesh->Lz) {  // We first check that image points are inside the computational domain. Habria que usar +- dx para afinar
 
@@ -72,14 +71,8 @@ int assign_image_cells(t_mesh *mesh,t_solid *solids){
 						aux2=cell[n].yim-cell[cell[n].ni[q]].yc;
 						aux3=cell[n].zim-cell[cell[n].ni[q]].zc;
 
-						//if(n==594473){
-						//      printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
-						//      printf("aux1 %lf aux2 %lf aux3 %lf\n", aux1,aux2,aux3);
-						//      getchar();
-						//}
-
 						di[q]=pow( aux1*aux1+aux2*aux2+aux3*aux3, 0.5 ); // this is the distance between the image point and each neighbor cell
-						if(cell[cell[n].ni[q]].ghost!=1){
+						if(cell[cell[n].ni[q]].type==1){
 							li[q]=1.0/(di[q]*di[q]+TOL14);
 						}else{
 							li[q]=0.0;
@@ -90,7 +83,6 @@ int assign_image_cells(t_mesh *mesh,t_solid *solids){
 
 					if(sum<TOL14){
 						cell[n].type=0;
-						cell[n].ghost=0;
 					}else{
 						for(q=0;q<8;q++){
 							cell[n].li[q]=li[q]/sum; // weighting coefficients
@@ -106,88 +98,151 @@ int assign_image_cells(t_mesh *mesh,t_solid *solids){
 				//      printf("cell image : %lf %lf %lf\n", cell[n].xim,cell[n].yim,cell[n].zim );
 				//	}
 					cell[n].type=0;
-					cell[n].ghost=0;
 				}
 
 			  }
 		}
+            
+            for(n=0;n<mesh->ncells;n++){
+                  if (cell[n].type==0) {
+                        cell[n].U[0]=-1.0;
+                        cell[n].U[1]=0.0;
+				cell[n].U[2]=0.0;
+				cell[n].U[3]=0.0;
+				cell[n].U[4]=0.0;
+				cell[n].U[5]=0.0;
+                  }
+            }
 
-		//printf("%s Image points have been identified \n\n",OK);
-	}
-
+      #endif
+      
 	return 1;
 }
 
 
-int update_ghost_cells(t_sim *sim,t_mesh *mesh,t_solid *solids){
-	t_cell *cell;
-      t_triangle *triangle;
-	int n,k,q;
-      double auxval[sim->nvar];
-      double dotprod;
+int update_ghost_cells(t_sim *sim,t_mesh *mesh){
 
-	if(solids->nsolid>0){
+      #if (ALLOW_SOLIDS==1)||(ALLOW_SOLIDS==3)
+            
+      	t_cell *cell;
+            #if ALLOW_SOLIDS==1
+            t_triangle *triangle;
+            #endif
+            int n,k,q;
+            double auxval[sim->nvar];
+            double dotprod;
+      
 		cell=mesh->cell;
 		for(n=0;n<mesh->ncells;n++){
-			  if (cell[n].ghost==1) {
-				triangle=cell[n].tri;  // triangular facet associated to a ghost cell
+			  if (cell[n].type==2) {
 				for(k=0;k<sim->nvar;k++){
 					auxval[k]=0.0;
 					for(q=0;q<8;q++){
 						auxval[k]= auxval[k] + cell[n].li[q]* cell[cell[n].ni[q]].U[k]; //interpolated variables at image point
-						//printf("li:%lf U:%lf \n", cell[n].li[q],cell[cell[n].ni[q]].U[k] );
+						//if (isnan(cell[n].li[q]) || isnan(cell[cell[n].ni[q]].U[k] )) {
+                                    //printf("li:%lf U:%lf \n", cell[n].li[q],cell[cell[n].ni[q]].U[k] );}
 					}
+                              if(k==1||k==2||k==3){
+                                    auxval[k]=auxval[k]/auxval[0];
+                              }
 					//getchar();
 				}
 
-
+                        #if ALLOW_SOLIDS==1
+                        triangle=cell[n].tri;  // triangular facet associated to a ghost cell
 				dotprod=triangle->nr[0]*auxval[1]+triangle->nr[1]*auxval[2]+triangle->nr[2]*auxval[3];
 				for(k=0;k<sim->nvar;k++){
 					if(k==1||k==2||k==3){
 						cell[n].U[k]=auxval[k]-2.0*dotprod*triangle->nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
-					}else{
+                                    cell[n].U[k]=cell[n].U[k]*cell[n].U[0];
+                              }else{
 						cell[n].U[k]=auxval[k]; //non-vector variables are assigned equal
 					}
 
 				}
+                        #endif
+                        
+                        #if ALLOW_SOLIDS==3
+				dotprod=cell[n].nr[0]*auxval[1]+cell[n].nr[1]*auxval[2]+cell[n].nr[2]*auxval[3];
+				for(k=0;k<sim->nvar;k++){
+					if(k==1||k==2||k==3){
+						cell[n].U[k]=auxval[k]-2.0*dotprod*cell[n].nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
+                                    cell[n].U[k]=cell[n].U[k]*cell[n].U[0];
+                              }else{
+						cell[n].U[k]=auxval[k]; //non-vector variables are assigned equal
+					}
+
+				}
+                        #endif
 
 
 
 			  }
 		}
-
-		//printf("%s Ghost cell values have been computed \n\n",OK);
-
-      }
-
+      
+      #endif
+      
 	return 1;
 }
 
 
-int update_wall_type(t_mesh *mesh,t_solid *solids){
-	t_wall *wall;
-	int n;
+int update_wall_type(t_mesh *mesh){
 
-	if(solids->nsolid<1){
-            printf("%s In function update_wall_type() no solids are considered\n",WAR);
-      }else{
+      #if (ALLOW_SOLIDS==1)||(ALLOW_SOLIDS==3)
+            
+      	t_wall *wall;
+            int n;
+      
 		for(n=0;n<mesh->nwalls;n++){
 			wall=&(mesh->wall[n]);
 
-			if(wall->cellL->ghost>0 && wall->cellR->ghost>0){       //left and right ghost
+			if(wall->cellL->type==2 && wall->cellR->type==2){       //left and right ghost
 				wall->wtype=0;
-			}else if(wall->cellR->type==0 && wall->cellL->ghost>0){ //left ghost and right solid
+			}else if(wall->cellR->type==0 && wall->cellL->type==2){ //left ghost and right solid
 				wall->wtype=0;
-			}else if(wall->cellL->type==0 && wall->cellR->ghost>0){ //left solid and right ghost
+			}else if(wall->cellL->type==0 && wall->cellR->type==2){ //left solid and right ghost
 				wall->wtype=0;
 			}else if(wall->cellL->type==0 && wall->cellR->type==0){ //left and right solids
 				wall->wtype=0;
 			}
 
+                  if(wall->boundary != 1){
+                        if(wall->nx>TOL4){ //e imponer que no sea pared del contorno
+                              if(wall->cellL->type==0 && wall->cellR->type!=0){
+                                    wall->wtype=4;
+                                    wall->boundId=4;
+                              }else if(wall->cellR->type==0 && wall->cellL->type!=0){
+                                    wall->wtype=4;
+                                    wall->boundId=2;
+                              }else if(wall->cellL->type==0 && wall->cellR->type==0){
+                                    wall->wtype=0;
+                              }
+                        }else if(wall->ny>TOL4){
+                              if(wall->cellL->type==0 && wall->cellR->type!=0){
+                                    wall->wtype=4;
+                                    wall->boundId=1;
+                              }else if(wall->cellR->type==0 && wall->cellL->type!=0){
+                                    wall->wtype=4;
+                                    wall->boundId=3;
+                              }else if(wall->cellL->type==0 && wall->cellR->type==0){
+                                    wall->wtype=0;
+                              }
+                        }else{
+                              if(wall->cellL->type==0 && wall->cellR->type!=0){
+                                    wall->wtype=4;
+                                    wall->boundId=5;
+                              }else if(wall->cellR->type==0 && wall->cellL->type!=0){
+                                    wall->wtype=4;
+                                    wall->boundId=6;
+                              }else if(wall->cellL->type==0 && wall->cellR->type==0){
+                                    wall->wtype=0;
+                              }
+                        }
+                  }
 
 		}
 
-	}
+	#endif
 
       return 1;
 
