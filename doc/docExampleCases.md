@@ -47,11 +47,6 @@ The Python scripts to generate the cases below must be launched from the softwar
   <img src="../doc/animationRP3D.gif" width="50%" alt="my alt text"/>
   </figure>
   
-- Setting up a 3D problem for the Euler equations with solid objects: [caseRadialSolid](../python/caseRadialSolid.py) ```python3 python/caseRadialSolid.py```
-
-  <figure style="text-align: center;">
-  <img src="../doc/animationRadialSolid.gif" width="50%" alt="my alt text"/>
-  </figure>
   
 - Advanced case: the shock-bubble test case [4]: [caseShockBub](../python/caseShockBub.py) ```python3 python/caseShockBub.py```
 
@@ -91,6 +86,29 @@ The Python scripts to generate the cases below must be launched from the softwar
     <figure style="text-align: center;">
     <img src="../doc/animationCol3D.gif" width="50%" alt="my alt text"/>
     </figure>
+    
+
+### Immersed boundaries
+
+- Setting up a 3D problem for the Euler equations with solid objects (staircase configuration): [caseRadialSolid](../python/caseRadialSolid.py) ```python3 python/caseRadialSolid.py```
+
+  <figure style="text-align: center;">
+  <img src="../doc/animationRadialSolid.gif" width="50%" alt="my alt text"/>
+  </figure>
+  
+- Double Mach reflection (staircase configuration): [caseDoubleMach](../python/caseDoubleMach.py) ```python3 python/caseDoubleMach.py```
+
+  <figure style="text-align: center;">
+  <img src="../doc/state002.out_doublemach_low.png" width="50%" alt="my alt text"/>
+  </figure>
+  
+- Double Mach reflection (level-set IBM configuration): [caseDoubleMach2](../python/caseDoubleMach2.py) ```python3 python/caseDoubleMach2.py```
+
+  <figure style="text-align: center;">
+  <img src="../doc/state002.out_doublemach_d3.png" width="50%" alt="my alt text"/>
+  </figure>  
+
+
     
 References and sources for the cases above:
 
