@@ -58,17 +58,25 @@ void update_cell(t_mesh *mesh, t_sim *sim){
 void update_cellK1(t_mesh *mesh, t_sim *sim){
 
 	int i,k;
+      double diff,old,new;
 	t_cell *cell;
 
 	//cell=mesh->cell;
-#pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
+#pragma omp parallel for default(none) private(k,cell,diff,old,new) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
 		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
-			cell->U_aux[k]=cell->U[k];
-			cell->U[k]-=sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
-		}
+                  cell->U_aux[k]=cell->U[k];
+			old=cell->U[k];
+			new=cell->U[k]-sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
+                  #if FILTER_RESIDUALS
+                  diff = fabs((new - old)/(old+TOL14));
+                  cell->U[k] = (diff < TOL14) ? old : new;
+                  #else
+                  cell->U[k] = new;  
+                  #endif
+            }
 		}
 	}
 }
@@ -77,16 +85,23 @@ void update_cellK1(t_mesh *mesh, t_sim *sim){
 void update_cellK2(t_mesh *mesh, t_sim *sim){
 
 	int i,k;
+      double diff,old,new;
 	t_cell *cell;
 
 	//cell=mesh->cell;
-#pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
+#pragma omp parallel for default(none) private(k,cell,diff,old,new) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
 		cell=&(mesh->cell[i]);
 		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
-			cell->U[k]=0.75*cell->U_aux[k]+0.25*cell->U[k]-0.25*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
-
+                  old=cell->U[k];
+			new=0.75*cell->U_aux[k]+0.25*cell->U[k]-0.25*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
+                  #if FILTER_RESIDUALS
+                  diff = fabs((new - old)/(old+TOL14));
+                  cell->U[k] = (diff < TOL14) ? old : new;
+                  #else
+                  cell->U[k] = new;  
+                  #endif
 		}
 		}
 	}
@@ -96,16 +111,23 @@ void update_cellK2(t_mesh *mesh, t_sim *sim){
 void update_cellK3(t_mesh *mesh, t_sim *sim){
 
 	int i,k;
+      double diff,old,new;
 	t_cell *cell;
 
 	//cell=mesh->cell;
-#pragma omp parallel for default(none) private(k,cell) shared(sim,mesh)
+#pragma omp parallel for default(none) private(k,cell,diff,old,new) shared(sim,mesh)
 	for(i=0;i<mesh->ncells;i++){
-		cell=&(mesh->cell[i]);
+		cell=&(mesh->cell[i]); 
 		if(cell->type==1){
 		for(k=0;k<sim->nvar;k++){
-			cell->U[k]=(1.0/3.0)*cell->U_aux[k]+(2.0/3.0)*cell->U[k]-(2.0/3.0)*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
-
+                  old=cell->U[k];
+			new=(1.0/3.0)*cell->U_aux[k]+(2.0/3.0)*cell->U[k]-(2.0/3.0)*sim->dt*((cell->w2->fL_star[k]-cell->w4->fR_star[k])/cell->dx + (cell->w3->fL_star[k]-cell->w1->fR_star[k])/cell->dy + (cell->w6->fL_star[k]-cell->w5->fR_star[k])/cell->dz - cell->S[k]);
+                  #if FILTER_RESIDUALS
+                  diff = fabs((new - old)/(old+TOL14));
+                  cell->U[k] = (diff < TOL14) ? old : new;
+                  #else
+                  cell->U[k] = new;  
+                  #endif
 		}
 		}
 	}

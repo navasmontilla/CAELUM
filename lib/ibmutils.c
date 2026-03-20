@@ -50,6 +50,7 @@ int assign_image_cells(t_mesh *mesh){
 					jmax= MIN(jmin+1,mesh->ycells-1);
 					kmin= MAX((cell[n].zim-mesh->dz/2.0)/mesh->dz,0);
 					kmax= MIN(kmin+1,mesh->zcells-1);
+                              
 
 
 
@@ -174,7 +175,49 @@ int update_ghost_cells(t_sim *sim,t_mesh *mesh){
 
 				}
                         #endif
+                        
+                        
+                        #if ST!=0 //gravity source terms
+                        
+                        for(k=0;k<sim->nvar;k++){
+					auxval[k]=0.0;
+					for(q=0;q<8;q++){
+						auxval[k]= auxval[k] + cell[n].li[q]* cell[cell[n].ni[q]].Ue[k]; //interpolated variables at image point
+					}
+                              if(k==1||k==2||k==3){
+                                    auxval[k]=auxval[k]/auxval[0];
+                              }
+					//getchar();
+				}
 
+                        #if ALLOW_SOLIDS==1
+                        triangle=cell[n].tri;  // triangular facet associated to a ghost cell
+				dotprod=triangle->nr[0]*auxval[1]+triangle->nr[1]*auxval[2]+triangle->nr[2]*auxval[3];
+				for(k=0;k<sim->nvar;k++){
+					if(k==1||k==2||k==3){
+						cell[n].Ue[k]=auxval[k]-2.0*dotprod*triangle->nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
+                                    cell[n].Ue[k]=cell[n].Ue[k]*cell[n].Ue[0];
+                              }else{
+						cell[n].Ue[k]=auxval[k]; //non-vector variables are assigned equal
+					}
+
+				}
+                        #endif
+                        
+                        #if ALLOW_SOLIDS==3
+				dotprod=cell[n].nr[0]*auxval[1]+cell[n].nr[1]*auxval[2]+cell[n].nr[2]*auxval[3];
+				for(k=0;k<sim->nvar;k++){
+					if(k==1||k==2||k==3){
+						cell[n].Ue[k]=auxval[k]-2.0*dotprod*cell[n].nr[k-1]; //this is a reflection for vector variables u_r=u-2*(u·n)n, which allows to impose the Dirichlet BC of zero velocity at solid faces
+                                    cell[n].Ue[k]=cell[n].Ue[k]*cell[n].Ue[0];
+                              }else{
+						cell[n].Ue[k]=auxval[k]; //non-vector variables are assigned equal
+					}
+
+				}
+                        #endif
+                        
+                        #endif
 
 
 			  }

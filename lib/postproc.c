@@ -153,7 +153,11 @@ int write_vtk(t_mesh *mesh, char *filename){
 	fprintf(fp,"SCALARS theta DOUBLE \n");
 	fprintf(fp,"LOOKUP_TABLE DEFAULT \n");
 	for(j=0;j<mesh->ncells;j++){
-            theta=mesh->cell[j].pres/(_R_*mesh->cell[j].U[0])/( pow((mesh->cell[j].pres/_p0_),((_gamma_-1.0)/_gamma_)) );
+            if (mesh->cell[j].type!=0){
+                  theta=mesh->cell[j].pres/(_R_*mesh->cell[j].U[0])/( pow((mesh->cell[j].pres/_p0_),((_gamma_-1.0)/_gamma_)) );
+            }else{
+                  theta=0.0;
+            }
 	   	fprintf(fp,"%14.14e \n",theta);
 	}
       #endif
@@ -206,7 +210,11 @@ int write_list(t_mesh *mesh, char *filename){
 				gamma=_gamma_;
 			#endif
 			p=pressure_from_energy(gamma, mesh->cell[k].U[4], u, v, w, mesh->cell[k].U[0], mesh->cell[k].zc);
-			theta=p/(_R_*mesh->cell[k].U[0])/( pow((p/_p0_),((_gamma_-1.0)/_gamma_)) );
+                  if (mesh->cell[k].type!=0){
+                        theta=p/(_R_*mesh->cell[k].U[0])/( pow((p/_p0_),((_gamma_-1.0)/_gamma_)) );
+                  }else{
+                        theta=0.0;
+                  }
                   fprintf(fp,"%14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e %14.14e\n",mesh->cell[k].xc,mesh->cell[k].yc,mesh->cell[k].zc,u,v,w,rho,p,phi,theta);
             }
 		}

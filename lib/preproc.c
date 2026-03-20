@@ -1031,7 +1031,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                           nz=0.0;
                                     }
                                     
-                                    modn=sqrt(nx*nx+ny*ny+nz*nz)+TOL8;
+                                    modn=sqrt(nx*nx+ny*ny+nz*nz)+TOL14;
                                     
                                     cell[k].nr[0]=nx/modn;
                                     cell[k].nr[1]=ny/modn;
@@ -1040,7 +1040,7 @@ int assign_cell_type(t_mesh *mesh,t_solid *solids, const char *folder_path){ // 
                                     cell[k].xim = cell[k].xc - 2.0*cell[k].sdf*cell[k].nr[0];
                                     cell[k].yim = cell[k].yc - 2.0*cell[k].sdf*cell[k].nr[1];
                                     cell[k].zim = cell[k].zc - 2.0*cell[k].sdf*cell[k].nr[2];
-                                    
+
                                     
                                     
                              // }else{

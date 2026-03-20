@@ -37,6 +37,7 @@ Content:
 #define TOL4 1.0E-4
 #define TOL8 1.0E-8
 #define TOL14 1.0E-14
+#define TOL16 1.0E-16
 #define TOL40 1.0E-40
 #define MIN(x,y) (x < y ? x : y)
 #define MAX(x,y) (x > y ? x : y)
@@ -51,6 +52,7 @@ Content:
 #define POSITIVITY 1 //This is 1 if activated, 0 deactivated, positivity fix
 #define TOL_RHO 1.0e-8
 #define TOL_P 1.0e-8 //2.0e-1 1.0e-8
+#define FILTER_RESIDUALS 1 
 
 //Equations
 #define EQUATION_SYSTEM 0 // 0: Linear advection, 1: Burgers, 2: Compressible Euler 
