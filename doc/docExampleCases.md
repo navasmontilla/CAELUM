@@ -86,6 +86,18 @@ The Python scripts to generate the cases below must be launched from the softwar
   <img src="../doc/state002.out_doublemach_d3.png" width="50%" alt="my alt text"/>
   </figure>  
   
+- Schardin's test case (level-set IBM configuration): [caseShockDiffractionShardin2](../python/caseShockDiffractionShardin2.py) ```python3 python/caseShockDiffractionShardin2.py```
+
+  <figure style="text-align: center;">
+  <img src="../doc/schardin.png" width="50%" alt="my alt text"/>
+  </figure>  
+  
+- Steady supersonic flow over a wedge: computation of the shock polar curve (level-set IBM configuration): [caseShockPolar](../python/caseShockPolar.py) ```python3 python/caseShockDiffractionShardin2.py```
+
+  <figure style="text-align: center;">
+  <img src="../doc/shock_polar.png" width="50%" alt="my alt text"/>
+  </figure> 
+  
 ### Atmospheric flow (Euler equations with gravity source term)
   
 - Setting up a 2D atmospheric simulation case: colliding thermals test case [6]: [caseCollidingBub](../python/caseCollidingBub.py) ```python3 python/caseCollidingBub.py```
