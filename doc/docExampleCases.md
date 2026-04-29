@@ -66,29 +66,7 @@ The Python scripts to generate the cases below must be launched from the softwar
   <img src="../doc/animationRM.gif" width="50%" alt="my alt text"/>
   </figure>
   
-### Atmospheric flow (Euler equations with gravity source term)
-  
-- Setting up a 2D atmospheric simulation case (colliding thermals test case) [6]: [caseCollidingBub](../python/caseCollidingBub.py) ```python3 python/caseCollidingBub.py```
-    
-    <figure style="text-align: center;">
-    <img src="../doc/animationCol.gif" width="50%" alt="my alt text"/>
-    </figure>
-    
-    
-- Setting up a 2D atmospheric simulation case (downward thermal with uneven ground): [caseDownwardBubbleSolid](../python/caseDownwardBubbleSolid.py) ```python3 python/caseDownwardBubbleSolid.py```
-    
-    <figure style="text-align: center;">
-    <img src="../doc/animationColSol.gif" width="50%" alt="my alt text"/>
-    </figure>
-    
-- Setting up a 3D atmospheric simulation case (colliding thermals test case): [caseCollidingBub3D](../python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](../python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub3D.py```
-    
-    <figure style="text-align: center;">
-    <img src="../doc/animationCol3D.gif" width="50%" alt="my alt text"/>
-    </figure>
-    
-
-### Immersed boundaries
+### Introducing solid objects
 
 - Setting up a 3D problem for the Euler equations with solid objects (staircase configuration): [caseRadialSolid](../python/caseRadialSolid.py) ```python3 python/caseRadialSolid.py```
 
@@ -107,6 +85,36 @@ The Python scripts to generate the cases below must be launched from the softwar
   <figure style="text-align: center;">
   <img src="../doc/state002.out_doublemach_d3.png" width="50%" alt="my alt text"/>
   </figure>  
+  
+### Atmospheric flow (Euler equations with gravity source term)
+  
+- Setting up a 2D atmospheric simulation case: colliding thermals test case [6]: [caseCollidingBub](../python/caseCollidingBub.py) ```python3 python/caseCollidingBub.py```
+    
+    <figure style="text-align: center;">
+    <img src="../doc/animationCol.gif" width="50%" alt="my alt text"/>
+    </figure>
+    
+- Setting up a 3D atmospheric simulation case: colliding thermals test case: [caseCollidingBub3D](../python/caseCollidingBub3D.py) [caseCollidingBub3D_plots](../python/caseCollidingBub3D_plots.py) ```python3 python/caseCollidingBub3D.py```
+    
+    <figure style="text-align: center;">
+    <img src="../doc/animationCol3D.gif" width="50%" alt="my alt text"/>
+    </figure>
+    
+- Downward thermal with uneven ground (staircase): [caseDownwardBubbleSolid](../python/caseDownwardBubbleSolid.py) ```python3 python/caseDownwardBubbleSolid.py```
+    
+    <figure style="text-align: center;">
+    <img src="../doc/animationDownwardS.gif" width="50%" alt="my alt text"/>
+    </figure>
+    
+- Downward thermal with uneven ground (IBM level-set): [caseDownwardBubbleIBM](../python/caseDownwardBubbleIBM.py) ```python3 python/caseDownwardBubbleIBM.py```
+    
+    <figure style="text-align: center;">
+    <img src="../doc/animationDownward.gif" width="50%" alt="my alt text"/>
+    </figure>
+    
+
+    
+
 
 
     

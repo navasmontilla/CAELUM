@@ -23,7 +23,7 @@ import imageio
 #This test case will run in the folder "caseCollidingBub/". 
 #Don't forget the bar (/). 
 #This directory should have been created prior to the execution to this script, and should also contain an /out folder inside
-folder_case="caseDownwardBubbleSolid/" 
+folder_case="caseDownwardBubbleIBM/" 
 
 
 # Then, all the paths are automatically assigned:
@@ -56,12 +56,12 @@ backup_file(folder_lib+'/definitions.h')
 #Configure the header file for compilation. Add as many lines as desired for the macros you want to modify.
 modify_header_file(folder_lib+'/definitions.h', 'NTHREADS', 48)         #number of threads
 modify_header_file(folder_lib+'/definitions.h', 'EQUATION_SYSTEM', 2)  #System of equations solved
-modify_header_file(folder_lib+'/definitions.h', 'ST', 3)               #Source term type
+modify_header_file(folder_lib+'/definitions.h', 'ST', 2)               #Source term type
 modify_header_file(folder_lib+'/definitions.h', 'SOLVER', 0)           #Riemann solver used
 modify_header_file(folder_lib+'/definitions.h', 'TYPE_REC', 2)
 modify_header_file(folder_lib+'/definitions.h', 'READ_INITIAL', 1)     #Read or not initial data, this should ALWAYS be 1
 modify_header_file(folder_lib+'/definitions.h', 'WRITE_LIST', 1)  
-modify_header_file(folder_lib+'/definitions.h', 'ALLOW_SOLIDS', 2)     
+modify_header_file(folder_lib+'/definitions.h', 'ALLOW_SOLIDS', 3)     
 
 #Compilation
 compile_program()
@@ -105,7 +105,7 @@ u_z = 1.0
 
 xc, yc, zc, u, v, w, rho, p, phi, ue, ve, we, rhoe, pe = initialize_variables(xcells, ycells, zcells, SizeX, SizeY, SizeZ)
 
-sld = np.zeros((xcells, ycells, zcells),dtype=int) #initialize solid cells
+sld = np.zeros((xcells, ycells, zcells)) #initialize solid cells
 
 # Among these, we have:
 # - the problem variables: ```u, v, w, rho, p, phi```
@@ -153,12 +153,10 @@ for l in range(0,xcells):
                 v  [l,m,n]=0.0 #y-velocity
                 w  [l,m,n]=0.0 #z-velocity
                 phi[l,m,n]=0.0 #solute
-                
-                dd=np.sqrt((xc[l,m,n]-xp)**2 + (zc[l,m,n]+2500.0)**2)   
-                if  dd < 5000:
-                    sld[l, m, n] = 0 #solid cell
-                else:
-                    sld[l, m, n] = 1 #normal cell
+               
+                #sld[l,m,n] =  zc[l,m,n]-3000  
+                sld[l,m,n] = np.sqrt((xc[l,m,n]-xp)**2 + (zc[l,m,n]+2500.0)**2) - 5000                
+                #sld[l,m,n] =  1.0/np.sqrt(1+0.1**2)*(-xc[l,m,n] + 10*zc[l,m,n] - 5000) 
 
 
 # Now, the configuration and initial condition (and equilibrium) files are written: 
@@ -185,6 +183,10 @@ run_program(folder_exe+"./caelum "+folder_case)
 xc_circ = 10000.0
 zc_circ = -2500.0
 R_circ  = 5000.0
+
+def sdf_circle(x, z, xc, zc, R):
+    return np.sqrt((x - xc)**2 + (z - zc)**2) - R
+
 
 os.remove(folder_out + "list_eq.out")
 files = sorted(glob(folder_out + "/*.out"), key=lambda x: int(re.findall(r'\d+', os.path.basename(x))[0]))
@@ -228,9 +230,9 @@ for fname in files:
     
     image_path = filename + ".png"
     fig.savefig(image_path,dpi=400)
-    images.append(imageio.imread(image_path)) 
-    
-    
+    images.append(imageio.imread(image_path))
+
+
     xp = xc[:,0,0]
     zp = zc[0,0,:]
 
@@ -267,9 +269,133 @@ for fname in files:
 
     plt.tight_layout()
 
-    fig.savefig(fname+"_theta_stair.png", dpi=300)
+    fig.savefig(fname+"_theta.png", dpi=300)
     plt.close(fig)  
 
+
+    # =====================================================
+    # Third plot: Zoom around circle with visible cells
+    # =====================================================
+
+    # ---- Define automatic zoom box around circle ----
+    margin = 500.0
+
+    x1_zoom = xc_circ - R_circ - margin
+    x2_zoom = xc_circ + R_circ + margin
+    z1_zoom = 0.0
+    z2_zoom = 10000
+
+    # ---- Compute cell edges from centers ----
+    dx = xp[1] - xp[0]
+    dz = zp[1] - zp[0]
+
+    x_edges = np.concatenate(([xp[0] - dx/2], xp + dx/2))
+    z_edges = np.concatenate(([zp[0] - dz/2], zp + dz/2))
+
+    X_edges, Z_edges = np.meshgrid(x_edges, z_edges, indexing="ij")
+
+    # ---- Extract indices inside zoom region ----
+    ix = np.where((xp >= x1_zoom) & (xp <= x2_zoom))[0]
+    iz = np.where((zp >= z1_zoom) & (zp <= z2_zoom))[0]
+
+    ix_edges = np.arange(ix[0], ix[-1] + 2)
+    iz_edges = np.arange(iz[0], iz[-1] + 2)
+
+    Sth_zoom = Sth[ix[0]:ix[-1]+1, iz[0]:iz[-1]+1]
+
+    X_edges_zoom = X_edges[ix_edges[0]:ix_edges[-1]+1,
+                           iz_edges[0]:iz_edges[-1]+1]
+
+    Z_edges_zoom = Z_edges[ix_edges[0]:ix_edges[-1]+1,
+                           iz_edges[0]:iz_edges[-1]+1]
+
+    Xp_zoom, Zp_zoom = np.meshgrid(
+        xp[ix[0]:ix[-1]+1],
+        zp[iz[0]:iz[-1]+1],
+        indexing="ij"
+    )
+
+    # ---- Create figure ----
+    fig3, ax3 = plt.subplots(figsize=(6,5))
+
+    cmap = plt.get_cmap('RdBu_r').copy()
+    cmap.set_under('gray')
+
+    plot3 = ax3.pcolormesh(
+        X_edges_zoom,
+        Z_edges_zoom,
+        Sth_zoom,
+        cmap=cmap,
+        shading='flat',
+        edgecolors='k',
+        linewidth=0.2,
+        vmin=280,
+        vmax=320
+    )
+
+    # =====================================================
+    # Mask centers using circle geometry (SDF)
+    # =====================================================
+
+    mask_circle = (Xp_zoom - xc_circ)**2 + (Zp_zoom - zc_circ)**2 <= R_circ**2
+
+    # ---- Mask valid theta ----
+    theta_mask = (Sth_zoom > 0) & (~np.isnan(Sth_zoom))
+
+    mask_centers = mask_circle & theta_mask
+
+    # ---- Plot cell centers inside circle ----
+    ax3.scatter(
+        Xp_zoom[mask_centers],
+        Zp_zoom[mask_centers],
+        s=6,
+        marker='o',
+        facecolors='none',
+        edgecolors='black',
+        linewidths=0.3,
+        zorder=35
+    )
+
+    # ---- Gray cells (invalid θ or inside solid) ----
+    gray_mask = ~theta_mask
+
+    ax3.scatter(
+        Xp_zoom[gray_mask],
+        Zp_zoom[gray_mask],
+        s=6,
+        marker='o',
+        color='black',
+        linewidths=0.3,
+        zorder=40
+    )
+
+    # =====================================================
+    # Draw circle boundary
+    # =====================================================
+
+    theta_plot = np.linspace(0, 2*np.pi, 300)
+    x_circ = xc_circ + R_circ*np.cos(theta_plot)
+    z_circ = zc_circ + R_circ*np.sin(theta_plot)
+
+    ax3.plot(x_circ, z_circ, 'k-', linewidth=1.0)
+
+    # ---- Axis formatting ----
+    ax3.set_xlim([x1_zoom, x2_zoom])
+    ax3.set_ylim([z1_zoom, z2_zoom])
+    ax3.set_aspect('equal', 'box')
+    ax3.set_xlabel("x (m)")
+    ax3.set_ylabel("z (m)")
+
+    cbar3 = plt.colorbar(plot3)
+    cbar3.ax.set_title('θ (K)')
+
+    plt.tight_layout()
+
+    zoom_name = fname + "_theta_cells"
+    zoom_path = zoom_name + ".png"
+
+    fig3.savefig(zoom_path, dpi=300)
+    plt.close(fig3)    
     
     j=j+1
          
